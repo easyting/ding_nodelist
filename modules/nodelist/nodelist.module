@@ -1,0 +1,46 @@
+<?php
+
+
+/**
+ * Implements hook_menu().
+ */
+
+function nodelist_menu() {
+  $items = array();
+  $items['admin/config/user-interface/nodelist'] = array(
+    'title' => t('Nodelist'),
+    'description' => t('View and customize your lists'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('nodelist_admin'),
+    'access arguments' => array('access notification'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function nodelist_permission() {
+  return array(
+    'access nodelist' => array(
+      'title' => t('View the administrative nodelist settings'),
+      'description' => t('Customizing the nodelist'),
+    ),
+  );
+}
+
+
+function nodelist_admin() {
+ $form = array();
+
+   $form['settings'] = array(
+    '#type' => 'fieldset', 
+    '#access' => user_access('administer nodes'), 
+    '#title' => t('Settings Field'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE, 
+    '#weight' => 25,
+  );
+ return system_settings_form($form);
+}
