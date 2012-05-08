@@ -7,14 +7,14 @@
 
 function nodelist_menu() {
   $items = array();
-   $items['admin/config/user-interface/nodelist'] = array(
-    'title' => t('Nodelist'),
-    'description' => t('View and customize your lists'),
+  $items['admin/config/user-interface/nodelist'] = array(
+    'title' => 'Nodelist',
+    'description' => 'View and customize your lists',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('nodelist_admin_settings'),
     'access arguments' => array('access notification'),
     'type' => MENU_NORMAL_ITEM,
-   );// This block-menu will appear in administer settings
+  );// This block-menu will appear in administer settings
   return $items;
 }
 
@@ -35,8 +35,8 @@ function nodelist_admin_settings() {
 // Get an array of node types with internal names as keys and
 // "friendly names" as values. E.g.,
   $types = node_type_get_types();
-  foreach($types as $node_type) {
-   $options[$node_type->type] = $node_type->name;
+  foreach ($types as $node_type) {
+  $options[$node_type->type] = $node_type->name;
   }
 
   $form['nodelist_node_types'] = array(
