@@ -7,15 +7,15 @@
 
 function nodelist_menu() {
   $items = array();
-  $items['admin/config/user-interface/nodelist'] = array(
+   $items['admin/config/user-interface/nodelist'] = array(
     'title' => t('Nodelist'),
     'description' => t('View and customize your lists'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('nodelist_admin'),
     'access arguments' => array('access notification'),
     'type' => MENU_NORMAL_ITEM,
-  );
-return $items;
+   );// This block-menu will appear in administer settings
+  return $items;
 }
 
 /**
@@ -32,8 +32,7 @@ function nodelist_permission() {
 
 
 function nodelist_admin() {
- $form = array();
-
+  $form = array();
    $form['settings'] = array(
     '#type' => 'fieldset', 
     '#access' => user_access('administer nodes'), 
@@ -41,6 +40,6 @@ function nodelist_admin() {
     '#collapsible' => TRUE, 
     '#collapsed' => FALSE, 
     '#weight' => 25,
-  );
- return system_settings_form($form);
+   );
+  return system_settings_form($form);
 }

@@ -3,6 +3,6 @@
 name = Nodelist
 description = Module for creating lists.
 core = 7.x
-package = Core
+package = Alpha
 configure = admin/config/user-interface/nodelist
 
