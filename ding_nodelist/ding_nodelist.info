@@ -1,8 +1,8 @@
 ; $id$
 
-name = Nodelist
+name = Ding Nodelist
 description = Module for creating lists.
 core = 7.x
 package = Alpha
-configure = admin/config/user-interface/nodelist
+configure = admin/config/user-interface/ding_nodelist
 
