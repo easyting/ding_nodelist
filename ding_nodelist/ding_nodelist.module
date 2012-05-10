@@ -4,7 +4,7 @@
 /**
  * Implements hook_menu().
  */
-
+// This block-menu will appear in administer settings
 function ding_nodelist_menu() {
   $items = array();
   $items['admin/config/user-interface/ding_nodelist'] = array(
@@ -14,7 +14,7 @@ function ding_nodelist_menu() {
     'page arguments' => array('ding_nodelist_admin_settings'),
     'access arguments' => array('access notification'),
     'type' => MENU_NORMAL_ITEM,
-  );// This block-menu will appear in administer settings
+  );
   return $items;
 }
 
@@ -29,7 +29,6 @@ function ding_nodelist_permission() {
     ),
   );
 }
-
 
 function ding_nodelist_admin_settings() {
 // Get an array of node types with internal names as keys and
