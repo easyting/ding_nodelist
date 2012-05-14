@@ -2,18 +2,18 @@
 /**
  * @file
  * Helps creating customizable lists of content
- * that can be placed anywhere as a block
+ * that can be placed on a panel.
  */
 
-  define('NL_SINGLE', 'single');
-  define('NL_LIST', 'item_list');
-  define('NL_CAROUSEL', 'carousel');
-  define('NL_CAROUSEL_ALT', 'carousel_alt');
+define('NL_SINGLE', 'single');
+define('NL_LIST', 'item_list');
+define('NL_CAROUSEL', 'carousel');
+define('NL_CAROUSEL_ALT', 'carousel_alt');
 
-  define('NL_COL_FULL', 'full');
-  define('NL_COL_HALF', 'half');
-  define('NL_COL_THIRD', 'third');
-  define('NL_COL_QRT', 'quarter');
+define('NL_COL_FULL', 'full');
+define('NL_COL_HALF', 'half');
+define('NL_COL_THIRD', 'third');
+define('NL_COL_QRT', 'quarter');
 
 function ding_nodelist_get_column_map() {
   return array(
@@ -27,15 +27,26 @@ function ding_nodelist_get_column_map() {
 /**
  * Implements hook_menu().
  */
-// This block-menu will appear in administer settings
 function ding_nodelist_menu() {
   $items = array();
+
+  $items['admin/config/ding/ding_nodelist'] = array(
+    'title' => 'Ding nodelist',
+    'description' => 'View and customize lists of content.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ding_nodelist_admin_settings'),
+    // @todo: define/set proper access permissions
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   $items['ding_nodelist/autocomplete/%'] = array(
     'page callback' => 'ding_nodelist_autocomplete',
     'page arguments' => array(2),
     'access callback' => TRUE,
     'type' => MENU_CALLBACK,
   );
+  
   return $items;
 }
 
@@ -125,7 +136,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $form['ding_nodelist_nodes']['title_text'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
-      '#description' => t('Enter a title to be shown above the node(s). Leave empty not to show anything.'),
+      '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.'),
       '#required' => FALSE,
       '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
       '#weight' => -2,
@@ -224,7 +235,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#required' => TRUE,
     '#default_value' => isset($conf['list_type']) ? $conf['list_type'] : $default_conf['list_type'],
     '#options' => $list_types,
-    '#description' => t('If single node selected, only the first node will be rendered')
+    '#description' => t('If single item selected, only the first item will be rendered')
   );
 
   $form['ding_nodelist_content']['node_format'] = array(
@@ -233,7 +244,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#required' => TRUE,
     '#default_value' => isset($conf['node_format']) ? $conf['node_format'] : $default_conf['node_format'],
     '#options' => $node_formats,
-    '#description' => t('Select how to display the nodes')
+    '#description' => t('Select how to display the items')
   );
 
   $form['ding_nodelist_content']['columns'] = array(
@@ -253,7 +264,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Bottom links'),
     '#collapsible' => FALSE,
-    '#description' => t('Custom title text or "More" button'),
+    '#description' => t('Custom title text for "More" button'),
     '#weight' => -1,
 
     'more_text' => array(
@@ -283,7 +294,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $form['ding_nodelist_settings']['title_text'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
-    '#description' => t('Enter a title to be shown above the node(s). Leave empty not to show anything.'),
+    '#description' => t('Enter a title to be shown above the item(s). Leave empty not to show anything.'),
     '#required' => FALSE,
     '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
   );
@@ -341,7 +352,8 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
 // Set default value for 'nid' if not empty field
   if (!is_null($node) && isset($node['nid']) && ctype_digit($node['nid'])) {
     $form['nid']['#value'] = $node['nid'];
-  } elseif (!is_null($node) && isset($node['node'])) {
+  }
+  elseif (!is_null($node) && isset($node['node'])) {
     $tmp_node = explode(':', $node);
     $tmp_node = array_pop($tmp_node);
     $tmp_node = substr($tmp_node, 0, -1);
@@ -358,7 +370,7 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
 
   $form['weight'] = array(
     '#type' => 'weight',
-    '#title' => $nid !== '' ? t('Weight for node @label', array('@label' => $nid)) : t('Weight for new choice'),
+    '#title' => $nid !== '' ? t('Weight for item @label', array('@label' => $nid)) : t('Weight for new choice'),
     '#title_display' => 'invisible',
     '#default_value' => $weight,
     '#delta' => 50,
@@ -492,25 +504,24 @@ function theme_ding_nodelist_list($variables) {
 /**
 * Implements template_preprocess_hook
 */
-function template_preprocess_ding_nodelist_single(&$variables){
-	foreach ($variables['items'] as $nid => &$item) {
-		if (!empty($variables['conf']['more_link_target'])) {
-			$link = $variables['conf']['more_link_target'];
-		}
-		else {
-			$link = 'node/' . $item->nid;
-		}
-		$image = array(
-				'style_name' => 'single_story', // style name
-				'path' => $item->field_page_image['und'][0]['filename'],
-				'alt' => $item->title,
-			'title' => $item->title,
-			);
-			$item->image_link =  l(theme('image_style', $image), $link, array('html' => TRUE));
-			
-			$item->title_link = l(truncate_utf8($item->title, 70, TRUE), $link);
-			
-	}
+function template_preprocess_ding_nodelist_single(&$variables) {
+  foreach ($variables['items'] as $nid => &$item) {
+    if (!empty($variables['conf']['more_link_target'])) {
+      $link = $variables['conf']['more_link_target'];
+    }
+    else {
+      $link = 'node/' . $item->nid;
+    }
+    $image = array(
+        'style_name' => 'single_story', // style name
+        'path' => $item->field_page_image['und'][0]['filename'],
+        'alt' => $item->title,
+        'title' => $item->title,
+    );
+    $item->image_link = l(theme('image_style', $image), $link, array('html' => TRUE));
+
+    $item->title_link = l(truncate_utf8($item->title, 70, TRUE), $link);
+  }
 }
 
 /**
@@ -518,7 +529,7 @@ function template_preprocess_ding_nodelist_single(&$variables){
  */
 function ding_nodelist_theme($existing, $type, $theme, $path) {
   $path .= '/templates';
-  
+
   $themes = array(
     'ding_nodelist_list' => array(
       'render element' => 'form',
@@ -581,9 +592,9 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   if (!empty($conf['more_link']) && !empty($conf['more_text'])) {
     $more = '<a class="ding_nodelist-more" href="' . url($conf['more_link']) . '">' . $conf['more_text'] . '</a>';
   }
-	
-	$more_link_target = !empty($conf['more_link']) ? $conf['more_link'] : NULL;
-	
+
+  $more_link_target = !empty($conf['more_link']) ? $conf['more_link'] : NULL;
+
   // Load default CSS.
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
@@ -645,5 +656,3 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   return $block;
 }
-
-

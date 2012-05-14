@@ -10,7 +10,7 @@
 $plugin = array(
   'title' => t('Nodelist'),
   'category' => t('Ding!'),
-  'description' => t('Custom visualization settings for a list of nodes'),
+  'description' => t('Allows to create highliy customizeable list of contents'),
   'single' => TRUE,
   'content_types' => 'ding_nodelist_content_type',
   'render callback' => 'ding_nodelist_content_type_render',
