@@ -14,9 +14,7 @@ $plugin = array(
   'single' => TRUE,
   'content_types' => 'ding_nodelist_content_type',
   'render callback' => 'ding_nodelist_content_type_render',
-  // Change the title of the pane preview in admin interfce
   'admin title' => 'ding_nodelist_content_type_admin_title',
-  // This is the preview pane shown on the panels building page.
   'admin info' => 'ding_nodelist_content_type_admin_info',
   'edit form' => 'ding_nodelist_content_type_edit_form',
 );

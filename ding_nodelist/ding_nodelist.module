@@ -35,19 +35,58 @@ function ding_nodelist_menu() {
     'description' => 'View and customize lists of content.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('ding_nodelist_admin_settings'),
-    // @todo: define/set proper access permissions
-    'access arguments' => array('access content'),
+    'access arguments' => array('configure nodelist'),
     'type' => MENU_NORMAL_ITEM,
   );
 
   $items['ding_nodelist/autocomplete/%'] = array(
     'page callback' => 'ding_nodelist_autocomplete',
     'page arguments' => array(2),
-    'access callback' => TRUE,
+    // @todo: implements permissions for nodelist managements
+    //'access arguments' => array('create nodelist instances'),
+    'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-  
+
   return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function ding_nodelist_permission() {
+  return array(
+    'configure nodelist' => array(
+      'title' => t('Configure nodelist'),
+      'description' => t('Configure the behavior of nodelist'),
+    ),
+    // @todo: this permission is declared but not implemented.
+//    'create nodelist instances' => array(
+//      'title' => t('Manage nodelist instances'),
+//      'description' => t('Create/edit/delete nodelist instances'),
+//    ),
+  );
+}
+
+/**
+ * Implements hook_admin_settings().
+ */
+function ding_nodelist_admin_settings() {
+  $options = node_type_get_names();
+
+  if (empty($options)) {
+    drupal_set_message(t('No content types were found, please add one first.'), 'error', FALSE);
+  }
+
+  $form['ding_nodelist_node_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Available content types'),
+    '#options' => $options,
+    '#default_value' => variable_get('ding_nodelist_node_types', array()),
+    '#description' => t('Choose content types avaialable for display'),
+  );
+
+  return system_settings_form($form);
 }
 
 /**
@@ -61,24 +100,28 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
   }
 }
 
+/**
+ * Ctools plugin callback for settings form.
+ */
 function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   // Caching form for correct workflow
   $form_state['cache'] = TRUE;
 
-  if (isset($form_state['values']['selected_nodes_count'])) {
-    $node_count = $form_state['values']['selected_nodes_count'];
-  }
-  else {
-    $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
-  }
-
   $conf = $form_state['conf'];
-  drupal_add_js(drupal_get_path('modules', 'ding_nodelist') . '/js/admin.js', 'file');
+  drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/admin.js', 'file');
 
-  $node_types = node_type_get_names();
-  if (empty($node_types)) {
-    drupal_set_message(t('No content types were found, please add one first.'), 'error', FALSE);
+  // Show only allowed content types.
+  $node_types = variable_get('ding_nodelist_node_types', array());
+  $all_node_types = node_type_get_names();
+  foreach ($node_types as $nt => $active) {
+    if ($active) {
+      $node_types_opts[$nt] = $all_node_types[$nt];
+    }
+  }
+
+  if (empty($node_types_opts)) {
+    drupal_set_message(t('No eligible content types were found, please configure a few first.'), 'error', FALSE);
   }
 
   $list_types = array(
@@ -95,20 +138,20 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'list_type' => NL_LIST,
     'node_format' => 'teaser',
     'columns' => NL_COL_FULL,
-    'more_btn_text' => t('More'),
-    'more_btn_link' => '',
+    'more_text' => t('More'),
+    'more_link' => '',
     'teaser_length' => 100,
   );
 
   $form['#prefix'] = '<div id="ding_nodelist-form-wrapper">';
   $form['#suffix'] = '</div>';
 
-//Forms for Manually settings
+  // Forms for Manually settings.
   $form['ding_nodelist_nodes'] = array(
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#tree' => FALSE,
-    '#title' => t('Manually controled list'),
+    '#title' => t('Custom item list'),
     '#description' => t('Select the content of the list'),
     '#collapsible' => FALSE,
     '#prefix' => '<div class="clear-block" id="ding_nodelist-wrapper">',
@@ -120,8 +163,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Content type'),
     '#required' => TRUE,
-    '#default_value' => isset($conf['content_type']) ? $conf['content_type'] : $default_conf['content_type'],
-    '#options' => $node_types,
+    '#default_value' => $node_type,
+    '#options' => $node_types_opts,
     '#description' => t('Select the content type of the list\'s items.'),
     '#weight' => -3,
     '#ajax' => array(
@@ -134,12 +177,12 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   );
 
   $form['ding_nodelist_nodes']['title_text'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Title'),
-      '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.'),
-      '#required' => FALSE,
-      '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
-      '#weight' => -2,
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.'),
+    '#required' => FALSE,
+    '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
+    '#weight' => -2,
   );
 
   $form['ding_nodelist_nodes']['selected_nodes'] = array(
@@ -167,12 +210,19 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   );
 
-// Get all nodes'
+  // Get all nodes.
   $delta = 0;
   $weight = 0;
   $max_weight = $weight;
 
-// Check if form is ment to be rebuild thanks to an ajax request from the select element
+  if (isset($form_state['values']['selected_nodes_count'])) {
+    $node_count = $form_state['values']['selected_nodes_count'];
+  }
+  else {
+    $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
+  }
+
+  // Check if form is ment to be rebuild thanks to an ajax request from the select element
   if (!empty($form_state['triggering_element']) && $form_state['triggering_element']['#name'] == 'content_type') {
     $node_count = 1;
     $node_type = $form_state['triggering_element']['#value'];
@@ -184,7 +234,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $form_state['rebuild'] = TRUE;
   }
 
-  if (isset($conf['selected_nodes']) && ($conf['content_type'] == $conf['selected_nodes'][0]['type'])) {
+  if (isset($conf['selected_nodes']) && isset($conf['content_type'])
+        && ($conf['content_type'] == $conf['selected_nodes'][0]['type'])) {
     $delta = count($conf['selected_nodes']);
     foreach ($conf['selected_nodes'] as $key => $node) {
       $weight = $node['weight'];
@@ -193,7 +244,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     }
   }
 
-// Add new node field
+  // Add new node field.
   $existing_delta = $delta;
   $weight = ++$max_weight;
   for ($delta; $delta < $node_count; $delta ++) {
@@ -214,7 +265,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
-//Forms for Display settings
+  // Forms for Display settings.
   $form['ding_nodelist_content'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display settings'),
@@ -222,7 +273,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#description' => t('Define custom visualization settings'),
 );
 
-// Set up all the available view modes for this type of nodes
+  // Set up all the available view modes for this type of nodes.
   $entity = entity_get_info('node');
   $node_formats = array();
   foreach ($entity['view modes'] as $view_mode => $settings) {
@@ -259,7 +310,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['columns']) ? $conf['columns'] : $default_conf['columns']
   );
 
-//Forms for Bottom settings
+  // Forms for Bottom settings.
   $form['ding_nodelist_options'] = array(
     '#type' => 'fieldset',
     '#title' => t('Bottom links'),
@@ -283,7 +334,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
-//Forms for Dynamic list settings
+  // Forms for Dynamic list settings.
   $form['ding_nodelist_settings'] = array(
     '#type' => 'fieldset',
     '#title' => t('Dynamic list'),
@@ -291,15 +342,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#weight' => -2,
   );
 
-  $form['ding_nodelist_settings']['title_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#description' => t('Enter a title to be shown above the item(s). Leave empty not to show anything.'),
-    '#required' => FALSE,
-    '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
-  );
-
-// Get an array of available vocabularies.
+  // Get an array of available vocabularies.
   $vocs = taxonomy_get_vocabularies();
   foreach ($vocs as $vid => $vocabulary) {
     $options[$vocabulary->name] = $vocabulary->name;
@@ -320,7 +363,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => variable_get('ding_nodelist_settings', array()),
   );
 
-// Use custom title options.
+  // Use custom title options.
   unset($form['override_title']);
   unset($form['override_title_text']);
   return $form;
@@ -332,7 +375,7 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
     '#weight' => $weight,
   );
 
-// Set default value for 'node'
+  // Set default value for 'node'
   $node_default =  (!is_null($node) && isset($node['node'])) ? $node['node'] : '';
   $form['node'] = array(
     '#type' => 'textfield',
@@ -349,7 +392,7 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
     '#parents' => array('selected_nodes', $key, 'nid'),
   );
 
-// Set default value for 'nid' if not empty field
+  // Set default value for 'nid' if not empty field
   if (!is_null($node) && isset($node['nid']) && ctype_digit($node['nid'])) {
     $form['nid']['#value'] = $node['nid'];
   }
@@ -370,7 +413,7 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
 
   $form['weight'] = array(
     '#type' => 'weight',
-    '#title' => $nid !== '' ? t('Weight for item @label', array('@label' => $nid)) : t('Weight for new choice'),
+    '#title' => $node['nid'] !== '' ? t('Weight for node @label', array('@label' => $node['nid'])) : t('Weight for new choice'),
     '#title_display' => 'invisible',
     '#default_value' => $weight,
     '#delta' => 50,
@@ -384,14 +427,14 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
  * Custom submit function to add more choices
  */
 function ding_nodelist_more_submit(&$form, &$form_state) {
-  // Add new node to list
+  // Add new node to list.
   if ($form_state['values']['op'] == $form_state['values']['ding_nodelist_more']) {
     $form_state['values']['selected_nodes_count'] = count($form_state['values']['selected_nodes']) + 1;
 
     unset($form_state['input']['selected_nodes']);
   }
 
-  // Change node types
+  // Change node types.
   if ($form_state['values']['op'] == $form_state['values']['content_type_select']) {
     foreach ($form_state['values']['selected_nodes'] as $key => $node) {
       if (($node['type'] != $form_state['values']['content_type'])) {
@@ -399,7 +442,7 @@ function ding_nodelist_more_submit(&$form, &$form_state) {
       }
     }
 
-    // Removing empty nodes
+    // Removing empty nodes.
     foreach ($form_state['values']['selected_nodes'] as $key => $node) {
       if (empty($node['node'])) {
         unset($form_state['values']['selected_nodes'][$key]);
@@ -421,19 +464,72 @@ function ding_nodelist_more_submit(&$form, &$form_state) {
       }
     }
   }
-  // Saving all the values of the form
+  // Saving all the values of the form.
   $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
   $form_state['conf']['columns'] = $form_state['values']['columns'];
   $form_state['conf']['title_text'] = $form_state['values']['title_text'];
-  $form_state['conf']['node_format'] = $form_state['values']['node_format'];
+  $form_state['conf']['content_type'] = $form_state['values']['content_type'];
+  $form_state['conf']['list_type'] = $form_state['values']['list_type'];
+  $form_state['conf']['columns'] = $form_state['values']['columns'];
+  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
+  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
+
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Edit form validate function.
+ */
+function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
+
+  // Validating selected nodes
+  if (!count($form_state['values']['selected_nodes'])
+          || empty($form_state['values']['selected_nodes'][0]['node'])) {
+    form_set_error('nodes', t('No nodes were selected.'));
+  }
+
+  if (!empty($form_state['values']['more_link'])) {
+    if (!drupal_valid_path($form_state['values']['more_link'])) {
+      if (!valid_url($form_state['values']['more_link'], TRUE)) {
+        form_set_error('more_link', t('External links must begin with "http" or "https".'));
+      }
+    }
+    // Handles <front>
+    if ($form_state['values']['more_link'] == '<front>') {
+      $form_state['values']['more_link'] = 'http://' . $_SERVER['SERVER_NAME'] . '/';
+    }
+  }
+}
+
+/**
+ * Edit form submit function.
+ */
+function ding_nodelist_content_type_edit_form_submit($form, &$form_state) {
+
+  // Removing empty nodes
+  foreach ($form_state['values']['selected_nodes'] as $key => $node) {
+    if (empty($node['node'])) {
+      unset($form_state['values']['selected_nodes'][$key]);
+    }
+    else {
+      $tmp_nid = explode(':', $node['node']);
+      $tmp_nid = array_pop($tmp_nid);
+      $tmp_nid = substr($tmp_nid, 0, -1);
+      // TODO: Implement more complex check for correct title of the given ID
+      if (ctype_digit($tmp_nid)) {
+        $form_state['values']['selected_nodes'][$key]['nid'] = $tmp_nid;
+      }
+    }
+  }
+
+  // Anything in $form_state['conf'] will be saved automatically.
+  $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
   $form_state['conf']['content_type'] = $form_state['values']['content_type'];
   $form_state['conf']['list_type'] = $form_state['values']['list_type'];
   $form_state['conf']['columns'] = $form_state['values']['columns'];
   $form_state['conf']['title_text'] = $form_state['values']['title_text'];
   $form_state['conf']['more_text'] = $form_state['values']['more_text'];
   $form_state['conf']['more_link'] = $form_state['values']['more_link'];
-
-  $form_state['rebuild'] = TRUE;
 }
 
 function ding_nodelist_js($form, &$form_state) {
@@ -449,7 +545,7 @@ function ding_nodelist_autocomplete($type = FALSE, $title = '') {
   $result = db_query("SELECT nid, title FROM {node} WHERE type = :type AND title LIKE :title", array(':type' => $type, ':title' => '%' . $title . '%'));
   $nodes = $result->fetchAllKeyed();
 
-  // Make a beatifull select
+  // Make a beatifull select.
   $formatted_result = array();
   foreach ($nodes as $nid => $title) {
     $formatted_result[$title . " [nid:$nid]"] = $title;
@@ -560,6 +656,31 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Ctools admin view pane's title.
+ */
+function ding_nodelist_content_type_admin_title($subtype, $conf, $context = NULL) {
+  if (!empty($conf['title_text'])) {
+    $output = t('Nodelist') . ': ' . filter_xss_admin($conf['title_text']);
+  }
+  else {
+    $output = t('Nodelist (untitled)');
+  }
+  return $output;
+}
+
+/**
+ * Callback to provide administrative info (the preview in panels when building
+ * a panel).
+ */
+function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL) {
+  // @todo: show details about nodelist configuration here.
+  $block->title = t('No information');
+  $info = '';
+  $block->content = $info;
+  return $block;
+}
+
+/**
  * Run-time rendering of the body of the list.
  *
  * @param $subtype Content type sub-type
@@ -587,7 +708,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     $title = check_plain($conf['title_text']);
   }
 
-  // Build 'More' link
+  // Build 'More' link.
   $more = NULL;
   if (!empty($conf['more_link']) && !empty($conf['more_text'])) {
     $more = '<a class="ding_nodelist-more" href="' . url($conf['more_link']) . '">' . $conf['more_text'] . '</a>';
@@ -614,13 +735,13 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     $columns_layout[$columns] = 0;
   }
 
-  // Render the contents
+  // Render the contents.
 
-  // This line may be removed after all nodelist panes are redefined
+  // This line may be removed after all nodelist panes are redefined.
   $raw_nodes = isset($conf['selected_nodes']) ? $conf['selected_nodes'] : array();
   $node_list = array();
 
-  // Sort the nodes according to their weight
+  // Sort the nodes according to their weight.
   $tmp_array = array();
   foreach ($raw_nodes as $key => $node) {
     $tmp_array[$key] = $node['weight'];
@@ -631,7 +752,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   }
 
   // If we have a single node, we don't need the other nodes
-  // so we take only the first one
+  // so we take only the first one.
   if ($conf['list_type'] == NL_SINGLE) {
     $node_list = array_shift($node_list);
     $node_list = array($node_list);
