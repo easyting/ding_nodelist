@@ -1,0 +1,43 @@
+.nodelist-carousel, .nodelist-carousel > div {
+  float: left;
+}
+
+.nodelist-carousel_alt, .nodelist-carousel_alt > div {
+  float: left;
+}
+
+.nodelist-col-first {
+  clear: left;
+}
+
+.nodelist-col-full {
+  width: 100%;
+}
+
+.nodelist-col-half {
+  width: 48%;
+  margin-right: 4%;
+}
+
+.nodelist-col-third {
+  width: 31%;
+  margin-right: 3%;
+}
+
+.nodelist-col-quarter {
+  width: 22%;
+  margin-right: 3%;
+}
+
+.nodelist-col-last {
+  margin-right: 0;
+}
+
+/* Empty styles to be overriden in theme. */
+.nodelist-title {
+}
+
+.nodelist-more {
+  clear: left;
+  display: block;
+}
