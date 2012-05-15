@@ -15,14 +15,8 @@ define('NL_COL_HALF', 'half');
 define('NL_COL_THIRD', 'third');
 define('NL_COL_QRT', 'quarter');
 
-function ding_nodelist_get_column_map() {
-  return array(
-    NL_COL_FULL   => 1,
-    NL_COL_HALF   => 2,
-    NL_COL_THIRD  => 3,
-    NL_COL_QRT    => 4,
-  );
-}
+define('NL_TPL_ACTIVE', 0);
+define('NL_TPL_HIDDEN', 1);
 
 /**
  * Implements hook_menu().
@@ -34,9 +28,25 @@ function ding_nodelist_menu() {
     'title' => 'Ding nodelist',
     'description' => 'View and customize lists of content.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('ding_nodelist_admin_settings'),
+    'page arguments' => array('ding_nodelist_settings_form'),
     'access arguments' => array('configure nodelist'),
     'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/config/ding/ding_nodelist/settings'] = array(
+    'title' => 'Settings',
+    'description' => 'Configure general settings.',
+    'tab_parent' => 'admin/config/ding/ding_nodelist',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/config/ding/ding_nodelist/templates'] = array(
+    'title' => 'Templates',
+    'description' => 'Manage content templates.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ding_nodelist_templates_form'),
+    'access arguments' => array('configure nodelist'),
+    'type' => MENU_LOCAL_TASK,
   );
 
   $items['ding_nodelist/autocomplete/%'] = array(
@@ -69,9 +79,9 @@ function ding_nodelist_permission() {
 }
 
 /**
- * Implements hook_admin_settings().
+ * General settings form.
  */
-function ding_nodelist_admin_settings() {
+function ding_nodelist_settings_form() {
   $options = node_type_get_names();
 
   if (empty($options)) {
@@ -87,6 +97,69 @@ function ding_nodelist_admin_settings() {
   );
 
   return system_settings_form($form);
+}
+
+/**
+ * Template settings form.
+ */
+function ding_nodelist_templates_form($form, &$form_state) {
+
+  $form['templates'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Templates'),
+    '#tree' => TRUE,
+    '#theme' => '_ding_nodelist_templates_table',
+  );
+
+  $templates = ding_nodelist_get_templates();
+
+  foreach ($templates as $template_name => $template) {
+    $form['templates'][$template_name]['template_name'] = array(
+      '#type' => 'hidden',
+      '#value' => $template_name,
+    );
+
+    $form['templates'][$template_name]['title'] = array(
+      '#type' => 'textfield',
+      '#default_value' => isset($template['title']) ? $template['title'] : '',
+    );
+
+    $ct = node_type_get_names();
+    $form['templates'][$template_name]['content_type'] = array(
+      '#markup' => isset($ct[$template['content_type']]) ?
+        $ct[$template['content_type']] : t('Missing (@ctname)', array('@ctname' => $template['content_type']))
+    );
+
+    // Visible in list of templates?
+    $form['templates'][$template_name]['visible'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => $template['status'] == NL_TPL_ACTIVE ? TRUE : FALSE,
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+
+/**
+ * bp_multiteaser_templates_form submit handler
+ * Writes details about found templates
+ */
+function ding_nodelist_templates_form_submit($form, &$form_state) {
+  foreach ($form_state['values']['templates'] as $template) {
+    $tpl_record = array(
+      'title' => check_plain($template['title']),
+      'status' => $template['visible'] ? NL_TPL_ACTIVE : NL_TPL_HIDDEN
+    );
+    db_update('ding_nodelist_templates')->fields($tpl_record)
+      ->condition('filename', $template['template_name'])->execute();
+  }
+
+  drupal_set_message(t('Template settings have been saved.'));
 }
 
 /**
@@ -188,7 +261,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $form['ding_nodelist_nodes']['selected_nodes'] = array(
     '#prefix' => '<div id="ding_nodelist-selected-nodes">',
     '#suffix' => '</div>',
-    '#theme' => 'ding_nodelist_list',
+    '#theme' => '_ding_nodelist_items_table',
     '#tree' => TRUE,
     '#weight' => -1,
   );
@@ -555,9 +628,44 @@ function ding_nodelist_autocomplete($type = FALSE, $title = '') {
 }
 
 /**
+ * Implements hook_theme().
+ */
+function ding_nodelist_theme($existing, $type, $theme, $path) {
+  // Do not rely on path - it may be unknown to module_invoke_all caller.
+  $path = drupal_get_path('module', 'ding_nodelist') . '/templates';
+
+  $themes = array(
+    // Do not rename, this is internal theme call.
+    '_ding_nodelist_items_table' => array(
+      'render element' => 'form',
+    ),
+    '_ding_nodelist_templates_table' => array(
+      'render element' => 'form',
+    ),
+    'ding_nodelist.ding_event.image_text' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.ding_event.image_text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    ),
+    'ding_nodelist.ding_news.image_text' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.ding_news.image_text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    ),
+    'ding_nodelist.ding_news.text' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.ding_news.text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    ),
+  );
+
+  return $themes;
+}
+
+/**
  * Helper theming function
  */
-function theme_ding_nodelist_list($variables) {
+function theme__ding_nodelist_items_table($variables) {
   $form = $variables['form'];
 
   drupal_add_tabledrag('ding_nodelist-selected-table', 'order', 'sibling', 'ding_nodelist-weight');
@@ -596,63 +704,28 @@ function theme_ding_nodelist_list($variables) {
   return $output;
 }
 
-
 /**
-* Implements template_preprocess_hook
-*/
-function template_preprocess_ding_nodelist_single(&$variables) {
-  foreach ($variables['items'] as $nid => &$item) {
-    if (!empty($variables['conf']['more_link_target'])) {
-      $link = $variables['conf']['more_link_target'];
-    }
-    else {
-      $link = 'node/' . $item->nid;
-    }
-    $image = array(
-        'style_name' => 'single_story', // style name
-        'path' => $item->field_page_image['und'][0]['filename'],
-        'alt' => $item->title,
-        'title' => $item->title,
-    );
-    $item->image_link = l(theme('image_style', $image), $link, array('html' => TRUE));
-
-    $item->title_link = l(truncate_utf8($item->title, 70, TRUE), $link);
-  }
-}
-
-/**
- * Implements hook_theme().
+ * Theme function to render the backend list of templates.
  */
-function ding_nodelist_theme($existing, $type, $theme, $path) {
-  $path .= '/templates';
-
-  $themes = array(
-    'ding_nodelist_list' => array(
-      'render element' => 'form',
-    ),
-    'ding_nodelist_single' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist-single',
-      'variables' => array('items' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist_item_list' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist-item-list',
-      'variables' => array('items' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist_carousel' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist-carousel',
-      'variables' => array('items' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist_carousel_alt' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist-carousel-alt',
-      'variables' => array('items' => NULL, 'conf' => NULL),
-    ),
+function theme__ding_nodelist_templates_table($variables) {
+  $header = array(
+    t('Machine name'),
+    t('Title'),
+    t('Content type'),
+    t('Visible'),
   );
+  $rows = array();
+  $form = $variables['form'];
+  foreach (element_children($form) as $key) {
+    $rows[] = array(
+      $form[$key]['template_name']['#value'],
+      drupal_render($form[$key]['title']),
+      drupal_render($form[$key]['content_type']),
+      drupal_render($form[$key]['visible']),
+    );
+  }
 
-  return $themes;
+  return theme('table', array('header' => $header, 'rows' => $rows));
 }
 
 /**
@@ -776,4 +849,89 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
             'classes' => $classes, 'format' => $conf['node_format'])));
 
   return $block;
+}
+
+/**
+ * Returns the most up-to-date list of nodelist templates.
+ * @param   boolean   include or not hidden templates in return array
+ * @return  array found nodelist template details
+ */
+function ding_nodelist_get_templates($include_hidden = TRUE) {
+  static $templates = array();
+
+  if (!empty($templates)) {
+    return $templates;
+  }
+
+  // Fetch templates declared by this and other modules (hook_theme templates).
+  // @todo: menu_block is known to cause issues on this call in PHP 5.3.x.
+  foreach (module_invoke_all('theme', array(), NULL, NULL, NULL) as $template_name => $template) {
+    if (strpos($template_name, 'ding_nodelist') === 0) {
+      $templates[$template_name] = array(
+        'filename' => $template_name,
+      );
+    }
+  }
+
+  $db_templates =
+    db_select('ding_nodelist_templates', 'dnt')->fields('dnt')
+      ->execute()->fetchAllAssoc('filename', PDO::FETCH_ASSOC);
+  $db_template_names = array_keys($db_templates);
+
+  // Register new templates.
+  foreach ($templates as $template_name => $template) {
+    if (!in_array($template_name, $db_template_names)) {
+      $tpl_record = array(
+        'filename'  => $template_name,
+        'title'     => $template_name,
+        'status'    => NL_TPL_HIDDEN  // @todo: show nodelist's native templates by default?
+      );
+      try {
+        db_insert('ding_nodelist_templates')->fields($tpl_record)->execute();
+      }
+      catch (Exception $e) {
+        // @todo: show errors when template name duplicates an existing.
+      }
+    }
+  }
+
+  // Second, collect templates from db and find the common list.
+  $db_templates =
+  db_select('ding_nodelist_templates', 'dnt')->fields('dnt')
+    ->execute()->fetchAllAssoc('filename', PDO::FETCH_ASSOC);
+
+  foreach ($db_templates as $template_name => $template) {
+    // Do not include hidden templates.
+    if (!$include_hidden) {
+      if ($template['status'] == NL_TPL_HIDDEN) {
+        continue;
+      }
+    }
+
+    if (isset($templates[$template_name])) {
+      // Fetch content type from filename.
+      $ct_name = explode('.', $template_name);
+      $templates[$template_name] = $template;
+      $templates[$template_name]['content_type'] = $ct_name[1];
+    }
+    // Template exists in DB but is not declared - remove it.
+    else {
+      db_delete('ding_nodelist_templates')->condition('filename', $template_name)
+        ->execute();
+      // @todo: show warning?
+    }
+  }
+
+  ksort($templates);
+
+  return $templates;
+}
+
+function ding_nodelist_get_column_map() {
+  return array(
+    NL_COL_FULL   => 1,
+    NL_COL_HALF   => 2,
+    NL_COL_THIRD  => 3,
+    NL_COL_QRT    => 4,
+  );
 }

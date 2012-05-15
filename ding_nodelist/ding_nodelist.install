@@ -1,0 +1,44 @@
+<?php
+/**
+ * @file
+ * Installation functions for ding_nodelist module.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function ding_nodelist_schema() {
+  $schema['ding_nodelist_templates'] = array(
+    'description' => 'Stores nodelist templates.',
+    'fields' => array(
+      'filename' => array(
+        'description' => 'Name of the template file.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'title' => array(
+        'description' => 'Template title set by users.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+      ),
+      'status' => array(
+        'description' => 'Boolean indicating whether the template is enabled by default.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+      ),
+    ),
+    'primary key' => array('filename'),
+    // @todo: define when selects become clear
+    'indexes' => array(
+    ),
+  );
+
+  return $schema;
+}
