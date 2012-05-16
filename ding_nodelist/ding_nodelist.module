@@ -5,6 +5,9 @@
  * that can be placed on a panel.
  */
 
+define('NL_CUSTOM', 'custom');
+define('NL_DYNAMIC', 'dynamic');
+
 define('NL_SINGLE', 'single');
 define('NL_LIST', 'item_list');
 define('NL_CAROUSEL', 'carousel');
@@ -31,6 +34,7 @@ function ding_nodelist_menu() {
     'page arguments' => array('ding_nodelist_settings_form'),
     'access arguments' => array('configure nodelist'),
     'type' => MENU_NORMAL_ITEM,
+    'file' => 'ding_nodelist.admin.inc'
   );
 
   $items['admin/config/ding/ding_nodelist/settings'] = array(
@@ -38,6 +42,7 @@ function ding_nodelist_menu() {
     'description' => 'Configure general settings.',
     'tab_parent' => 'admin/config/ding/ding_nodelist',
     'type' => MENU_DEFAULT_LOCAL_TASK,
+    'file' => 'ding_nodelist.admin.inc'
   );
 
   $items['admin/config/ding/ding_nodelist/templates'] = array(
@@ -47,6 +52,7 @@ function ding_nodelist_menu() {
     'page arguments' => array('ding_nodelist_templates_form'),
     'access arguments' => array('configure nodelist'),
     'type' => MENU_LOCAL_TASK,
+    'file' => 'ding_nodelist.admin.inc'
   );
 
   $items['ding_nodelist/autocomplete/%'] = array(
@@ -79,90 +85,6 @@ function ding_nodelist_permission() {
 }
 
 /**
- * General settings form.
- */
-function ding_nodelist_settings_form() {
-  $options = node_type_get_names();
-
-  if (empty($options)) {
-    drupal_set_message(t('No content types were found, please add one first.'), 'error', FALSE);
-  }
-
-  $form['ding_nodelist_node_types'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Available content types'),
-    '#options' => $options,
-    '#default_value' => variable_get('ding_nodelist_node_types', array()),
-    '#description' => t('Choose content types avaialable for display'),
-  );
-
-  return system_settings_form($form);
-}
-
-/**
- * Template settings form.
- */
-function ding_nodelist_templates_form($form, &$form_state) {
-
-  $form['templates'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Templates'),
-    '#tree' => TRUE,
-    '#theme' => '_ding_nodelist_templates_table',
-  );
-
-  $templates = ding_nodelist_get_templates();
-
-  foreach ($templates as $template_name => $template) {
-    $form['templates'][$template_name]['template_name'] = array(
-      '#type' => 'hidden',
-      '#value' => $template_name,
-    );
-
-    $form['templates'][$template_name]['title'] = array(
-      '#type' => 'textfield',
-      '#default_value' => isset($template['title']) ? $template['title'] : '',
-    );
-
-    $ct = node_type_get_names();
-    $form['templates'][$template_name]['content_type'] = array(
-      '#markup' => isset($ct[$template['content_type']]) ?
-        $ct[$template['content_type']] : t('Missing (@ctname)', array('@ctname' => $template['content_type']))
-    );
-
-    // Visible in list of templates?
-    $form['templates'][$template_name]['visible'] = array(
-      '#type' => 'checkbox',
-      '#default_value' => $template['status'] == NL_TPL_ACTIVE ? TRUE : FALSE,
-    );
-  }
-
-  $form['submit'] = array(
-    '#type' => 'submit',
-    '#value' => t('Save'),
-  );
-
-  return $form;
-}
-
-/**
- * bp_multiteaser_templates_form submit handler
- * Writes details about found templates
- */
-function ding_nodelist_templates_form_submit($form, &$form_state) {
-  foreach ($form_state['values']['templates'] as $template) {
-    $tpl_record = array(
-      'title' => check_plain($template['title']),
-      'status' => $template['visible'] ? NL_TPL_ACTIVE : NL_TPL_HIDDEN
-    );
-    db_update('ding_nodelist_templates')->fields($tpl_record)
-      ->condition('filename', $template['template_name'])->execute();
-  }
-
-  drupal_set_message(t('Template settings have been saved.'));
-}
-
-/**
  * Implements hook_ctools_plugin_directory().
  * This lets ctools know to scan the module for a content_type plugin file.
  */
@@ -178,7 +100,7 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
  */
 function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
-  // Caching form for correct workflow
+  // Cache the form for correct workflow.
   $form_state['cache'] = TRUE;
 
   $conf = $form_state['conf'];
@@ -197,18 +119,12 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     drupal_set_message(t('No eligible content types were found, please configure a few first.'), 'error', FALSE);
   }
 
-  $list_types = array(
-    NL_SINGLE   => t('Single node'),
-    NL_LIST     => t('List of nodes'),
-    NL_CAROUSEL => t('Carousel'),
-    NL_CAROUSEL_ALT => t('Alternative carousel'),
-  );
-
   $node_type = isset($conf['content_type']) ? $conf['content_type'] : current(array_keys($node_types));
 
   $default_conf = array(
     'content_type' => $node_type,
-    'list_type' => NL_LIST,
+    'list_type' => NL_CUSTOM,
+    'widget_type' => NL_LIST,
     'node_format' => 'teaser',
     'columns' => NL_COL_FULL,
     'more_text' => t('More'),
@@ -219,7 +135,53 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $form['#prefix'] = '<div id="ding_nodelist-form-wrapper">';
   $form['#suffix'] = '</div>';
 
-  // Forms for Manually settings.
+  /**
+   * Initial settings.
+   */
+  $form['ding_nodelist_basic'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#tree' => FALSE,
+    '#title' => t('Basic settings'),
+    '#collapsible' => FALSE,
+    '#weight' => -4,
+  );
+
+  $form['ding_nodelist_basic']['content_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Content type'),
+    '#required' => TRUE,
+    '#default_value' => $node_type,
+    '#options' => $node_types_opts,
+    '#description' => t('Select the content type of the list\'s items.'),
+    '#ajax' => array(
+      'wrapper' => 'ding_nodelist-selected-nodes',
+      'callback' => 'ding_nodelist_js',
+      'method' => 'replace',
+      'effect' => 'fade'
+    ),
+  );
+
+  $form['ding_nodelist_basic']['list_type'] = array(
+    '#type' => 'radios',
+    '#title' => t('List type'),
+    '#description' => t('What kind of list you want to create.'),
+    '#required' => TRUE,
+    '#options'  => array(NL_CUSTOM => t(NL_CUSTOM), NL_DYNAMIC => t(NL_DYNAMIC)),
+    '#default_value' => isset($conf['list_type']) ? $conf['list_type'] : $default_conf['list_type'],
+  );
+
+  $form['ding_nodelist_basic']['title_text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('List title'),
+    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.'),
+    '#required' => FALSE,
+    '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
+  );
+
+  /**
+   * Manually controlled list.
+   */
   $form['ding_nodelist_nodes'] = array(
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
@@ -232,47 +194,12 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#weight' => -3,
   );
 
-  $form['content_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Content type'),
-    '#required' => TRUE,
-    '#default_value' => $node_type,
-    '#options' => $node_types_opts,
-    '#description' => t('Select the content type of the list\'s items.'),
-    '#weight' => -3,
-    '#ajax' => array(
-      'wrapper' => 'ding_nodelist-selected-nodes',
-      'callback' => 'ding_nodelist_js',
-      'method' => 'replace',
-      'effect' => 'fade'
-    ),
-    '#weight' => -4,
-  );
-
-  $form['ding_nodelist_nodes']['title_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.'),
-    '#required' => FALSE,
-    '#default_value' => isset($conf['title_text']) ? $conf['title_text'] : '',
-    '#weight' => -2,
-  );
-
-  $form['ding_nodelist_nodes']['selected_nodes'] = array(
-    '#prefix' => '<div id="ding_nodelist-selected-nodes">',
-    '#suffix' => '</div>',
-    '#theme' => '_ding_nodelist_items_table',
-    '#tree' => TRUE,
-    '#weight' => -1,
-  );
-
   $form['ding_nodelist_nodes']['content_type_select'] = array(
     '#type' => 'submit',
     '#value' => t('Choose'),
     '#weight' => -2,
-    '#submit' => array('ding_nodelist_more_submit'),
+    '#submit' => array('ding_nodelist_add_node_submit'),
     '#ajax' => array(
-      'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js',
       'method' => 'replace',
       'effect' => 'fade'
@@ -283,68 +210,232 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   );
 
-  // Get all nodes.
+  // Render selected nodes.
+  $form['ding_nodelist_nodes']['selected_nodes'] = array(
+    '#prefix' => '<div id="ding_nodelist-selected-nodes">',
+    '#suffix' => '</div>',
+    '#theme' => '_ding_nodelist_items_table',
+    '#tree' => TRUE,
+    '#weight' => -1,
+  );
+
   $delta = 0;
   $weight = 0;
   $max_weight = $weight;
-
-  if (isset($form_state['values']['selected_nodes_count'])) {
-    $node_count = $form_state['values']['selected_nodes_count'];
-  }
-  else {
-    $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
-  }
+  $node_count = NULL;
+  $filter_count = NULL;
 
   // Check if form is ment to be rebuild thanks to an ajax request from the select element
   if (!empty($form_state['triggering_element']) && $form_state['triggering_element']['#name'] == 'content_type') {
+    // Reset node and filter count.
     $node_count = 1;
-    $node_type = $form_state['triggering_element']['#value'];
-    $conf['selected_nodes'] = array();
-    $form_state['values']['selected_nodes'] = array();
-    $form_state['conf']['selected_nodes'] = array();
-    unset($form_state['input']['selected_nodes']);
+    $filter_count = 1;
 
+    // Refresh CT setting.
+    $node_type = $form_state['triggering_element']['#value'];
+
+    // Reset other form values.
+    $conf['content_type'] = $node_type;
+    $conf['selected_nodes'] = array();
+    $conf['taxonomy_filters'] = array();
+
+    $form_state['values']['content_type'] = $node_type;
+    $form_state['values']['selected_nodes'] = array();
+    $form_state['values']['taxonomy_filters'] = array();
+
+    $form_state['conf']['content_type'] = $node_type;
+    $form_state['conf']['selected_nodes'] = array();
+    $form_state['conf']['taxonomy_filters'] = array();
+
+    unset($form_state['input']['content_type']);
+    unset($form_state['input']['selected_nodes']);
+    unset($form_state['input']['taxonomy_filters']);
+
+    // Rebuild the form.
     $form_state['rebuild'] = TRUE;
   }
 
-  if (isset($conf['selected_nodes']) && isset($conf['content_type'])
-        && ($conf['content_type'] == $conf['selected_nodes'][0]['type'])) {
+  if (is_null($node_count)) {
+    if (isset($form_state['values']['selected_nodes_count'])) {
+      $node_count = $form_state['values']['selected_nodes_count'];
+    }
+    else {
+      $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
+    }
+  }
+
+  if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])
+        && isset($conf['content_type']) && ($conf['content_type'] == $conf['selected_nodes'][0]['type'])) {
     $delta = count($conf['selected_nodes']);
     foreach ($conf['selected_nodes'] as $key => $node) {
       $weight = $node['weight'];
       $max_weight = ($max_weight < $weight) ? $weight : $max_weight;
-      $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, $node, $weight, $node_count);
+      $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, $node, $weight);
     }
   }
 
   // Add new node field.
-  $existing_delta = $delta;
   $weight = ++$max_weight;
-  for ($delta; $delta < $node_count; $delta ++) {
+  for (; $delta < $node_count; $delta ++) {
     $key = $delta;
-    $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, NULL, $weight, $node_count);
+    $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, NULL, $weight);
   }
 
-  $form['ding_nodelist_nodes']['ding_nodelist_more'] = array(
+  $form['ding_nodelist_nodes']['add_node'] = array(
     '#type' => 'submit',
-    '#value' => t('Add more'),
+    '#value' => t('Add content'),
     '#weight' => 1,
-    '#submit' => array('ding_nodelist_more_submit'),
+    '#submit' => array('ding_nodelist_add_node_submit'),
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-selected-nodes',
-      'callback' => 'ding_nodelist_js',
+      'callback' => 'ding_nodelist_js_add_node',
       'method' => 'replace',
       'effect' => 'fade'
     ),
   );
 
-  // Forms for Display settings.
-  $form['ding_nodelist_content'] = array(
+  /**
+   * Dynamic list settings.
+   */
+  $form['ding_nodelist_dynamic'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Dynamic list'),
+    '#required' => FALSE,
+    '#weight' => -2,
+  );
+
+  // Render selected filters.
+  $form['ding_nodelist_dynamic']['taxonomy_filters'] = array(
+    '#type'   => 'fieldset',
+    '#title'  => t('Taxonomy filters'),
+    '#prefix' => '<div id="ding_nodelist-taxonomy-filters">',
+    '#suffix' => '</div>',
+    '#theme' => '_ding_nodelist_filters_table',
+    '#tree' => TRUE,
+    '#weight' => -1,
+  );
+
+  if (is_null($filter_count)) {
+    if (isset($form_state['values']['taxonomy_filters_count'])) {
+      $filter_count = $form_state['values']['taxonomy_filters_count'];
+    }
+    else {
+      $filter_count = empty($form_state['values']['taxonomy_filters']) ? 1 : count($form_state['values']['taxonomy_filters']);
+    }
+  }
+
+  // Retrieve vocabularies current CT references.
+  $fields = field_info_fields();
+  $allowed_vocabs = array();
+  $term_field_settings = array();
+  foreach ($fields as $field) {
+    // Check if the field is a term that belongs to current CT.
+    if ($field['type'] == 'taxonomy_term_reference' && isset($field['bundles']['node'])
+          && in_array($node_type, $field['bundles']['node'])) {
+      // @todo: is this structure always the same?
+      $machine_name = $field['settings']['allowed_values'][0]['vocabulary'];
+      $vocab = taxonomy_vocabulary_machine_name_load($machine_name);
+      $allowed_vocabs[$machine_name] = $vocab->name;
+      $term_field_settings[$machine_name] = $field['field_name'];
+    }
+  }
+
+  // Check if filter vocabulary was changed.
+  $changed_filter_id = NULL;
+  if (!empty($form_state['triggering_element']) && isset($form_state['triggering_element']['#parents'][2])
+          && $form_state['triggering_element']['#parents'][2] == 'filter_vocab') {
+    $changed_filter_id = $form_state['triggering_element']['#parents'][1];
+    $changed_filter = $form_state['values']['taxonomy_filters'][$changed_filter_id];
+    // @todo: do not allow to change to empty value on frontend - provide a 'delete' button instead.
+    if (!empty($changed_filter['filter_vocab'])) {
+      $filter['filter_autocomplete_path'] = 'taxonomy/autocomplete/' . $term_field_settings[$changed_filter['filter_vocab']];
+      // Update auto-complete, preserve other fields.
+      $filter['filter_type'] = $changed_filter['filter_type'];
+      $filter['filter_vocab'] = $changed_filter['filter_vocab'];
+    }
+    // Important: delete old input!
+    unset($form_state['input']['taxonomy_filters'][$changed_filter_id]);
+
+    $form['ding_nodelist_dynamic']['taxonomy_filters'][$changed_filter_id] = _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $changed_filter_id);
+  }
+
+  $delta = 0;
+
+  // @todo: improve the check.
+  if (isset($conf['taxonomy_filters']) && isset($conf['content_type'])) {
+    $delta = count($conf['taxonomy_filters']);
+    foreach ($conf['taxonomy_filters'] as $key => $filter) {
+      if ($changed_filter_id === $key) {
+        continue;
+      }
+
+      if (isset($filter['filter_vocab'])) {
+        $filter['filter_autocomplete_path'] = 'taxonomy/autocomplete/' . $term_field_settings[$filter['filter_vocab']];
+      }
+
+      $tags = array();
+      foreach ($filter['filter_terms'] as $item) {
+        $tags[$item['tid']] = isset($item['taxonomy_term']) ? $item['taxonomy_term'] : taxonomy_term_load($item['tid']);
+      }
+      $filter['filter_terms'] = taxonomy_implode_tags($tags);
+      $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $key);
+    }
+  }
+
+  // Add new filter field.
+  for (; $delta < $filter_count; $delta++) {
+    $key = $delta;
+    if ($changed_filter_id === $key) {
+      continue;
+    }
+    $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_vocabs, NULL, $key);
+  }
+
+  $form['ding_nodelist_dynamic']['add_filter'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add filter'),
+    '#weight' => 0,
+    '#submit' => array('ding_nodelist_add_filter_submit'),
+    '#ajax' => array(
+      'wrapper' => 'ding_nodelist-taxonomy-filters',
+      'callback' => 'ding_nodelist_js_add_filter',
+      'method' => 'replace',
+      'effect' => 'fade'
+    ),
+  );
+
+  /**
+   * Content filters.
+   */
+  $form['ding_nodelist_dynamic']['content_filters'] = array(
+    '#type'   => 'fieldset',
+    '#title'  => t('Content filters'),
+    '#weight' => 1,
+
+    'content_filter_promoted' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Show "Promoted to front page" content'),
+      '#description' => t('Only promoted content will be shown'),
+      '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
+    ),
+
+    'content_filter_sticky' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Show sticky content'),
+      '#description' => t('Sticky content will be shown first'),
+      '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
+    )
+  );
+
+  /**
+   * Display settings.
+   */
+  $form['ding_nodelist_display'] = array(
     '#type' => 'fieldset',
     '#title' => t('Display settings'),
     '#collapsible' => FALSE,
     '#description' => t('Define custom visualization settings'),
-);
+  );
 
   // Set up all the available view modes for this type of nodes.
   $entity = entity_get_info('node');
@@ -353,16 +444,23 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $node_formats[$view_mode] = $settings['label'];
   }
 
-  $form['ding_nodelist_content']['list_type'] = array(
+  $widget_types = array(
+    NL_SINGLE   => t('Single node'),
+    NL_LIST     => t('List of nodes'),
+    NL_CAROUSEL => t('Carousel'),
+    NL_CAROUSEL_ALT => t('Alternative carousel'),
+  );
+
+  $form['ding_nodelist_display']['widget_type'] = array(
     '#type' => 'select',
     '#title' => t('List type'),
     '#required' => TRUE,
-    '#default_value' => isset($conf['list_type']) ? $conf['list_type'] : $default_conf['list_type'],
-    '#options' => $list_types,
+    '#default_value' => isset($conf['widget_type']) ? $conf['widget_type'] : $default_conf['widget_type'],
+    '#options' => $widget_types,
     '#description' => t('If single item selected, only the first item will be rendered')
   );
 
-  $form['ding_nodelist_content']['node_format'] = array(
+  $form['ding_nodelist_display']['node_format'] = array(
     '#type' => 'select',
     '#title' => t('Node format'),
     '#required' => TRUE,
@@ -371,7 +469,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#description' => t('Select how to display the items')
   );
 
-  $form['ding_nodelist_content']['columns'] = array(
+  $form['ding_nodelist_display']['columns'] = array(
     '#type' => 'select',
     '#title' => 'Width (columns)',
     '#options' => array(
@@ -407,42 +505,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
-  // Forms for Dynamic list settings.
-  $form['ding_nodelist_settings'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Dynamic list'),
-    '#required' => FALSE,
-    '#weight' => -2,
-  );
-
-  // Get an array of available vocabularies.
-  $vocs = taxonomy_get_vocabularies();
-  foreach ($vocs as $vid => $vocabulary) {
-    $options[$vocabulary->name] = $vocabulary->name;
-  }
-
-  $form['ding_nodelist_settings']['tags'] = array(
-    '#type' => 'select',
-    '#title' => t('Choose a vocabulary'),
-    '#options' => $options,
-    '#default_value' => variable_get('ding_nodelist_settings', array()),
-    '#description' => t('List of avaible vocabularies'),
-  );
-
-  $form['ding_nodelist_settings']['filters'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Content options'),
-    '#options' => array('Show sticky content first', 'Show "Promoted to front page" content only'),
-    '#default_value' => variable_get('ding_nodelist_settings', array()),
-  );
-
   // Use custom title options.
   unset($form['override_title']);
   unset($form['override_title_text']);
   return $form;
 }
 
-function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weight = 0, $size = 10) {
+function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
   $form = array(
     '#tree' => TRUE,
     '#weight' => $weight,
@@ -470,7 +539,7 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
     $form['nid']['#value'] = $node['nid'];
   }
   elseif (!is_null($node) && isset($node['node'])) {
-    $tmp_node = explode(':', $node);
+    $tmp_node = explode(':', $node['node']); // EXPERIMENTAL FIX! previous value '$node' gave warnings.
     $tmp_node = array_pop($tmp_node);
     $tmp_node = substr($tmp_node, 0, -1);
     if (ctype_digit($tmp_node)) {
@@ -496,12 +565,55 @@ function _ding_nodelist_selected_node($key, $type= 'player', $node = NULL, $weig
   return $form;
 }
 
+function _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $key) {
+  $form = array(
+    '#tree' => TRUE,
+    '#weight' => $key
+  );
+
+  $form['filter_type'] = array(
+    '#type' => 'select',
+    '#options' => array('and' => t('and'), 'or' => t('or')),
+    '#default_value' => !is_null($filter) && !empty($filter['filter_type']) ? $filter['filter_type'] : 'or',
+    '#parents' => array('taxonomy_filters', $key, 'filter_type'),
+  );
+
+  $form['filter_vocab'] = array(
+    '#type' => 'select',
+    '#title_display' => 'invisible',
+    '#empty_option' => t('-- select --'),
+    '#options' => $allowed_vocabs,
+    '#default_value' => !is_null($filter) && !empty($filter['filter_vocab']) ? $filter['filter_vocab'] : '',
+    '#ajax' => array(
+      'wrapper' => 'ding_nodelist-taxonomy-filters',
+      'callback' => 'ding_nodelist_js_add_filter',
+      'method' => 'replace',
+      'effect' => 'fade'
+    ),
+    '#parents' => array('taxonomy_filters', $key, 'filter_vocab'),
+  );
+
+  $form['filter_terms'] = array(
+    '#vocabulary_name'=> $filter['filter_vocab'],
+    '#type' => 'textfield',
+    '#title_display' => 'invisible',
+    '#default_value' => !is_null($filter) && !empty($filter['filter_terms']) ? $filter['filter_terms'] : '',
+    '#parents' => array('taxonomy_filters', $key, 'filter_terms'),
+    '#maxlength' => 1024,
+    '#element_validate' => array('_ding_nodelist_taxonomy_autocomplete_validate'),
+    '#autocomplete_path' => !is_null($filter) && !empty($filter['filter_autocomplete_path'])
+      ? $filter['filter_autocomplete_path'] : NULL,
+  );
+
+  return $form;
+}
+
 /**
  * Custom submit function to add more choices
  */
-function ding_nodelist_more_submit(&$form, &$form_state) {
+function ding_nodelist_add_node_submit(&$form, &$form_state) {
   // Add new node to list.
-  if ($form_state['values']['op'] == $form_state['values']['ding_nodelist_more']) {
+  if ($form_state['values']['op'] == $form_state['values']['add_node']) {
     $form_state['values']['selected_nodes_count'] = count($form_state['values']['selected_nodes']) + 1;
 
     unset($form_state['input']['selected_nodes']);
@@ -537,17 +649,36 @@ function ding_nodelist_more_submit(&$form, &$form_state) {
       }
     }
   }
-  // Saving all the values of the form.
-  $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
-  $form_state['conf']['columns'] = $form_state['values']['columns'];
-  $form_state['conf']['title_text'] = $form_state['values']['title_text'];
-  $form_state['conf']['content_type'] = $form_state['values']['content_type'];
-  $form_state['conf']['list_type'] = $form_state['values']['list_type'];
-  $form_state['conf']['columns'] = $form_state['values']['columns'];
-  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
-  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
 
-  $form_state['rebuild'] = TRUE;
+  // Saving all the values of the form.
+  _ding_nodelist_content_type_form_save($form_state, TRUE);
+}
+
+/**
+ * Custom submit function for adding more filters.
+ */
+function ding_nodelist_add_filter_submit(&$form, &$form_state) {
+  // Add new filter.
+  if ($form_state['values']['op'] == $form_state['values']['add_filter']) {
+    $form_state['values']['taxonomy_filters_count'] = count($form_state['values']['taxonomy_filters']) + 1;
+
+    unset($form_state['input']['taxonomy_filters']);
+  }
+
+//  foreach ($form_state['values']['selected_nodes'] as $key => $node) {
+//    if (!empty($node['node'])) {
+//      $tmp_nid = explode(':', $node['node']);
+//      $tmp_nid = array_pop($tmp_nid);
+//      $tmp_nid = substr($tmp_nid, 0, -1);
+//      // TODO: Implement more complex check for given title + ID
+//      if (ctype_digit($tmp_nid)) {
+//        $form_state['values']['selected_nodes'][$key]['nid'] = $tmp_nid;
+//      }
+//    }
+//  }
+
+  // Saving all the values of the form.
+  _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
 
 /**
@@ -556,8 +687,8 @@ function ding_nodelist_more_submit(&$form, &$form_state) {
 function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
 
   // Validating selected nodes
-  if (!count($form_state['values']['selected_nodes'])
-          || empty($form_state['values']['selected_nodes'][0]['node'])) {
+  if ($form_state['values']['list_type'] == NL_CUSTOM && (!count($form_state['values']['selected_nodes'])
+          || empty($form_state['values']['selected_nodes'][0]['node']))) {
     form_set_error('nodes', t('No nodes were selected.'));
   }
 
@@ -595,18 +726,43 @@ function ding_nodelist_content_type_edit_form_submit($form, &$form_state) {
     }
   }
 
+  // Removing empty filters.
+  foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
+    if (empty($filter['filter_vocab']) || empty($filter['filter_terms'])) {
+      unset($form_state['values']['taxonomy_filters'][$key]);
+    }
+  }
+
   // Anything in $form_state['conf'] will be saved automatically.
-  $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
-  $form_state['conf']['content_type'] = $form_state['values']['content_type'];
-  $form_state['conf']['list_type'] = $form_state['values']['list_type'];
-  $form_state['conf']['columns'] = $form_state['values']['columns'];
-  $form_state['conf']['title_text'] = $form_state['values']['title_text'];
-  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
-  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
+  _ding_nodelist_content_type_form_save($form_state);
 }
 
+/**
+ * Ajax handler of content type select box.
+ * Returns multiple commands.
+ */
 function ding_nodelist_js($form, &$form_state) {
+  return array(
+    '#type' => 'ajax',
+    '#commands' => array(
+      ajax_command_replace('#ding_nodelist-selected-nodes', drupal_render($form['ding_nodelist_nodes']['selected_nodes'])),
+      ajax_command_replace('#ding_nodelist-taxonomy-filters', drupal_render($form['ding_nodelist_dynamic']['taxonomy_filters'])),
+    )
+  );
+}
+
+/**
+ * Ajax handler for custom nodes actions.
+ */
+function ding_nodelist_js_add_node($form, &$form_state) {
   return $form['ding_nodelist_nodes']['selected_nodes'];
+}
+
+/**
+ * Ajax handler of taxonomy filter actions.
+ */
+function ding_nodelist_js_add_filter($form, &$form_state) {
+  return $form['ding_nodelist_dynamic']['taxonomy_filters'];
 }
 
 /**
@@ -635,8 +791,10 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
   $path = drupal_get_path('module', 'ding_nodelist') . '/templates';
 
   $themes = array(
-    // Do not rename, this is internal theme call.
     '_ding_nodelist_items_table' => array(
+      'render element' => 'form',
+    ),
+    '_ding_nodelist_filters_table' => array(
       'render element' => 'form',
     ),
     '_ding_nodelist_templates_table' => array(
@@ -700,6 +858,33 @@ function theme__ding_nodelist_items_table($variables) {
   }
 
   $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => 'ding_nodelist-selected-table')));
+  $output .= drupal_render_children($form);
+  return $output;
+}
+
+/**
+ * Helper theming function
+ */
+function theme__ding_nodelist_filters_table($variables) {
+  $form = $variables['form'];
+
+  $rows = array();
+  $header = array('', t('Vocabulary'), t('Terms'));
+
+  foreach (element_children($form) as $key) {
+    // Build the table row.
+    $row = array(
+      'data' => array(
+        drupal_render($form[$key]['filter_type']),
+        drupal_render($form[$key]['filter_vocab']),
+        drupal_render($form[$key]['filter_terms']),
+      ),
+    );
+
+    $rows[] = $row;
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'ding_nodelist-filters-table')));
   $output .= drupal_render_children($form);
   return $output;
 }
@@ -772,7 +957,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Prepare classes
   $classes = array();
   $classes[] = 'ding_nodelist';
-  $classes[] = 'ding_nodelist-' . $conf['list_type'];
+  $classes[] = 'ding_nodelist-' . $conf['widget_type'];
   $classes[] = 'ding_nodelist-col-' . $columns;
 
   // Build title
@@ -793,7 +978,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
   // Define if this is the last column pane and apply additional style.
-  $map = ding_nodelist_get_column_map();
+  $map = _ding_nodelist_get_column_map();
   $columns_layout = &drupal_static('ding_nodelist_cols', array());
   if (empty($columns_layout[$columns])) {
     $columns_layout[$columns] = 1;
@@ -826,13 +1011,13 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // If we have a single node, we don't need the other nodes
   // so we take only the first one.
-  if ($conf['list_type'] == NL_SINGLE) {
+  if ($conf['widget_type'] == NL_SINGLE) {
     $node_list = array_shift($node_list);
     $node_list = array($node_list);
   }
 
   // Special JS fopr carousel widgets
-  if (in_array($conf['list_type'], array(NL_CAROUSEL, NL_CAROUSEL_ALT))) {
+  if (in_array($conf['widget_type'], array(NL_CAROUSEL, NL_CAROUSEL_ALT))) {
     $add_carousel_js = &drupal_static(__FUNCTION__ . '_js', TRUE);
     if ($add_carousel_js) {
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-4.4.2.js', 'file');
@@ -842,7 +1027,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   }
 
   $nodes = node_load_multiple($node_list);
-  $theme_func = 'ding_nodelist_' . $conf['list_type'];
+  $theme_func = 'ding_nodelist_' . $conf['widget_type'];
   $block->content = theme($theme_func,
     array('items' => $nodes,
           'conf' => array('more' => $more, 'more_link_target' => $more_link_target,
@@ -927,7 +1112,64 @@ function ding_nodelist_get_templates($include_hidden = TRUE) {
   return $templates;
 }
 
-function ding_nodelist_get_column_map() {
+/**
+ * Save CT plugin form values.
+ */
+function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
+
+  $form_state['conf']['content_type'] = $form_state['values']['content_type'];
+  $form_state['conf']['list_type'] = $form_state['values']['list_type'];
+  $form_state['conf']['title_text'] = $form_state['values']['title_text'];
+  $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
+  $form_state['conf']['taxonomy_filters'] = $form_state['values']['taxonomy_filters'];
+  $form_state['conf']['columns'] = $form_state['values']['columns'];
+  $form_state['conf']['widget_type'] = $form_state['values']['widget_type'];
+  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
+  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
+
+  if ($rebuild) {
+    $form_state['rebuild'] = TRUE;
+  }
+}
+
+/**
+ * Customized function for taxononmy autocomplete element validation
+ * (copied from core's taxonomy_autocomplete_validate)
+ * @see taxonomy_autocomplete_validate
+ */
+function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
+  // Autocomplete widgets do not send their tids in the form, so we must detect
+  // them here and process them independently.
+  $value = array();
+  if ($tags = $element['#value']) {
+    // Collect candidate vocabularies.
+    $vocabularies = array();
+    $vocabulary = taxonomy_vocabulary_machine_name_load($element['#vocabulary_name']);
+    $vocabularies[$vocabulary->vid] = $vocabulary;
+
+    // Translate term names into actual terms.
+    $typed_terms = drupal_explode_tags($tags);
+    foreach ($typed_terms as $typed_term) {
+      // See if the term exists in the chosen vocabulary and return the tid;
+      // otherwise, create a new 'autocreate' term for insert/update.
+      if ($possibilities = taxonomy_term_load_multiple(array(), array('name' => trim($typed_term), 'vid' => array_keys($vocabularies)))) {
+        $term = array_pop($possibilities);
+      }
+      else {
+        form_error($element, t('Invalid term(s).'));
+        return;
+      }
+      $value[] = (array)$term;
+    }
+  }
+
+  form_set_value($element, $value, $form_state);
+}
+
+/**
+ * Translates constant definitions to numbers.
+ */
+function _ding_nodelist_get_column_map() {
   return array(
     NL_COL_FULL   => 1,
     NL_COL_HALF   => 2,
@@ -935,3 +1177,4 @@ function ding_nodelist_get_column_map() {
     NL_COL_QRT    => 4,
   );
 }
+
