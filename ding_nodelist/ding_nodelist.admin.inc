@@ -37,7 +37,7 @@ function ding_nodelist_templates_form($form, &$form_state) {
     '#theme' => '_ding_nodelist_templates_table',
   );
 
-  $templates = ding_nodelist_get_templates();
+  $templates = _ding_nodelist_get_templates();
 
   foreach ($templates as $template_name => $template) {
     $form['templates'][$template_name]['template_name'] = array(

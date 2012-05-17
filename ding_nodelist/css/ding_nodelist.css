@@ -1,8 +1,8 @@
-.ding_nodelist-carousel, .ding_nodelist-carousel > div {
+.ding_nodelist-simple, .ding_nodelist-simple > div {
   float: left;
 }
 
-.ding_nodelist-carousel_alt, .ding_nodelist-carousel_alt > div {
+.ding_nodelist-carousel, .ding_nodelist-carousel > div {
   float: left;
 }
 
@@ -31,13 +31,4 @@
 
 .ding_nodelist-col-last {
   margin-right: 0;
-}
-
-/* Empty styles to be overriden in theme. */
-.ding_nodelist-title {
-}
-
-.ding_nodelist-more {
-  clear: left;
-  display: block;
 }

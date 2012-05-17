@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- *
+ * Ctools plugin definition file.
  */
 
 /**
