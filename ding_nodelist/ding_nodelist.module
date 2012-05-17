@@ -308,6 +308,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $form['ding_nodelist_dynamic']['taxonomy_filters'] = array(
     '#type'   => 'fieldset',
     '#title'  => t('Taxonomy filters'),
+    '#description' => t('Create one or more taxonomy filters. The content selected will match all of them.'),
     '#prefix' => '<div id="ding_nodelist-taxonomy-filters">',
     '#suffix' => '</div>',
     '#theme' => '_ding_nodelist_filters_table',
@@ -325,38 +326,35 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   }
 
   // Retrieve vocabularies current CT references.
-  $fields = field_info_fields();
-  $allowed_vocabs = array();
-  $term_field_settings = array();
+  $allowed_fields = array();
+  $field_vocabulary = array();
+  $fields = field_info_instances('node', $node_type);
   foreach ($fields as $field) {
-    // Check if the field is a term that belongs to current CT.
-    if ($field['type'] == 'taxonomy_term_reference' && isset($field['bundles']['node'])
-          && in_array($node_type, $field['bundles']['node'])) {
-      // @todo: is this structure always the same?
-      $machine_name = $field['settings']['allowed_values'][0]['vocabulary'];
-      $vocab = taxonomy_vocabulary_machine_name_load($machine_name);
-      $allowed_vocabs[$machine_name] = $vocab->name;
-      $term_field_settings[$machine_name] = $field['field_name'];
+    $field_config = field_info_field($field['field_name']);
+    // Check if the field is a term reference field.
+    if ($field_config['type'] == 'taxonomy_term_reference') {
+      $allowed_fields[$field['field_name']] = $field['label'];
+      $field_vocabulary[$field['field_name']] = $field_config['settings']['allowed_values'][0]['vocabulary'];
     }
   }
 
   // Check if filter vocabulary was changed.
   $changed_filter_id = NULL;
   if (!empty($form_state['triggering_element']) && isset($form_state['triggering_element']['#parents'][2])
-          && $form_state['triggering_element']['#parents'][2] == 'filter_vocab') {
+          && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
     $changed_filter_id = $form_state['triggering_element']['#parents'][1];
     $changed_filter = $form_state['values']['taxonomy_filters'][$changed_filter_id];
     // @todo: do not allow to change to empty value on frontend - provide a 'delete' button instead.
-    if (!empty($changed_filter['filter_vocab'])) {
-      $filter['filter_autocomplete_path'] = 'taxonomy/autocomplete/' . $term_field_settings[$changed_filter['filter_vocab']];
+    if (!empty($changed_filter['filter_field'])) {
       // Update auto-complete, preserve other fields.
-      $filter['filter_type'] = $changed_filter['filter_type'];
-      $filter['filter_vocab'] = $changed_filter['filter_vocab'];
-    }
-    // Important: delete old input!
-    unset($form_state['input']['taxonomy_filters'][$changed_filter_id]);
+      $filter['filter_field'] = $changed_filter['filter_field'];
+      $filter['filter_vocab'] = $field_vocabulary[$filter['filter_field']];
 
-    $form['ding_nodelist_dynamic']['taxonomy_filters'][$changed_filter_id] = _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $changed_filter_id);
+      // Important: delete old input!
+      unset($form_state['input']['taxonomy_filters'][$changed_filter_id]);
+      $form_state['#dn_filter_changed'] = TRUE;
+      $form['ding_nodelist_dynamic']['taxonomy_filters'][$changed_filter_id] = _ding_nodelist_taxonomy_filter($allowed_fields, $filter, $changed_filter_id);
+    }
   }
 
   $delta = 0;
@@ -369,16 +367,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
         continue;
       }
 
-      if (isset($filter['filter_vocab'])) {
-        $filter['filter_autocomplete_path'] = 'taxonomy/autocomplete/' . $term_field_settings[$filter['filter_vocab']];
-      }
-
       $tags = array();
-      foreach ($filter['filter_terms'] as $item) {
-        $tags[$item['tid']] = isset($item['taxonomy_term']) ? $item['taxonomy_term'] : taxonomy_term_load($item['tid']);
+      foreach ($filter['filter_terms'] as $tid) {
+        $tags[$tid] = taxonomy_term_load($tid);
       }
       $filter['filter_terms'] = taxonomy_implode_tags($tags);
-      $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $key);
+      $filter['filter_vocab'] = $field_vocabulary[$filter['filter_field']];
+      $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_fields, $filter, $key);
     }
   }
 
@@ -388,7 +383,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     if ($changed_filter_id === $key) {
       continue;
     }
-    $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_vocabs, NULL, $key);
+    $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_fields, NULL, $key);
   }
 
   $form['ding_nodelist_dynamic']['add_filter'] = array(
@@ -565,32 +560,25 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
   return $form;
 }
 
-function _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $key) {
+function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
   $form = array(
     '#tree' => TRUE,
     '#weight' => $key
   );
 
-  $form['filter_type'] = array(
-    '#type' => 'select',
-    '#options' => array('and' => t('and'), 'or' => t('or')),
-    '#default_value' => !is_null($filter) && !empty($filter['filter_type']) ? $filter['filter_type'] : 'or',
-    '#parents' => array('taxonomy_filters', $key, 'filter_type'),
-  );
-
-  $form['filter_vocab'] = array(
+  $form['filter_field'] = array(
     '#type' => 'select',
     '#title_display' => 'invisible',
     '#empty_option' => t('-- select --'),
-    '#options' => $allowed_vocabs,
-    '#default_value' => !is_null($filter) && !empty($filter['filter_vocab']) ? $filter['filter_vocab'] : '',
+    '#options' => $fields,
+    '#default_value' => !is_null($filter) && !empty($filter['filter_field']) ? $filter['filter_field'] : '',
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
       'method' => 'replace',
       'effect' => 'fade'
     ),
-    '#parents' => array('taxonomy_filters', $key, 'filter_vocab'),
+    '#parents' => array('taxonomy_filters', $key, 'filter_field'),
   );
 
   $form['filter_terms'] = array(
@@ -601,8 +589,8 @@ function _ding_nodelist_taxonomy_filter($allowed_vocabs, $filter, $key) {
     '#parents' => array('taxonomy_filters', $key, 'filter_terms'),
     '#maxlength' => 1024,
     '#element_validate' => array('_ding_nodelist_taxonomy_autocomplete_validate'),
-    '#autocomplete_path' => !is_null($filter) && !empty($filter['filter_autocomplete_path'])
-      ? $filter['filter_autocomplete_path'] : NULL,
+    '#autocomplete_path' => !is_null($filter) && !empty($filter['filter_field'])
+      ? 'taxonomy/autocomplete/' . $filter['filter_field'] : NULL,
   );
 
   return $form;
@@ -665,18 +653,6 @@ function ding_nodelist_add_filter_submit(&$form, &$form_state) {
     unset($form_state['input']['taxonomy_filters']);
   }
 
-//  foreach ($form_state['values']['selected_nodes'] as $key => $node) {
-//    if (!empty($node['node'])) {
-//      $tmp_nid = explode(':', $node['node']);
-//      $tmp_nid = array_pop($tmp_nid);
-//      $tmp_nid = substr($tmp_nid, 0, -1);
-//      // TODO: Implement more complex check for given title + ID
-//      if (ctype_digit($tmp_nid)) {
-//        $form_state['values']['selected_nodes'][$key]['nid'] = $tmp_nid;
-//      }
-//    }
-//  }
-
   // Saving all the values of the form.
   _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
@@ -690,6 +666,27 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   if ($form_state['values']['list_type'] == NL_CUSTOM && (!count($form_state['values']['selected_nodes'])
           || empty($form_state['values']['selected_nodes'][0]['node']))) {
     form_set_error('nodes', t('No nodes were selected.'));
+  }
+
+  // Remove empty/partially set filters.
+  foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
+    if (empty($filter['filter_field']) && empty($filter['filter_terms'])) {
+      unset($form_state['values']['taxonomy_filters'][$key]);
+    }
+
+    // Check if some filters are not fully completed.
+    if (!isset($form_state['#dn_filter_changed'])) {
+      if (empty($filter['filter_terms'])) {
+        form_set_error("taxonomy_filters][$key][filter_terms", t('No terms specified for filter.'));
+      }
+    }
+  }
+  unset($form_state['#dn_filter_changed']);
+
+
+  // Check if there are any non-empty filters.
+  if ($form_state['values']['list_type'] == NL_DYNAMIC && !count($form_state['values']['taxonomy_filters'])) {
+    form_set_error('taxonomy_filters', t('You need to specify at least one filter.'));
   }
 
   if (!empty($form_state['values']['more_link'])) {
@@ -728,7 +725,7 @@ function ding_nodelist_content_type_edit_form_submit($form, &$form_state) {
 
   // Removing empty filters.
   foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
-    if (empty($filter['filter_vocab']) || empty($filter['filter_terms'])) {
+    if (empty($filter['filter_field']) || empty($filter['filter_terms'])) {
       unset($form_state['values']['taxonomy_filters'][$key]);
     }
   }
@@ -869,14 +866,13 @@ function theme__ding_nodelist_filters_table($variables) {
   $form = $variables['form'];
 
   $rows = array();
-  $header = array('', t('Vocabulary'), t('Terms'));
+  $header = array(t('Field'), t('Values'));
 
   foreach (element_children($form) as $key) {
     // Build the table row.
     $row = array(
       'data' => array(
-        drupal_render($form[$key]['filter_type']),
-        drupal_render($form[$key]['filter_vocab']),
+        drupal_render($form[$key]['filter_field']),
         drupal_render($form[$key]['filter_terms']),
       ),
     );
@@ -950,11 +946,18 @@ function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL)
  *   An object with at least title and content members.
  */
 function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
+
   $block = new stdClass();
+  $block->content =
+          '<pre>Custom nodes: <br/>'
+          . print_r(_ding_nodelist_get_custom_list_nodes($conf), TRUE)
+          . 'Dynamic nodes: <br/>'
+          . print_r(_ding_nodelist_get_dynamic_list_nodes($conf), TRUE);
 
   $columns = $conf['columns'];
 
-  // Prepare classes
+  // Prepare classes for widget container.
+  /*** TEMPORARILY COMMENTED OUT
   $classes = array();
   $classes[] = 'ding_nodelist';
   $classes[] = 'ding_nodelist-' . $conf['widget_type'];
@@ -974,9 +977,6 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   $more_link_target = !empty($conf['more_link']) ? $conf['more_link'] : NULL;
 
-  // Load default CSS.
-  drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
-
   // Define if this is the last column pane and apply additional style.
   $map = _ding_nodelist_get_column_map();
   $columns_layout = &drupal_static('ding_nodelist_cols', array());
@@ -987,36 +987,15 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   else {
     $columns_layout[$columns]++;
   }
-
   if ($columns_layout[$columns] == $map[$columns]) {
     $classes[] = 'ding_nodelist-col-last';
     $columns_layout[$columns] = 0;
   }
 
   // Render the contents.
-
-  // This line may be removed after all nodelist panes are redefined.
-  $raw_nodes = isset($conf['selected_nodes']) ? $conf['selected_nodes'] : array();
-  $node_list = array();
-
-  // Sort the nodes according to their weight.
-  $tmp_array = array();
-  foreach ($raw_nodes as $key => $node) {
-    $tmp_array[$key] = $node['weight'];
-  }
-  asort($tmp_array);
-  foreach ($tmp_array as $key => $weight) {
-    $node_list []= $raw_nodes[$key]['nid'];
-  }
-
-  // If we have a single node, we don't need the other nodes
-  // so we take only the first one.
-  if ($conf['widget_type'] == NL_SINGLE) {
-    $node_list = array_shift($node_list);
-    $node_list = array($node_list);
-  }
-
-  // Special JS fopr carousel widgets
+  // Load default CSS.
+  drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
+  // Special JS for carousel widgets
   if (in_array($conf['widget_type'], array(NL_CAROUSEL, NL_CAROUSEL_ALT))) {
     $add_carousel_js = &drupal_static(__FUNCTION__ . '_js', TRUE);
     if ($add_carousel_js) {
@@ -1032,7 +1011,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     array('items' => $nodes,
           'conf' => array('more' => $more, 'more_link_target' => $more_link_target,
             'classes' => $classes, 'format' => $conf['node_format'])));
-
+  */
   return $block;
 }
 
@@ -1133,6 +1112,56 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
 }
 
 /**
+ * Retreive all nodes based on dynamic list settings.
+ * @return array of node IDs
+ */
+function _ding_nodelist_get_dynamic_list_nodes($conf) {
+  $nodes = array();
+
+  if (isset($conf['taxonomy_filters']) && count($conf['taxonomy_filters'])) {
+    // Support for slave-master DB servers.
+    $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
+    $ti_l = 'ti';
+    $query->join('taxonomy_index', $ti_l, "n.nid = $ti_l.nid");
+    $i = 1;
+    foreach ($conf['taxonomy_filters'] as $filter) {
+      $ti_r = 'ti' . $i++;
+      $filter['filter_terms'] = is_array($filter['filter_terms']) ?
+        $filter['filter_terms'] : array($filter['filter_terms']);
+      // Use $i in argument placeholder as workaround.
+      $ti_l = $query->join('taxonomy_index', $ti_r, "$ti_l.nid = $ti_r.nid AND $ti_r.tid IN (:tids$i)", array(":tids$i" => $filter['filter_terms']));
+    }
+
+    // Filter by content type/node settings.
+    $query->condition('n.type', $conf['content_type'])
+          ->condition('n.status', NODE_PUBLISHED)
+          ->distinct();
+
+    $nodes = $query->execute()->fetchCol();
+  }
+
+  return $nodes;
+}
+
+/**
+ * Retreive all nodes based on custom list settings.
+ * @return array of node IDs
+ */
+function _ding_nodelist_get_custom_list_nodes($conf) {
+  $nodes = array();
+
+  if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
+    foreach ($conf['selected_nodes'] as $key => $node) {
+      $nodes[$node['weight']] = $node;
+    }
+    // Sort the nodes according to their weight.
+    ksort($nodes);
+  }
+
+  return $nodes;
+}
+
+/**
  * Customized function for taxononmy autocomplete element validation
  * (copied from core's taxonomy_autocomplete_validate)
  * @see taxonomy_autocomplete_validate
@@ -1159,7 +1188,7 @@ function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
         form_error($element, t('Invalid term(s).'));
         return;
       }
-      $value[] = (array)$term;
+      $value[] = (int)$term->tid;
     }
   }
 
@@ -1177,4 +1206,3 @@ function _ding_nodelist_get_column_map() {
     NL_COL_QRT    => 4,
   );
 }
-
