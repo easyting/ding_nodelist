@@ -865,6 +865,11 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist.ding_event.image_text',
       'variables' => array('item' => NULL, 'conf' => NULL),
     ),
+    'ding_nodelist.event_editorial_dashboard.image_text' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.event_editorial_dashboard.image_text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    ),
     'ding_nodelist.ding_news.image_text' => array(
       'path' => $path,
       'template' => 'ding_nodelist.ding_news.image_text',
