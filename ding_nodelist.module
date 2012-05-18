@@ -1249,7 +1249,7 @@ function _ding_nodelist_get_custom_list_nodes($conf) {
 
   if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
     foreach ($conf['selected_nodes'] as $key => $node) {
-      $nodes[$node['weight']] = $node;
+      $nodes[$node['weight']] = $node['nid'];
     }
     // Sort the nodes according to their weight.
     ksort($nodes);
