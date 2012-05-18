@@ -589,6 +589,9 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
   return $form;
 }
 
+/**
+ * Builds filter form.
+ */
 function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
   $form = array(
     '#tree' => TRUE,
