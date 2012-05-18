@@ -125,6 +125,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'list_type' => NL_CUSTOM,
     'widget_type' => NL_WIDGET_LIST,
     'columns' => NL_COL_FULL,
+    'sort_field' => 'created',
+    'sort_order' => 'desc',
     'more_text' => t('More'),
     'more_link' => '',
     'teaser_length' => 100,
@@ -472,7 +474,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $form['ding_nodelist_display']['columns'] = array(
     '#type' => 'select',
-    '#title' => 'Width (columns)',
+    '#title' => t('Width (columns)'),
     '#options' => array(
       NL_COL_FULL   => t('full width'),
       NL_COL_HALF   => '1/2',
@@ -480,6 +482,27 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       NL_COL_QRT    => '1/4'
     ),
     '#default_value' => isset($conf['columns']) ? $conf['columns'] : $default_conf['columns']
+  );
+
+  $form['ding_nodelist_display']['sort_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Sort by'),
+    '#options' => array(
+      'created' => t('creation date'),
+      'title'   => t('title'),
+    ),
+    '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : $default_conf['sort_field']
+  );
+
+  // @todo: place next to Sort by field ie in one row (better UX).
+  $form['ding_nodelist_display']['sort_order'] = array(
+    '#type' => 'select',
+    '#title' => t('Sorting order'),
+    '#options' => array(
+      'asc' => t('ascending'),
+      'desc'=> t('descending'),
+    ),
+    '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order']
   );
 
   // Forms for Bottom settings.
@@ -1157,6 +1180,8 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['columns'] = $form_state['values']['columns'];
   $form_state['conf']['widget_type'] = $form_state['values']['widget_type'];
   $form_state['conf']['item_template'] = $form_state['values']['item_template'];
+  $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
+  $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
   $form_state['conf']['more_text'] = $form_state['values']['more_text'];
   $form_state['conf']['more_link'] = $form_state['values']['more_link'];
 
@@ -1190,6 +1215,9 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     $query->condition('n.type', $conf['content_type'])
           ->condition('n.status', NODE_PUBLISHED)
           ->distinct();
+
+    // Sorting.
+    $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
 
     $nodes = $query->execute()->fetchCol();
   }
