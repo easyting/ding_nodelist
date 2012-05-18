@@ -403,6 +403,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   /**
    * Content filters.
    */
+  /*
   $form['ding_nodelist_dynamic']['content_filters'] = array(
     '#type'   => 'fieldset',
     '#title'  => t('Content filters'),
@@ -422,7 +423,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
     )
   );
-
+  */
   /**
    * Display settings.
    */
@@ -1196,8 +1197,8 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['item_template'] = $form_state['values']['item_template'];
   $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
   $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
-  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
-  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
+//  $form_state['conf']['more_text'] = $form_state['values']['more_text'];
+//  $form_state['conf']['more_link'] = $form_state['values']['more_link'];
 
   if ($rebuild) {
     $form_state['rebuild'] = TRUE;
