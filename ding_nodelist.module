@@ -505,6 +505,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order']
   );
 
+  /*
   // Forms for Bottom settings.
   $form['ding_nodelist_options'] = array(
     '#type' => 'fieldset',
@@ -527,7 +528,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       '#description' => t('Enter local Drupal path or external URL starting with http(s).'),
       '#default_value' => isset($conf['more_link']) ? $conf['more_link'] : $default_conf['more_link'],
     ),
-  );
+  );*/
 
   // Use custom title options.
   unset($form['override_title']);
