@@ -1,3 +1,4 @@
+/* Widgets */
 .ding_nodelist-simple, .ding_nodelist-simple > div {
   float: left;
 }
@@ -6,6 +7,11 @@
   float: left;
 }
 
+.ding_nodelist-title {
+  margin-bottom: 4px;
+}
+
+/* Columnar layout */
 .ding_nodelist-col-first {
   clear: left;
 }
@@ -31,4 +37,9 @@
 
 .ding_nodelist-col-last {
   margin-right: 0;
+}
+
+/* Others */
+.ding_nodelist-item {
+  margin-bottom: 8px;
 }

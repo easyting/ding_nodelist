@@ -12,5 +12,7 @@
  * group_audience
  */
 ?>
-<?php	print drupal_render(field_view_field('node', $item, 'title', 'teaser')); ?>
-<?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
+<div class="ding_nodelist-item">
+  <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
+  <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
+</div>
