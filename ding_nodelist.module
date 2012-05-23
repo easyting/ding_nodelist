@@ -642,7 +642,7 @@ function _ding_nodelist_links_form($key, $link) {
     '#tree' => TRUE,
     '#weight' => -1,
     '#parents' => array('more_links', $key, 'text'),
-    '#default_value' => (!is_null($link) && isset($link['text'])) ? $link['text'] : '',
+    '#default_value' => (!empty($link['text'])) ? $link['text'] : '',
   );
 
   $form['links'] = array(
@@ -652,7 +652,7 @@ function _ding_nodelist_links_form($key, $link) {
     '#required' => FALSE,
     '#description' => t('Enter local Drupal path or external URL starting with http(s).'),
     '#parents' => array('more_links', $key, 'links'),
-    '#default_value' => (!is_null($link) && isset($link['links'])) ? $link['links'] : '',     
+    '#default_value' => (!empty($link['links'])) ? $link['links'] : '',     
   );
 
   return $form;
@@ -824,12 +824,15 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
       }
     }
     // Handles <front>
-    if ($bottom['links'][$key] == '<front>') {
-      $bottom['links'][$key] = 'http://' . $_SERVER['SERVER_NAME'] . '/';
-    }
+    if ($bottom['links'] == '<front>') {
+      if (isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on'){
+        $bottom['links'] = 'https://' . $_SERVER['SERVER_NAME'] . '/';
+      } else {
+        $bottom['links'] = 'http://' . $_SERVER['SERVER_NAME'] . '/';
+        }
+    }     
   }
-  
-
+ 
   // Validate template selection.
   if (empty($form_state['values']['item_template'])) {
     form_set_error('item_template', t('Please select item template.'));
@@ -883,6 +886,9 @@ function ding_nodelist_js($form, &$form_state) {
   );
 }
 
+/**
+ * Ajax handler of bottom links actions.
+ */
 function ding_nodelist_js_add_links($form, &$form_state) {
   return $form['ding_nodelist_bottom_links']['more_links'];
 }
@@ -944,17 +950,17 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_widget_simple' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_simple',
-      'variables' => array('items' => NULL, 'links' =>NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_carousel' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_carousel',
-      'variables' => array('items' => NULL, 'links' =>NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_accordeon' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_accordeon',
-      'variables' => array('items' => NULL, 'links' =>NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     // List item templates.
     'ding_nodelist.ding_event.image_text' => array(
@@ -1055,6 +1061,9 @@ function theme__ding_nodelist_filters_table($variables) {
   return $output;
 }
 
+/**
+ * Helper theming function
+ */
 function theme__ding_nodelist_links_table($variables) {
   $form = $variables['form'];
   $rows = array();
