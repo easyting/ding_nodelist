@@ -965,8 +965,8 @@ function theme__ding_nodelist_templates_table($variables) {
  * Ctools admin view pane's title.
  */
 function ding_nodelist_content_type_admin_title($subtype, $conf, $context = NULL) {
-  if (!empty($conf['title_text'])) {
-    $output = t('Nodelist') . ': ' . filter_xss_admin($conf['title_text']);
+  if (!empty($conf['override_title_text'])) {
+    $output = t('Nodelist') . ': ' . filter_xss_admin($conf['override_title_text']);
   }
   else {
     $output = t('Nodelist (untitled)');
@@ -1010,8 +1010,8 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // Build title
   $title = NULL;
-  if (!empty($conf['title_text'])) {
-    $title = check_plain($conf['title_text']);
+  if (!empty($conf['override_title_text'])) {
+    $title = check_plain($conf['override_title_text']);
   }
 
   // Build 'More' link.
