@@ -15,7 +15,7 @@
     <?php print $items; ?>
   </div>
   <div class="item-list">
-    <?php print $links; ?>
+    <?php print ($links); ?>
   </div>
 </div>
 <?php endif; ?>
