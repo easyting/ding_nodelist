@@ -526,8 +526,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   // Get all bottom links.
   $delta = 0;
-  $weight = 0;
-  $max_weight = $weight;
 
   if (isset($form_state['values']['bottom_links_count'])) {
     $links_count = $form_state['values']['bottom_links_count'];
@@ -539,14 +537,11 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   if (isset($conf['more_links'])) {
   	$delta = count($conf['more_links']);
     foreach ($conf['more_links'] as $key => $link) {
-      $weight = $link['weight'];
-      $max_weight = ($max_weight < $weight) ? $weight : $max_weight;
       $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, $link);
     }
   }
 
   // Add new bottom link field.
-  $weight = ++$max_weight;
   for ($delta; $delta < $links_count; $delta ++) {
     $key = $delta;
     $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, NULL);
