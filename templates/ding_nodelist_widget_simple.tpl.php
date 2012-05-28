@@ -14,7 +14,7 @@
   <div class="ding_nodelist-items">
     <?php print $items; ?>
   </div>
-  <div class="item-list">
+  <div class="links">
     <?php print $links; ?>
   </div>
 </div>

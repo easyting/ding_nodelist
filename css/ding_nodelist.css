@@ -107,12 +107,6 @@ h3 {
   float:left;
   padding: 5px;
   margin-right: 10px;
-  border-color: #CCCCCC #C1C1C1 #C1C1C1 #CCCCCC;
-  border-style: solid;
-  border-width: 1px;
-  -webkit-box-shadow: 3px 3px 4px #C9C9C9;
-  -moz-box-shadow: 3px 3px 4px #C9C9C9;
-  box-shadow: 3px 3px 4px #C9C9C9;
 }
 
 .event_image .field-items {
@@ -205,11 +199,10 @@ h3 {
 
 .item-list {
   text-align: justify;
-  margin-left: 10px;
+  margin-left: 15px;
   text-shadow: 1px 1px 1px #EAF1EA;
 }
 
 li {
   list-style: none;
-  float: left;
 }
