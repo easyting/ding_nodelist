@@ -7,6 +7,10 @@
   float: left;
 }
 
+.ding_nodelist-title {
+  margin-bottom: 4px;
+}
+
 /* Columnar layout */
 .ding_nodelist-col-first {
   clear: left;
