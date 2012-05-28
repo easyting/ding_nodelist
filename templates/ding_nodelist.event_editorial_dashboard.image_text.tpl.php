@@ -13,10 +13,11 @@
  */
 ?>
 <div class="ding_event">
-  
-  <div class="event_image">
-    <?php	print drupal_render(field_view_field('node', $item, 'field_eddb_event_limage', 'teaser')); ?>
-  </div>
+  <?php if(!empty($item->field_eddb_event_limage)){ ?>  
+          <div class="event_image">
+            <?php print drupal_render(field_view_field('node', $item, 'field_eddb_event_limage', 'teaser')); ?>
+          </div>
+  <?php } ?>
  
   <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
  
