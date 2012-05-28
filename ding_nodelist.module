@@ -511,6 +511,60 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['columns']) ? $conf['columns'] : $default_conf['columns']
   );
 
+  // Forms for Bottom settings.
+  $form['ding_nodelist_bottom_links'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Bottom links'),
+    '#collapsible' => FALSE,
+    '#description' => t('List of "read more" links.'),
+    '#weight' => -1,
+  );
+
+  // Container for bottom links
+  $form['ding_nodelist_bottom_links']['more_links'] = array(
+    '#prefix' => '<div id="ding_nodelist-more-link">',
+    '#suffix' => '</div>',
+    '#theme' => '_ding_nodelist_links_table',
+    '#tree' => TRUE,
+    '#weight' => -1,
+  );
+
+  // Get all bottom links.
+  $delta = 0;
+
+  if (isset($form_state['values']['bottom_links_count'])) {
+    $links_count = $form_state['values']['bottom_links_count'];
+  }
+  else {
+    $links_count = empty($form_state['values']['more_links']) ? 1 : count($form_state['values']['more_links']);
+  }
+
+  if (isset($conf['more_links'])) {
+  	$delta = count($conf['more_links']);
+    foreach ($conf['more_links'] as $key => $link) {
+      $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, $link);
+    }
+  }
+
+  // Add new bottom link field.
+  for ($delta; $delta < $links_count; $delta ++) {
+    $key = $delta;
+    $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, NULL);
+  }
+
+  $form['ding_nodelist_bottom_links']['ding_bottom_links_more'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add more link'),
+    '#weight' => 1,
+    '#submit' => array('ding_nodelist_add_bottom_link_submit'),
+    '#ajax' => array(
+      'wrapper' => 'ding_nodelist-more-link',
+      'callback' => 'ding_nodelist_js_add_links',
+      'effect' => 'fade',
+      'method' => 'replace',
+    ),
+  );
+
   return $form;
 }
 
@@ -563,6 +617,39 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
     '#default_value' => $weight,
     '#delta' => 50,
     '#parents' => array('selected_nodes', $key, 'weight'),
+  );
+
+  return $form;
+}
+
+/**
+ * Builds more link form.
+ */
+function _ding_nodelist_links_form($key, $link) {
+  $form = array(
+    '#tree' => TRUE,
+    '#weight' => $key,
+  );
+
+  $form['text'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Link title'),
+    '#title_display' => 'invisible',
+    '#size' => 20,
+    '#tree' => TRUE,
+    '#weight' => -1,
+    '#parents' => array('more_links', $key, 'text'),
+    '#default_value' => (!empty($link['text'])) ? $link['text'] : '',
+  );
+
+  $form['links'] = array(
+    '#type' => 'textfield',
+    '#title' => t('URL'),
+    '#title_display' => 'invisible',
+    '#required' => FALSE,
+    '#description' => check_plain(('Relative path or external URL starting with http(s). Enter "<front>" to link to home page.')),
+    '#parents' => array('more_links', $key, 'links'),
+    '#default_value' => (!empty($link['links'])) ? $link['links'] : '',
   );
 
   return $form;
@@ -669,6 +756,22 @@ function ding_nodelist_add_filter_submit(&$form, &$form_state) {
 }
 
 /**
+ * Custom submit function for adding more links.
+ */
+function ding_nodelist_add_bottom_link_submit(&$form, &$form_state) {
+  // Add new link to list.
+  if ($form_state['values']['op'] == $form_state['values']['ding_bottom_links_more']) {
+    $form_state['values']['bottom_links_count'] = count($form_state['values']['more_links']) + 1;
+
+    unset($form_state['input']['more_links']);
+  }
+
+  // Saving all the values of the form.
+  _ding_nodelist_content_type_form_save($form_state, TRUE);
+
+}
+
+/**
  * Edit form validate function.
  */
 function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
@@ -707,15 +810,14 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
     }
   }
 
-  if (!empty($form_state['values']['more_link'])) {
-    if (!drupal_valid_path($form_state['values']['more_link'])) {
-      if (!valid_url($form_state['values']['more_link'], TRUE)) {
-        form_set_error('more_link', t('External links must begin with "http" or "https".'));
+  // Check if the link is valid.
+  foreach ($form_state['values']['more_links'] as $key => &$bottom) {
+    if (!empty($bottom['text']) || !empty($bottom['links'])) {
+      if (!drupal_valid_path($bottom['links'])) {
+        if (!valid_url($bottom['links'], TRUE)) {
+          form_set_error("more_links][$key][links", t('External links must begin with "http" or "https".'));
+        }
       }
-    }
-    // Handles <front>
-    if ($form_state['values']['more_link'] == '<front>') {
-      $form_state['values']['more_link'] = 'http://' . $_SERVER['SERVER_NAME'] . '/';
     }
   }
 
@@ -773,6 +875,13 @@ function ding_nodelist_js($form, &$form_state) {
 }
 
 /**
+ * Ajax handler of bottom links actions.
+ */
+function ding_nodelist_js_add_links($form, &$form_state) {
+  return $form['ding_nodelist_bottom_links']['more_links'];
+}
+
+/**
  * Ajax handler for custom nodes actions.
  */
 function ding_nodelist_js_add_node($form, &$form_state) {
@@ -819,6 +928,9 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_filters_table' => array(
       'render element' => 'form',
     ),
+    '_ding_nodelist_links_table' => array(
+      'render element' => 'form',
+    ),
     '_ding_nodelist_templates_table' => array(
       'render element' => 'form',
     ),
@@ -826,17 +938,17 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_widget_simple' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_simple',
-      'variables' => array('items' => NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_carousel' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_carousel',
-      'variables' => array('items' => NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_accordeon' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_accordeon',
-      'variables' => array('items' => NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     // List item templates.
     'ding_nodelist.ding_event.image_text' => array(
@@ -852,6 +964,11 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     'ding_nodelist.event_editorial_dashboard.image_text' => array(
       'path' => $path,
       'template' => 'ding_nodelist.event_editorial_dashboard.image_text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    ),
+    'ding_nodelist.ding_news.text_after_image' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.ding_news.text_after_image',
       'variables' => array('item' => NULL, 'conf' => NULL),
     ),
     'ding_nodelist.ding_news.image_text' => array(
@@ -938,6 +1055,31 @@ function theme__ding_nodelist_filters_table($variables) {
 }
 
 /**
+ * Helper theming function.
+ */
+function theme__ding_nodelist_links_table($variables) {
+  $form = $variables['form'];
+  $rows = array();
+  $header = array(t('Text'), t('URL'));
+
+  foreach (element_children($form) as $key) {
+    // Build the table row.
+    $row = array(
+      'data' => array(
+        drupal_render($form[$key]['text']),
+        drupal_render($form[$key]['links']),
+      ),
+    );
+
+    $rows[] = $row;
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('id' => 'ding_nodelist-links-table')));
+  $output .= drupal_render_children($form);
+  return $output;
+}
+
+/**
  * Theme function to render the backend list of templates.
  */
 function theme__ding_nodelist_templates_table($variables) {
@@ -1015,12 +1157,12 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   }
 
   // Build 'More' link.
-  $more = NULL;
-  if (!empty($conf['more_link']) && !empty($conf['more_text'])) {
-    $more = '<a class="ding_nodelist-more" href="' . url($conf['more_link']) . '">' . $conf['more_text'] . '</a>';
+  $more_links = NULL;
+  $link_bottom = '';
+  foreach ($conf['more_links'] as $key => $bottom) {
+    $link_bottom[$key] =l(t($bottom['text']),$bottom['links']);
   }
-
-  $more_link_target = !empty($conf['more_link']) ? $conf['more_link'] : NULL;
+  $more_links = theme('item_list', array('items' =>$link_bottom));
 
   // Create proper layout for variable-width lists.
   $map = _ding_nodelist_get_column_map();
@@ -1072,10 +1214,9 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
     'items' => $rendered_nodes,
+    'links' => $more_links,
     'conf' => array(
       'title' => $title,
-      'more'  => $more,
-      'more_link_target' => $more_link_target,
       'classes' => join(' ', $classes)
     )));
 
@@ -1178,6 +1319,15 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['item_template'] = $form_state['values']['item_template'];
   $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
   $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
+
+  // Check if there are any empty links.
+  foreach ($form_state['values']['more_links'] as $key => &$bottom) {
+    if (empty($bottom['text']) || empty($bottom['links'])) {
+      unset($form_state['values']['more_links'][$key]);
+    }
+  }
+
+  $form_state['conf']['more_links'] = $form_state['values']['more_links'];
 
   if ($rebuild) {
     $form_state['rebuild'] = TRUE;
