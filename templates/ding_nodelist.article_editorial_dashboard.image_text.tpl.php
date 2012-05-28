@@ -22,4 +22,10 @@
   <div class="node">
     <?php	print drupal_render(field_view_field('node', $item, 'body', 'teaser')); ?>
   </div>
+  <div class="bottom">
+    <ul>
+      <li class="name">Submitted by <a href="<?php print url('user/' . $item->uid) ?>"><?php	print $item->name; ?></a></li>
+      <li class="date"><?php echo format_date($item->created, 'custom', 'l m.d.Y - H:i'); ?></li>
+    </ul>
+  </div>
 </div>
