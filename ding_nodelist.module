@@ -377,7 +377,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     }
 
     // Set default field value.
-    $first_field = array_pop(array_keys($fields));
+    $first_field = array_pop(array_keys($allowed_fields));
     $filter = array(
       'filter_field'  => $allowed_fields[$first_field],
       'filter_vocab'  => $field_vocabulary[$first_field]
