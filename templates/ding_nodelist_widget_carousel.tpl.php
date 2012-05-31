@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Single list widget template.
+ * Carousel list widget template.
  * Variables are:
  * $items - rendered items (HTML)
  * $conf - list configuration with:
@@ -13,12 +13,15 @@
   <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
   <div class="ding_nodelist-items">
     <?php
-      $node = reset($items);
-      print theme($template, array('item' => $node));
+      foreach ($items as $node) {
+        print theme($template, array('item' => $node));
+      }
     ?>
   </div>
-  <div class="item-list">
-    <?php print ($links); ?>
+  <div class="next-prev">
+    <a class="prev" href="#"><span>prev</span></a>
+    <a class="next" href="#"><span>next</span></a>
   </div>
+  <div class="pagination"></div>
 </div>
 <?php endif; ?>

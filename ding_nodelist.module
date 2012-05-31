@@ -471,10 +471,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $widget_types = array(
     NL_WIDGET_LIST      => t('Simple list'),
     NL_WIDGET_SINGLE => t('Single node'),
+    NL_WIDGET_CAROUSEL  => t('Carousel'),
     NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon')
-  // @todo: implement.
-//    NL_WIDGET_CAROUSEL  => t('Carousel'),
-//    NL_WIDGET_ACCORDEON => t('Accordeon'),
   );
 
   $form['ding_nodelist_display']['widget_type'] = array(
@@ -953,6 +951,11 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_horizontal_accordeon',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
+    '_ding_nodelist_widget_carousel' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist_widget_carousel',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+    ),
     // List item templates.
     'ding_nodelist.ding_event.image_text' => array(
       'path' => $path,
@@ -1192,7 +1195,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   if ($conf['widget_type'] == NL_WIDGET_CAROUSEL) {
     $add_carousel_js = &drupal_static(__FUNCTION__ . '_js', TRUE);
     if ($add_carousel_js) {
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-4.4.2.js', 'file');
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
       $add_carousel_js = FALSE;
     }
