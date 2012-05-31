@@ -11,7 +11,7 @@ define('NL_DYNAMIC', 'dynamic');
 define('NL_WIDGET_LIST', 'simple');
 define('NL_WIDGET_SINGLE', 'single');
 define('NL_WIDGET_CAROUSEL', 'carousel');
-define('NL_WIDGET_ACCORDEON', 'accordeon');
+define('NL_WIDGET_HOR_ACCORDEON', 'horizontal_accordeon');
 
 define('NL_COL_FULL', 'full');
 define('NL_COL_HALF', 'half');
@@ -470,7 +470,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $widget_types = array(
     NL_WIDGET_LIST      => t('Simple list'),
-    NL_WIDGET_SINGLE => t('Single node')
+    NL_WIDGET_SINGLE => t('Single node'),
+    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon')
   // @todo: implement.
 //    NL_WIDGET_CAROUSEL  => t('Carousel'),
 //    NL_WIDGET_ACCORDEON => t('Accordeon'),
@@ -947,15 +948,10 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_single',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-    '_ding_nodelist_widget_carousel' => array(
+    '_ding_nodelist_widget_horizontal_accordeon' => array(
       'path' => $path,
-      'template' => 'ding_nodelist_widget_carousel',
-      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
-    ),
-    '_ding_nodelist_widget_accordeon' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist_widget_accordeon',
-      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
+      'template' => 'ding_nodelist_widget_horizontal_accordeon',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     // List item templates.
     'ding_nodelist.ding_event.image_text' => array(
