@@ -5,5 +5,5 @@ description = Module for creating lists.
 
 core = 7.x
 version = 7.x-1.0
-package = Ding!
+package = "Alpha"
 configure = admin/config/ding/ding_nodelist
