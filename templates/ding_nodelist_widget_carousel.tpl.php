@@ -18,6 +18,10 @@
       }
     ?>
   </div>
+  <div class="next-prev">
+    <a class="prev" href="#"><span>prev</span></a>
+    <a class="next" href="#"><span>next</span></a>
+  </div>
   <div class="pagination"></div>
 </div>
 <?php endif; ?>

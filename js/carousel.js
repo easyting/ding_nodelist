@@ -15,8 +15,16 @@
         items: 1
       },
       pagination : {
-        container : '.pagination'
-      }
+        container : '.ding_nodelist-carousel .pagination'
+      },
+      prev: {
+        button: ".ding_nodelist-carousel .prev",
+        key: "left"
+      },
+      next: {
+        button: ".ding_nodelist-carousel .next",
+        key: "right"
+	    }
     });
   });
 })(jQuery);

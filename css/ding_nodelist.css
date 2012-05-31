@@ -53,6 +53,14 @@
   height: 170px;
 }
 
+.ding_nodelist-carousel .pagination {
+  position: absolute;
+}
+
+.ding_nodelist-carousel .next-prev{
+  position: absolute;
+}
+
 .ding_editorial_article {
   border: 1px solid #e3e2d8;
   background: #f9f8ef;
