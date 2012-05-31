@@ -1345,6 +1345,11 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
 function _ding_nodelist_get_dynamic_list_nodes($conf) {
   $nodes = array();
 
+  // Do not fetch anything if custom content already fetched for single item widget.
+  if (!empty($conf['custom_content']) && $conf['widget_type'] == NL_WIDGET_SINGLE) {
+    return;
+  }
+
   if (isset($conf['taxonomy_filters']) && count($conf['taxonomy_filters'])) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
@@ -1367,6 +1372,11 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     // Sorting.
     $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
 
+    // Limit to 1 for single node widget.
+    if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+      $query->range(0, 1);
+    }
+
     $nodes = $query->execute()->fetchCol();
   }
 
@@ -1377,15 +1387,19 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
  * Retreive all nodes based on custom list settings.
  * @return array of node IDs
  */
-function _ding_nodelist_get_custom_list_nodes($conf) {
+function _ding_nodelist_get_custom_list_nodes(&$conf) {
   $nodes = array();
 
   if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
     foreach ($conf['selected_nodes'] as $key => $node) {
       $nodes[$node['weight']] = $node['nid'];
+      if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+        break;
+      }
     }
     // Sort the nodes according to their weight.
     ksort($nodes);
+    $conf['custom_content'] = TRUE;
   }
 
   return $nodes;
