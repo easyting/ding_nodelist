@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Simple list widget template.
+ * Single list widget template.
  * Variables are:
  * $items - rendered items (HTML)
  * $conf - list configuration with:
