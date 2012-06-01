@@ -1193,14 +1193,24 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
   // Special JS for carousel widget.
   if ($conf['widget_type'] == NL_WIDGET_CAROUSEL) {
-    $add_carousel_js = &drupal_static(__FUNCTION__ . '_js', TRUE);
+    $add_carousel_js = &drupal_static(__FUNCTION__ . 'carousel_js', TRUE);
     if ($add_carousel_js) {
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
       $add_carousel_js = FALSE;
     }
   }
-  // @todo: special JS for accordeon widget.
+  
+  // Special JS for accordeon widget
+  if ($conf['widget_type'] == NL_WIDGET_HOR_ACCORDEON || $conf['widget_type'] == NL_WIDGET_HOR_ACCORDEON) {
+    $add_accordeon_js = &drupal_static(__FUNCTION__ . 'accordeon_js', TRUE);
+    if ($add_accordeon_js) {
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/accordeon.js', 'file');
+      $add_accordeon_js = FALSE;
+    }
+  }
 
   // Render the contents.
   if ($conf['list_type'] == NL_CUSTOM) {

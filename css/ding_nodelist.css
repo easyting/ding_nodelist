@@ -226,3 +226,16 @@ li {
   list-style: none;
   float: left;
 }
+
+.ding_nodelist-horizontal_accordeon li .data {
+  display: none;
+}
+
+.ding_nodelist-horizontal_accordeon li {
+  position: relative;
+  height: 350px;
+}
+
+.ding_nodelist-horizontal_accordeon li .event_date {
+  position: absolute;
+}
