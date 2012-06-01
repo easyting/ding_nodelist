@@ -454,7 +454,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $widget_types = array(
     NL_WIDGET_LIST      => t('Simple list'),
-    NL_WIDGET_SINGLE => t('Single node')
+    NL_WIDGET_SINGLE => t('Single item')
   // @todo: implement.
 //    NL_WIDGET_CAROUSEL  => t('Carousel'),
 //    NL_WIDGET_ACCORDEON => t('Accordeon'),
