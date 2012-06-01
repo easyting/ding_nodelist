@@ -6,6 +6,7 @@
  */
 
 define('NL_WIDGET_LIST', 'simple');
+define('NL_WIDGET_SINGLE', 'single');
 define('NL_WIDGET_CAROUSEL', 'carousel');
 define('NL_WIDGET_ACCORDEON', 'accordeon');
 
@@ -453,6 +454,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $widget_types = array(
     NL_WIDGET_LIST      => t('Simple list'),
+    NL_WIDGET_SINGLE => t('Single node')
   // @todo: implement.
 //    NL_WIDGET_CAROUSEL  => t('Carousel'),
 //    NL_WIDGET_ACCORDEON => t('Accordeon'),
@@ -968,7 +970,12 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_widget_simple' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_simple',
-      'variables' => array('items' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+    ),
+    '_ding_nodelist_widget_single' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist_widget_single',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_carousel' => array(
       'path' => $path,
@@ -1232,14 +1239,11 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // Render individual items.
   $nodes = node_load_multiple($nodes);
-  $rendered_nodes = '';
-  foreach ($nodes as $node) {
-    $rendered_nodes .= theme($conf['item_template'], array('item' => $node));
-  }
 
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
-    'items' => $rendered_nodes,
+    'items' => $nodes,
+    'template' => $conf['item_template'],
     'links' => $more_links,
     'conf' => array(
       'title' => $title,
@@ -1358,6 +1362,11 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
 function _ding_nodelist_get_dynamic_list_nodes($conf) {
   $nodes = array();
 
+  // Do not fetch anything if custom content already fetched for single item widget.
+  if (!empty($conf['custom_content']) && $conf['widget_type'] == NL_WIDGET_SINGLE) {
+    return;
+  }
+
   if (isset($conf['taxonomy_filters']) && count($conf['taxonomy_filters'])) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
@@ -1380,6 +1389,11 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     // Sorting.
     $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
 
+    // Limit to 1 for single node widget.
+    if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+      $query->range(0, 1);
+    }
+
     $nodes = $query->execute()->fetchCol();
   }
 
@@ -1390,15 +1404,19 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
  * Retreive all nodes based on custom list settings.
  * @return array of node IDs
  */
-function _ding_nodelist_get_custom_list_nodes($conf) {
+function _ding_nodelist_get_custom_list_nodes(&$conf) {
   $nodes = array();
 
   if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
     foreach ($conf['selected_nodes'] as $key => $node) {
       $nodes[$node['weight']] = $node['nid'];
+      if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+        break;
+      }
     }
     // Sort the nodes according to their weight.
     ksort($nodes);
+    $conf['custom_content'] = TRUE;
   }
 
   return $nodes;
