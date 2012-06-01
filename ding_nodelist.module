@@ -259,7 +259,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   // Add new node field.
   $weight = ++$max_weight;
-  for (; $delta < $node_count; $delta ++) {
+  for (; $delta < $node_count; $delta++) {
     $key = $delta;
     $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, NULL, $weight);
   }
@@ -327,7 +327,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   // Check if filter vocabulary was changed.
   $changed_filter_id = NULL;
   if (!empty($form_state['triggering_element']) && isset($form_state['triggering_element']['#parents'][2])
-          && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
+           && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
     $changed_filter_id = $form_state['triggering_element']['#parents'][1];
     $changed_filter = $form_state['values']['taxonomy_filters'][$changed_filter_id];
 
@@ -408,7 +408,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Sorting order'),
     '#options' => array(
       'asc' => t('ascending'),
-      'desc'=> t('descending'),
+      'desc' => t('descending'),
     ),
     '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order']
   );
@@ -417,26 +417,26 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
    * Content filters.
    */
   /*
-  $form['ding_nodelist_dynamic']['content_filters'] = array(
-    '#type'   => 'fieldset',
-    '#title'  => t('Content filters'),
-    '#weight' => 1,
+   $form['ding_nodelist_dynamic']['content_filters'] = array(
+   '#type'   => 'fieldset',
+   '#title'  => t('Content filters'),
+   '#weight' => 1,
 
-    'content_filter_promoted' => array(
-      '#type' => 'checkbox',
-      '#title' => t('Show "Promoted to front page" content'),
-      '#description' => t('Only promoted content will be shown'),
-      '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
-    ),
+   'content_filter_promoted' => array(
+   '#type' => 'checkbox',
+   '#title' => t('Show "Promoted to front page" content'),
+   '#description' => t('Only promoted content will be shown'),
+   '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
+   ),
 
-    'content_filter_sticky' => array(
-      '#type' => 'checkbox',
-      '#title' => t('Show sticky content'),
-      '#description' => t('Sticky content will be shown first'),
-      '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
-    )
-  );
-  */
+   'content_filter_sticky' => array(
+   '#type' => 'checkbox',
+   '#title' => t('Show sticky content'),
+   '#description' => t('Sticky content will be shown first'),
+   '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
+   )
+   );
+   */
   /**
    * Display settings.
    */
@@ -528,14 +528,14 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   }
 
   if (isset($conf['more_links'])) {
-  	$delta = count($conf['more_links']);
+    $delta = count($conf['more_links']);
     foreach ($conf['more_links'] as $key => $link) {
       $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, $link);
     }
   }
 
   // Add new bottom link field.
-  for ($delta; $delta < $links_count; $delta ++) {
+  for ($delta; $delta < $links_count; $delta++) {
     $key = $delta;
     $form['ding_nodelist_bottom_links']['more_links'][$key] = _ding_nodelist_links_form($key, NULL);
   }
@@ -713,7 +713,7 @@ function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
   );
 
   $form['filter_terms'] = array(
-    '#vocabulary_name'=> $filter['filter_vocab'],
+    '#vocabulary_name' => $filter['filter_vocab'],
     '#type' => 'textfield',
     '#title_display' => 'invisible',
     '#default_value' => !is_null($filter) && !empty($filter['filter_terms']) ? $filter['filter_terms'] : '',
@@ -823,7 +823,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
 
   $te = empty($form_state['triggering_element']) ? NULL : $form_state['triggering_element'];
   if (strpos($te['#name'], 'filter_delete_') === 0 || strpos($te['#name'], 'node_delete_') === 0
-        || $te['#name'] == 'filter_field') {
+         || $te['#name'] == 'filter_field') {
     return;
   }
 
@@ -1220,9 +1220,9 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   $more_links = NULL;
   $link_bottom = '';
   foreach ($conf['more_links'] as $key => $bottom) {
-    $link_bottom[$key] =l(t($bottom['text']),$bottom['links']);
+    $link_bottom[$key] = l(t($bottom['text']), $bottom['links']);
   }
-  $more_links = theme('item_list', array('items' =>$link_bottom));
+  $more_links = theme('item_list', array('items' => $link_bottom));
 
   // Create proper layout for variable-width lists.
   $map = _ding_nodelist_get_column_map();
@@ -1321,7 +1321,7 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       $tpl_record = array(
         'filename'  => $template_name,
         'title'     => $template_name,
-        'status'    => NL_TPL_HIDDEN  // @todo: show nodelist's native templates by default?
+        'status'    => NL_TPL_HIDDEN   // @todo: show nodelist's native templates by default?
       );
       try {
         db_insert('ding_nodelist_templates')->fields($tpl_record)->execute();
@@ -1509,7 +1509,7 @@ function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
         form_error($element, t('Invalid term(s).'));
         return;
       }
-      $value[] = (int)$term->tid;
+      $value[] = (int) $term->tid;
     }
   }
 
@@ -1522,8 +1522,8 @@ function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
 function _ding_nodelist_get_column_map() {
   return array(
     NL_COL_FULL   => 1,
-    NL_COL_HALF   => 1/2,
-    NL_COL_THIRD  => 1/3,
-    NL_COL_QRT    => 1/4,
+    NL_COL_HALF   => 1 / 2,
+    NL_COL_THIRD  => 1 / 3,
+    NL_COL_QRT    => 1 / 4,
   );
 }
