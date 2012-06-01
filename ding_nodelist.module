@@ -18,6 +18,8 @@ define('NL_COL_QRT', 'quarter');
 define('NL_TPL_ACTIVE', 0);
 define('NL_TPL_HIDDEN', 1);
 
+define('NL_CACHE_LIFETIME', 1800);
+
 /**
  * Implements hook_menu().
  */
@@ -443,6 +445,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Display settings'),
     '#collapsible' => FALSE,
     '#description' => t('Define custom visualization settings'),
+    '#weight' => -1,
   );
 
   // Set up all the available view modes for this type of nodes.
@@ -502,7 +505,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Bottom links'),
     '#collapsible' => FALSE,
     '#description' => t('List of "read more" links.'),
-    '#weight' => -1,
+    '#weight' => 0,
   );
 
   // Container for bottom links
@@ -549,6 +552,27 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'method' => 'replace',
     ),
   );
+
+  // Cache settings.
+  $form['cache_settings'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#tree' => FALSE,
+    '#title' => t('Cache settings'),
+    '#weight' => 1,
+  );
+
+  // Load cache settigns and prepare form.
+  $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
+  ctools_plugin_load_includes($simple_cache_plugin);
+  $pane = $form_state['pane'];
+  $settings = !empty($pane->cache['settings']) ? $pane->cache['settings'] :
+              array('lifetime' => variable_get('ding_nodelist_cache_default_time', NL_CACHE_LIFETIME), 'granularity' => 'context');
+  $cache_form = panels_simple_cache_settings_form($settings, $form_state['display'], $pane->pid);
+  // @todo: Granularity is forced to 'context' now.
+  unset($cache_form['granularity']);
+  $form['cache_settings'] = array_merge($form['cache_settings'], $cache_form);
 
   // Restore other form elements if this is not the first form display.
   if (isset($form_state['restore'])) {
@@ -1361,9 +1385,34 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
   $form_state['conf']['more_links'] = $form_state['values']['more_links'];
 
+  // Not a final save yet.
   if ($rebuild) {
     $form_state['rebuild'] = TRUE;
   }
+  // Finally, save cache settings to display cache.
+  else {
+    _ding_nodelist_simple_cache_save($form_state);
+  }
+}
+
+/**
+ * Saves simple cache settings.
+ */
+function _ding_nodelist_simple_cache_save(&$form_state) {
+  // Save cache settings.
+  $pane_cache = &$form_state['pane']->cache;
+  $pane_cache['method'] = 'simple';
+  $pane_cache['settings'] = array(
+    'lifetime' => $form_state['values']['lifetime'],
+    'granularity' => 'context');
+
+  // Invalidate old cache.
+  // @todo: check if any changes were introduced.
+  $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
+  ctools_plugin_load_includes($simple_cache_plugin);
+  $cid = panels_simple_cache_get_id($pane_cache['settings'], $form_state['display'],
+    array() /* args not used */, $form_state['contexts'], $form_state['pane']);
+  cache_clear_all($cid, 'cache');
 }
 
 /**
@@ -1375,7 +1424,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
 
   // Do not fetch anything if custom content already fetched for single item widget.
   if (!empty($conf['custom_content']) && $conf['widget_type'] == NL_WIDGET_SINGLE) {
-    return;
+    return array();
   }
 
   if (isset($conf['taxonomy_filters']) && count($conf['taxonomy_filters'])) {
