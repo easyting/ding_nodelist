@@ -28,7 +28,7 @@ $edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['va
   </div>
   
   <div class="node">
-    <?php	print drupal_render(field_view_field('node', $item, 'body', 'teaser')); ?>
+    <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
   </div>
   <div class="more"><?php print l(t('More'), 'node/' . $item->nid); ?></div>
 </div>
