@@ -12,11 +12,9 @@
  * group_audience 
  */
 
-$image = field_view_field('node', $item, 'field_eddb_event_limage', 'teaser');
-$event_date = field_get_items('node', $item, 'field_eddb_event_date');
+$image = field_view_field('node', $item, 'field_list_image', 'teaser');
+$event_date = field_get_items('node', $item, 'field_event_date');
 $event_date = @strtotime($event_date[0]);
-$library = field_get_items('node', $item, 'field_eddb_event_library');
-$library = node_load($library[0]['value']);
 ?>
 <li class="event">
   <div class="event_date">
@@ -28,7 +26,7 @@ $library = node_load($library[0]['value']);
       Kl. <?php echo date('H:i', $event_date);?>
     </div>
     <div class="library">
-      <?php print l($library->title, 'node/' . $library->nid); ?>
+      <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser')); ?>
     </div>
     <div class="caption">
       <h3>

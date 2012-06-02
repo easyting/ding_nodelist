@@ -227,8 +227,12 @@ li {
   float: left;
 }
 
-.ding_nodelist-horizontal_accordeon li .data {
+.ding_nodelist-horizontal_accordeon li.slide-closed .data {
   display: none;
+}
+
+.ding_nodelist-horizontal_accordeon li.slide-open .data {
+  display: block;
 }
 
 .ding_nodelist-horizontal_accordeon li {
