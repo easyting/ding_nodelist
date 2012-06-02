@@ -12,7 +12,7 @@
  * group_audience
  */
 ?>
-<div class="event">
+<div class="item">
   <div class="event_image">
     <?php print drupal_render(field_view_field('node', $item, 'field_eddb_event_limage', 'teaser')); ?>
   </div>
