@@ -12,6 +12,7 @@
  * group_audience
  */
 
+$image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['value']);
 ?>
 <div class="item">
@@ -19,7 +20,11 @@ $edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['va
   <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
   
   <div class="article_image">
-    <?php	print drupal_render(field_view_field('node', $item, 'field_eddb_article_limage', 'teaser')); ?>
+    <?php 
+    if ($image) {
+      print theme('image_style', array('style_name' => 'node_list_carousel', 'path' => $image[0]['#item']['uri']));
+    }
+    ?>
   </div>
   
   <div class="node">
