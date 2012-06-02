@@ -239,3 +239,25 @@ li {
 .ding_nodelist-horizontal_accordeon li .event_date {
   position: absolute;
 }
+
+
+/* Slider base styles */
+.ding_nodelist-slider {
+  height: 400px;
+  overflow: hidden;
+}
+
+.ding_nodelist-slider .legend {
+  float: left;
+  width: 300px;
+}
+
+.ding_nodelist-slider .ding_nodelist-items {
+  float: left;
+  width: 600px;
+}
+
+.ding_nodelist-slider .ding_nodelist-items .item {
+  height: 150px;
+  width: 100%;
+}
