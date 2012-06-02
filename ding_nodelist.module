@@ -1019,19 +1019,19 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     ),
       
     // @todo: Code below should be refactored: we need to fetch templates dynamically
-    'ding_nodelist.article_editorial_dashboard.image_text' => array(
+    'ding_nodelist.ding_news.image_text' => array(
       'path' => $path,
-      'template' => 'ding_nodelist.article_editorial_dashboard.image_text',
+      'template' => 'ding_nodelist.ding_news.image_text',
       'variables' => array('item' => NULL, 'conf' => NULL),
     ),
-    'ding_nodelist.article_editorial_dashboard.text' => array(
+    'ding_nodelist.ding_news.text' => array(
       'path' => $path,
-      'template' => 'ding_nodelist.article_editorial_dashboard.text',
+      'template' => 'ding_nodelist.ding_news.text',
       'variables' => array('item' => NULL, 'conf' => NULL),
     ),
-    'ding_nodelist.event_editorial_dashboard.image_text' => array(
+    'ding_nodelist.ding_event.image_text' => array(
       'path' => $path,
-      'template' => 'ding_nodelist.event_editorial_dashboard.image_text',
+      'template' => 'ding_nodelist.ding_event.image_text',
       'variables' => array('item' => NULL, 'conf' => NULL),
     )
   );
@@ -1515,3 +1515,5 @@ function _ding_nodelist_get_column_map() {
     NL_COL_QRT    => 1 / 4,
   );
 }
+
+include_once('ding_nodelist.features.inc');
