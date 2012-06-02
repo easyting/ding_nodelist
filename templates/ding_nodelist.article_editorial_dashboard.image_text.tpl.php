@@ -13,7 +13,7 @@
  */
 $edbase = taxonomy_term_load($item->field_eddb_article_base[LANGUAGE_NONE][0]['value']);
 ?>
-<div class="ding_editorial_article">
+<div class="item">
   <div class="category"><?php print l(t($edbase->name), 'taxonomy/term/' . $edbase->tid); ?></div>  
   <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
   
