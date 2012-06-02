@@ -1,0 +1,33 @@
+<?php
+/**
+ * @file
+ * Slider list widget template.
+ * Variables are:
+ * $items - rendered items (HTML)
+ * $conf - list configuration with:
+ *  - classes - widget-specific CSS classes
+ */
+?>
+<?php if ($items): ?>
+<div class="<?php print $conf['classes']?>">
+  <div class="legend">
+    <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
+    <?php foreach ($links as $key => $bottom) : ?>
+    <span>
+    <?php print $link_bottom[$key] = l(t($bottom['text']), $bottom['links']);?>
+    </span>
+    <?php endforeach;?>
+  </div>
+  <div class="ding_nodelist-items">
+    <?php
+      foreach ($items as $node) {
+        print theme($template, array('item' => $node));
+      }
+    ?>
+  </div>
+  <div class="next-prev">
+    <a class="prev" href="#"><span>prev</span></a>
+    <a class="next" href="#"><span>next</span></a>
+  </div>
+</div>
+<?php endif; ?>

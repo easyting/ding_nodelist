@@ -9,6 +9,7 @@ define('NL_WIDGET_LIST', 'simple');
 define('NL_WIDGET_SINGLE', 'single');
 define('NL_WIDGET_CAROUSEL', 'carousel');
 define('NL_WIDGET_HOR_ACCORDEON', 'horizontal_accordeon');
+define('NL_WIDGET_SLIDER', 'slider');
 
 define('NL_COL_FULL', 'full');
 define('NL_COL_HALF', 'half');
@@ -459,7 +460,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     NL_WIDGET_LIST      => t('Simple list'),
     NL_WIDGET_SINGLE => t('Single item'),
     NL_WIDGET_CAROUSEL  => t('Carousel'),
-    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon')
+    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon'),
+    NL_WIDGET_SLIDER => t('Slider'),
   );
 
   $form['ding_nodelist_display']['widget_type'] = array(
@@ -1010,27 +1012,13 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_carousel',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-    // List item templates.
-    'ding_nodelist.ding_event.image_text' => array(
+    '_ding_nodelist_widget_slider' => array(
       'path' => $path,
-      'template' => 'ding_nodelist.ding_event.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
+      'template' => 'ding_nodelist_widget_slider',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-    'ding_nodelist.article_editorial_dashboard.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.article_editorial_dashboard.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.event_editorial_dashboard.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.event_editorial_dashboard.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.ding_news.text_after_image' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_news.text_after_image',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
+      
+    // @todo: Code below should be refactored: we need to fetch templates dynamically
     'ding_nodelist.ding_news.image_text' => array(
       'path' => $path,
       'template' => 'ding_nodelist.ding_news.image_text',
@@ -1041,6 +1029,11 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist.ding_news.text',
       'variables' => array('item' => NULL, 'conf' => NULL),
     ),
+    'ding_nodelist.ding_event.image_text' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist.ding_event.image_text',
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    )
   );
 
   return $themes;
@@ -1216,14 +1209,6 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     $title = check_plain($conf['override_title_text']);
   }
 
-  // Build 'More' link.
-  $more_links = NULL;
-  $link_bottom = '';
-  foreach ($conf['more_links'] as $key => $bottom) {
-    $link_bottom[$key] = l(t($bottom['text']), $bottom['links']);
-  }
-  $more_links = theme('item_list', array('items' => $link_bottom));
-
   // Create proper layout for variable-width lists.
   $map = _ding_nodelist_get_column_map();
   $columns_layout = &drupal_static('ding_nodelist_cols', 0);
@@ -1246,26 +1231,29 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load default CSS.
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
-  // @todo: refactor with a more generic approach.
-  // Special JS for carousel widget.
-  if ($conf['widget_type'] == NL_WIDGET_CAROUSEL) {
-    $add_carousel_js = &drupal_static(__FUNCTION__ . 'carousel_js', TRUE);
-    if ($add_carousel_js) {
+  // Adding required JS libs
+  switch ($conf['widget_type']) {
+    case NL_WIDGET_CAROUSEL:
+    case NL_WIDGET_SLIDER:
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
-      $add_carousel_js = FALSE;
-    }
-  }
-
-  // Special JS for accordeon widget
-  if ($conf['widget_type'] == NL_WIDGET_HOR_ACCORDEON) {
-    $add_accordeon_js = &drupal_static(__FUNCTION__ . 'accordeon_js', TRUE);
-    if ($add_accordeon_js) {
+      break;
+    case NL_WIDGET_HOR_ACCORDEON:
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
+      break;
+  }
+  
+  // Adding JS widget init stuff
+  switch ($conf['widget_type']) {
+    case NL_WIDGET_CAROUSEL:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
+      break;
+    case NL_WIDGET_SLIDER:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/slider.js', 'file');
+      break;
+    case NL_WIDGET_HOR_ACCORDEON:
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/accordeon.js', 'file');
-      $add_accordeon_js = FALSE;
-    }
+      break;
   }
 
   // Render the contents.
@@ -1279,7 +1267,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   $block->content = theme($theme_func, array(
     'items' => $nodes,
     'template' => $conf['item_template'],
-    'links' => $more_links,
+    'links' => $conf['more_links'],
     'conf' => array(
       'title' => $title,
       'classes' => join(' ', $classes)
@@ -1527,3 +1515,5 @@ function _ding_nodelist_get_column_map() {
     NL_COL_QRT    => 1 / 4,
   );
 }
+
+include_once('ding_nodelist.features.inc');

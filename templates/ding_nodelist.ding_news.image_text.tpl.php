@@ -11,7 +11,8 @@
  * field_materials
  * group_audience
  */
-$edbase = taxonomy_term_load($item->field_eddb_article_base[LANGUAGE_NONE][0]['value']);
+
+$edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['value']);
 ?>
 <div class="item">
   <div class="category"><?php print l(t($edbase->name), 'taxonomy/term/' . $edbase->tid); ?></div>  
