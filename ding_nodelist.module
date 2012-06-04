@@ -1017,24 +1017,17 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_slider',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-      
-    // @todo: Code below should be refactored: we need to fetch templates dynamically
-    'ding_nodelist.ding_news.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_news.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.ding_news.text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_news.text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.ding_event.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_event.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    )
   );
+
+  // Automatically register core templates.
+  $templates = _ding_nodelist_get_core_templates();
+  foreach ($templates as $template_name => $template) {
+    $themes[$template_name] = array(
+      'path' => $path,
+      'template' => str_replace('.tpl.php', '', $template_name),
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    );
+  }
 
   return $themes;
 }
@@ -1242,7 +1235,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
       break;
   }
-  
+
   // Adding JS widget init stuff
   switch ($conf['widget_type']) {
     case NL_WIDGET_CAROUSEL:
@@ -1288,7 +1281,7 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
     return $templates;
   }
 
-  // Fetch templates declared by this and other modules (hook_theme templates).
+  // Fetch templates declared by this and other modules hook_theme function.
   // @todo: menu_block is known to cause issues on this call in PHP 5.3.x.
   foreach (module_invoke_all('theme', array(), NULL, NULL, NULL) as $template_name => $template) {
     if (strpos($template_name, 'ding_nodelist') === 0) {
@@ -1297,6 +1290,9 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       );
     }
   }
+
+  // Add core file templates.
+  $templates = array_merge($templates, _ding_nodelist_get_core_templates());
 
   $db_templates =
     db_select('ding_nodelist_templates', 'dnt')->fields('dnt')
@@ -1502,6 +1498,23 @@ function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
   }
 
   form_set_value($element, $value, $form_state);
+}
+
+/**
+ * Scans templates module sub-directory for template files and returns them.
+ */
+function _ding_nodelist_get_core_templates() {
+  // Get core templates from files.
+  $templates = array();
+  $path = drupal_get_path('module', 'ding_nodelist') . '/templates';
+  $template_files = drupal_system_listing('/^ding_nodelist\..+\.tpl\.php$/', $path, 'filename', 0);
+  foreach ($template_files as $template_name => $file) {
+    $templates[$template_name] = array(
+      'filename' => $template_name,
+    );
+  }
+
+  return $templates;
 }
 
 /**
