@@ -274,6 +274,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#value' => t('Add content'),
     '#weight' => 1,
     '#submit' => array('ding_nodelist_add_node_submit'),
+    '#limit_validation_errors' => array(array('selected_nodes')),
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js_add_node',
@@ -386,6 +387,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#value' => t('Add filter'),
     '#weight' => 0,
     '#submit' => array('ding_nodelist_add_filter_submit'),
+    '#limit_validation_errors' => array(array('taxonomy_filters')),
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
