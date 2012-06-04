@@ -5,10 +5,7 @@
         circular: true,
         infinite: true,
         direction: 'down',
-        auto : {
-          pauseOnHover: true,
-          pauseDuration: 5000
-        },
+        auto : false,
         width: 'auto',
         responsive: true,
         items: {
