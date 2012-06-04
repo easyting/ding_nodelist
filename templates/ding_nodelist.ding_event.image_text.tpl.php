@@ -14,7 +14,7 @@
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $event_date = field_get_items('node', $item, 'field_event_date');
-$event_date = @strtotime($event_date[0]);
+$event_date = strtotime($event_date[0]['value']);
 ?>
 <li class="event">
   <div class="expand">Expand</div>
