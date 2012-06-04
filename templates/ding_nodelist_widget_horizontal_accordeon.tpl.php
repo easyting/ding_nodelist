@@ -19,7 +19,7 @@
     ?>
   </ul>
   <div class="item-list">
-    <?php print ($links); ?>
+    <?php print(l($links[0]['text'], $links[0]['links'], array())); ?>
   </div>
 </div>
 <?php endif; ?>
