@@ -82,13 +82,12 @@ function ding_nodelist_templates_form($form, &$form_state) {
 }
 
 /**
- * bp_multiteaser_templates_form submit handler
- * Writes details about found templates
+ * Writes details about found templates.
  */
 function ding_nodelist_templates_form_submit($form, &$form_state) {
   foreach ($form_state['values']['templates'] as $template) {
     $tpl_record = array(
-      'title' => check_plain($template['title']),
+      'title' => $template['title'],
       'status' => $template['visible'] ? NL_TPL_ACTIVE : NL_TPL_HIDDEN
     );
     db_update('ding_nodelist_templates')->fields($tpl_record)
