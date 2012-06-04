@@ -586,6 +586,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   );
 
   // Load cache settigns and prepare form.
+  ctools_include('plugins');
   $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
   ctools_plugin_load_includes($simple_cache_plugin);
   $pane = $form_state['pane'];
