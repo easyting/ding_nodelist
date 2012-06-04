@@ -210,7 +210,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $filter_count = NULL;
 
   // Check if form is ment to be rebuild thanks to an ajax request from the select element
-  if (!empty($form_state['triggering_element']) && $form_state['triggering_element']['#name'] == 'content_type') {
+  if (!empty($form_state['triggering_element'])
+          && $form_state['triggering_element']['#name'] == 'content_type') {
     // Reset node and filter count.
     $node_count = 1;
     $filter_count = 1;
@@ -456,24 +457,41 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $node_formats[$view_mode] = $settings['label'];
   }
 
-  $widget_types = array(
-    NL_WIDGET_LIST      => t('Simple list'),
-    NL_WIDGET_SINGLE => t('Single item'),
-    NL_WIDGET_CAROUSEL  => t('Carousel'),
-    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon'),
-    NL_WIDGET_SLIDER => t('Slider'),
-  );
-
+  $widget_types = _ding_nodelist_get_widget_types();
   $form['ding_nodelist_display']['widget_type'] = array(
     '#type' => 'select',
     '#title' => t('List type'),
     '#required' => TRUE,
-    '#default_value' => isset($conf['widget_type']) ? $conf['widget_type'] : $default_conf['widget_type'],
+    '#default_value' => isset($conf['widget_type']) ? $conf['widget_type'] : '',
     '#options' => $widget_types,
-    '#description' => t('If single item selected, only the first item will be rendered')
+    '#empty_option' => t('- select -'),
+    '#description' => t('If single item selected, only the first item will be rendered'),
+    '#ajax' => array(
+      'wrapper' => 'ding_nodelist-item-template',
+      'callback' => 'ding_nodelist_js_template',
+      'method' => 'replace',
+      'effect' => 'fade'
+    ),
   );
 
-  $item_templates = _ding_nodelist_get_templates(FALSE, $node_type);
+  // Check if form is meant to be rebuild thanks to an ajax request from widget select element.
+  $item_templates = array();
+  if (!empty($form_state['triggering_element'])
+          && $form_state['triggering_element']['#name'] == 'widget_type') {
+    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
+
+    unset($conf['item_template']);
+    unset($form_state['conf']['item_template']);
+    unset($form_state['input']['item_template']);
+    unset($form_state['values']['item_template']);
+
+    // Rebuild the form.
+    $form_state['rebuild'] = TRUE;
+  }
+  elseif (!empty($conf['widget_type'])) {
+    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $conf['widget_type']);
+  }
+
   $tpl_options = array();
   foreach ($item_templates as $filename => $template) {
     $tpl_options[$filename] = empty($template['title']) ? $filename : $template['title'];
@@ -486,7 +504,9 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#required' => FALSE,
     '#default_value' => isset($conf['item_template']) ? $conf['item_template'] : '',
     '#options' => $tpl_options,
-    '#description' => t('Choose a template responsible for item display mode')
+    '#description' => t('Choose a template responsible for item display mode'),
+    '#prefix' => '<div id="ding_nodelist-item-template">',
+    '#suffix' => '</div>',
   );
 
   $form['ding_nodelist_display']['columns'] = array(
@@ -825,7 +845,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
 
   $te = empty($form_state['triggering_element']) ? NULL : $form_state['triggering_element'];
   if (strpos($te['#name'], 'filter_delete_') === 0 || strpos($te['#name'], 'node_delete_') === 0
-         || $te['#name'] == 'filter_field') {
+         || strpos($te['#name'], 'widget_type') === 0 || $te['#name'] == 'filter_field') {
     return;
   }
 
@@ -953,6 +973,14 @@ function ding_nodelist_js_add_filter($form, &$form_state) {
 }
 
 /**
+ * Ajax handler of widget type select box.
+ * Returns eligible item templates based on configuration.
+ */
+function ding_nodelist_js_template($form, &$form_state) {
+  return $form['ding_nodelist_display']['item_template'];
+}
+
+/**
  * Autocomplete function that gives the available nodes
  */
 function ding_nodelist_autocomplete($type = FALSE, $title = '') {
@@ -1017,24 +1045,17 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_slider',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-      
-    // @todo: Code below should be refactored: we need to fetch templates dynamically
-    'ding_nodelist.ding_news.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_news.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.ding_news.text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_news.text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    ),
-    'ding_nodelist.ding_event.image_text' => array(
-      'path' => $path,
-      'template' => 'ding_nodelist.ding_event.image_text',
-      'variables' => array('item' => NULL, 'conf' => NULL),
-    )
   );
+
+  // Automatically register core templates.
+  $templates = _ding_nodelist_get_core_templates();
+  foreach ($templates as $template_name => $template) {
+    $themes[$template_name] = array(
+      'path' => $path,
+      'template' => $template_name,
+      'variables' => array('item' => NULL, 'conf' => NULL),
+    );
+  }
 
   return $themes;
 }
@@ -1140,6 +1161,7 @@ function theme__ding_nodelist_templates_table($variables) {
     t('Machine name'),
     t('Title'),
     t('Content type'),
+    t('List type'),
     t('Visible'),
   );
   $rows = array();
@@ -1149,6 +1171,7 @@ function theme__ding_nodelist_templates_table($variables) {
       $form[$key]['template_name']['#value'],
       drupal_render($form[$key]['title']),
       drupal_render($form[$key]['content_type']),
+      drupal_render($form[$key]['widget']),
       drupal_render($form[$key]['visible']),
     );
   }
@@ -1242,7 +1265,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
       drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
       break;
   }
-  
+
   // Adding JS widget init stuff
   switch ($conf['widget_type']) {
     case NL_WIDGET_CAROUSEL:
@@ -1281,14 +1304,14 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
  * @param   boolean   include or not hidden templates in return array
  * @return  array found nodelist template details
  */
-function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NULL) {
+function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NULL, $widget_type = NULL) {
   static $templates = array();
 
   if (!empty($templates)) {
     return $templates;
   }
 
-  // Fetch templates declared by this and other modules (hook_theme templates).
+  // Fetch templates declared by this and other modules hook_theme function.
   // @todo: menu_block is known to cause issues on this call in PHP 5.3.x.
   foreach (module_invoke_all('theme', array(), NULL, NULL, NULL) as $template_name => $template) {
     if (strpos($template_name, 'ding_nodelist') === 0) {
@@ -1297,6 +1320,9 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       );
     }
   }
+
+  // Add core file templates.
+  $templates = array_merge($templates, _ding_nodelist_get_core_templates());
 
   $db_templates =
     db_select('ding_nodelist_templates', 'dnt')->fields('dnt')
@@ -1337,11 +1363,18 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
     if (isset($templates[$template_name])) {
       // Fetch content type from filename.
       $ct_name = explode('.', $template_name);
+
+      // Filter by CT.
       if (!$content_type || ($content_type && $content_type == $ct_name[1])) {
         $templates[$template_name] = $template;
         $templates[$template_name]['content_type'] = $ct_name[1];
       }
       else {
+        unset($templates[$template_name]);
+      }
+
+      // Filter by widget type.
+      if ($widget_type && $widget_type != $template['widget']) {
         unset($templates[$template_name]);
       }
     }
@@ -1502,6 +1535,38 @@ function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
   }
 
   form_set_value($element, $value, $form_state);
+}
+
+/**
+ * Scans templates module sub-directory for template files and returns them.
+ */
+function _ding_nodelist_get_core_templates() {
+  // Get core templates from files.
+  $templates = array();
+  $path = drupal_get_path('module', 'ding_nodelist') . '/templates';
+  $template_files = drupal_system_listing('/^ding_nodelist\..+\.tpl\.php$/', $path, 'filename', 0);
+  foreach ($template_files as $template_name => $file) {
+    $template_name = str_replace('.tpl.php', '', $template_name);
+    $templates[$template_name] = array(
+      'filename' => $template_name,
+    );
+  }
+
+  return $templates;
+}
+
+/**
+ * Returns an array of widget types that can be used as #options
+ * in a select input.
+ */
+function _ding_nodelist_get_widget_types() {
+  return array(
+    NL_WIDGET_LIST          => t('Simple list'),
+    NL_WIDGET_SINGLE        => t('Single item'),
+    NL_WIDGET_CAROUSEL      => t('Carousel'),
+    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon'),
+    NL_WIDGET_SLIDER        => t('Slider'),
+  );
 }
 
 /**
