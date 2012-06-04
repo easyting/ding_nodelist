@@ -58,12 +58,22 @@ function ding_nodelist_templates_form($form, &$form_state) {
     $form['templates'][$template_name]['title'] = array(
       '#type' => 'textfield',
       '#default_value' => isset($template['title']) ? $template['title'] : '',
+      '#size' => 40
     );
 
     $ct = node_type_get_names();
     $form['templates'][$template_name]['content_type'] = array(
       '#markup' => isset($ct[$template['content_type']]) ?
         $ct[$template['content_type']] : t('Missing (@ctname)', array('@ctname' => $template['content_type']))
+    );
+
+    $widgets = _ding_nodelist_get_widget_types();
+    $form['templates'][$template_name]['widget'] = array(
+      '#type' => 'select',
+      '#empty_option' => t('- select -'),
+      '#required' => TRUE,
+      '#default_value' => isset($template['widget']) ? $template['widget'] : '',
+      '#options' => $widgets,
     );
 
     // Visible in list of templates?
@@ -87,8 +97,9 @@ function ding_nodelist_templates_form($form, &$form_state) {
 function ding_nodelist_templates_form_submit($form, &$form_state) {
   foreach ($form_state['values']['templates'] as $template) {
     $tpl_record = array(
-      'title' => $template['title'],
-      'status' => $template['visible'] ? NL_TPL_ACTIVE : NL_TPL_HIDDEN
+      'title'   => $template['title'],
+      'status'  => $template['visible'] ? NL_TPL_ACTIVE : NL_TPL_HIDDEN,
+      'widget'  => $template['widget'],
     );
     db_update('ding_nodelist_templates')->fields($tpl_record)
       ->condition('filename', $template['template_name'])->execute();
