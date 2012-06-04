@@ -171,32 +171,6 @@ h3 {
   height: 20px;
 }
 
-/*
-* Links on top.
-
-.top {
-  padding-top: 10px;
-  clear: both;
-
-}
-
-.top ul {
-  padding: 0;
-  margin: 0;
-}
-
-.top ul li {
-  float: left;
-  list-style: none;
-  margin-right: 20px;
-  line-height: 26px;
-  font-size: 11px;
-  color: #6A6960;
-  height: 20px;
-}
-*/
-
-
 .name {
   background: url(../images/node-author.png) no-repeat left bottom;
   display: block;
@@ -220,11 +194,6 @@ h3 {
   text-align: justify;
   margin-left: 10px;
   text-shadow: 1px 1px 1px #EAF1EA;
-}
-
-li {
-  list-style: none;
-  float: left;
 }
 
 .ding_nodelist-horizontal_accordeon li.slide-closed .data {
