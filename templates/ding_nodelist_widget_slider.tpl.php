@@ -3,9 +3,11 @@
  * @file
  * Slider list widget template.
  * Variables are:
- * $items - rendered items (HTML)
+ * $items - node items (objects)
  * $conf - list configuration with:
  *  - classes - widget-specific CSS classes
+ *  - title - list title
+ * $links - list of links (array)
  */
 ?>
 <?php if ($items): ?>
@@ -14,7 +16,7 @@
     <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
     <?php foreach ($links as $key => $bottom) : ?>
     <span>
-    <?php print $link_bottom[$key] = l(t($bottom['text']), $bottom['links']);?>
+    <?php print l(t($bottom['text']), $bottom['links']);?>
     </span>
     <?php endforeach;?>
   </div>

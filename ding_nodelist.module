@@ -1279,11 +1279,11 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
       break;
   }
 
-  // Render the contents.
+  // Fetch content IDs.
   $nodes = _ding_nodelist_get_custom_list_nodes($conf);
   $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
 
-  // Render individual items.
+  // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
@@ -1561,7 +1561,7 @@ function _ding_nodelist_get_core_templates() {
  */
 function _ding_nodelist_get_widget_types() {
   return array(
-    NL_WIDGET_LIST          => t('Simple list'),
+//    NL_WIDGET_LIST          => t('Simple list'),
     NL_WIDGET_SINGLE        => t('Single item'),
     NL_WIDGET_CAROUSEL      => t('Carousel'),
     NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon'),
