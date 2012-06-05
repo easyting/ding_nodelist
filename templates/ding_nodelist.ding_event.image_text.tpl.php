@@ -17,7 +17,7 @@ $event_date = field_get_items('node', $item, 'field_event_date');
 $event_date = strtotime($event_date[0]['value']);
 ?>
 <li class="event">
-  <div class="expand">Expand</div>
+  <div class="expand"><?php print l('', 'node/' . $item->nid); ?></div>
   <div class="event-label"><?php print t('Calendar');?></div>
   <div class="event-date">
     <div class="event-day"><?php echo date('d', $event_date);?></div>
