@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Simple list widget template.
+ * Slider list widget template.
  * Variables are:
  * $items - node items (objects)
  * $conf - list configuration with:
@@ -12,13 +12,24 @@
 ?>
 <?php if ($items): ?>
 <div class="<?php print $conf['classes']?>">
-  <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
+  <div class="legend">
+    <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
+    <?php foreach ($links as $key => $bottom) : ?>
+    <span>
+    <?php print l(t($bottom['text']), $bottom['links']);?>
+    </span>
+    <?php endforeach;?>
+  </div>
   <div class="ding_nodelist-items">
     <?php
       foreach ($items as $node) {
         print theme($template, array('item' => $node));
       }
     ?>
+  </div>
+  <div class="next-prev">
+    <a class="prev" href="#"><span>prev</span></a>
+    <a class="next" href="#"><span>next</span></a>
   </div>
 </div>
 <?php endif; ?>

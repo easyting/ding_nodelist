@@ -7,3 +7,7 @@ core = 7.x
 version = 7.x-1.0
 package = "Alpha"
 configure = admin/config/ding/ding_nodelist
+
+features[image][] = "node_list_accordeon"
+features[image][] = "node_list_carousel"
+

@@ -25,6 +25,13 @@ function ding_nodelist_schema() {
         'not null' => FALSE,
         'default' => '',
       ),
+      'widget' => array(
+        'description' => 'Widget type this template is bind to.',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'status' => array(
         'description' => 'Boolean indicating whether the template is enabled by default.',
         'type' => 'int',
