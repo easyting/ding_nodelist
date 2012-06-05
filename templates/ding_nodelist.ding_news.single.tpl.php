@@ -13,7 +13,7 @@
  */
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['value']);
+$edbase = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
 ?>
 <div class="item">
 	<div class="article_image">
@@ -24,7 +24,7 @@ $edbase = taxonomy_term_load($item->field_editorial_base_n[LANGUAGE_NONE][0]['va
     ?>
   </div>
   <div class="article-info">
-  <div class="category"><?php print l(t($edbase->name), 'taxonomy/term/' . $edbase->tid); ?></div>  
+  <div class="category"><?php print drupal_render($edbase); ?></div>
     <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
     <div class="node">
       <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
