@@ -109,6 +109,36 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $form_state['original_form'] = $form;
   }
 
+  // Check if form is ment to be rebuild thanks to an ajax request from the select element.
+  if (!empty($form_state['triggering_element'])
+          && $form_state['triggering_element']['#name'] == 'content_type') {
+    // Reset node and filter count.
+    $node_count = 1;
+    $filter_count = 1;
+
+    // Refresh CT setting.
+    $node_type = $form_state['triggering_element']['#value'];
+
+    // Reset other form values.
+    $form_state['values']['content_type'] = $node_type;
+    $form_state['values']['selected_nodes'] = array();
+    $form_state['values']['taxonomy_filters'] = array();
+    unset($form_state['values']['item_template']);
+
+    $form_state['conf']['content_type'] = $node_type;
+    $form_state['conf']['selected_nodes'] = array();
+    $form_state['conf']['taxonomy_filters'] = array();
+    unset($form_state['conf']['item_template']);
+
+    unset($form_state['input']['content_type']);
+    unset($form_state['input']['selected_nodes']);
+    unset($form_state['input']['taxonomy_filters']);
+    unset($form_state['input']['item_template']);
+
+    // Rebuild the form.
+    $form_state['rebuild'] = TRUE;
+  }
+
   $conf = $form_state['conf'];
   drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/admin.js', 'file');
 
@@ -130,7 +160,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $default_conf = array(
     'content_type' => $node_type,
-    'widget_type' => NL_WIDGET_LIST,
+    'widget_type' => NL_WIDGET_SINGLE,
     'columns' => NL_COL_FULL,
     'sort_field' => 'created',
     'sort_order' => 'desc',
@@ -209,37 +239,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $node_count = NULL;
   $filter_count = NULL;
 
-  // Check if form is ment to be rebuild thanks to an ajax request from the select element
-  if (!empty($form_state['triggering_element'])
-          && $form_state['triggering_element']['#name'] == 'content_type') {
-    // Reset node and filter count.
-    $node_count = 1;
-    $filter_count = 1;
-
-    // Refresh CT setting.
-    $node_type = $form_state['triggering_element']['#value'];
-
-    // Reset other form values.
-    $conf['content_type'] = $node_type;
-    $conf['selected_nodes'] = array();
-    $conf['taxonomy_filters'] = array();
-
-    $form_state['values']['content_type'] = $node_type;
-    $form_state['values']['selected_nodes'] = array();
-    $form_state['values']['taxonomy_filters'] = array();
-
-    $form_state['conf']['content_type'] = $node_type;
-    $form_state['conf']['selected_nodes'] = array();
-    $form_state['conf']['taxonomy_filters'] = array();
-
-    unset($form_state['input']['content_type']);
-    unset($form_state['input']['selected_nodes']);
-    unset($form_state['input']['taxonomy_filters']);
-
-    // Rebuild the form.
-    $form_state['rebuild'] = TRUE;
-  }
-
   if (is_null($node_count)) {
     if (isset($form_state['values']['selected_nodes_count'])) {
       $node_count = $form_state['values']['selected_nodes_count'];
@@ -256,7 +255,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       $max_weight = ($max_weight < $weight) ? $weight : $max_weight;
       $form['ding_nodelist_nodes']['selected_nodes'][$key] = _ding_nodelist_selected_node($key, $node_type, $node, $weight);
     }
-    ksort($form['ding_nodelist_nodes']['selected_nodes']);
   }
 
   // Add new node field.
@@ -349,7 +347,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $delta = count($conf['taxonomy_filters']);
     foreach ($conf['taxonomy_filters'] as $key => $filter) {
       // Skip just changed filter.
-      if ($changed_filter_id === $key) {
+      if ($changed_filter_id === $key || empty($filter['filter_terms'])) {
         continue;
       }
 
@@ -436,7 +434,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
    'content_filter_sticky' => array(
    '#type' => 'checkbox',
    '#title' => t('Show sticky content'),
-   '#description' => t('Sticky content will be shown first'),
+   '#description' => t('Sticky content will be shown    '#submit' => array('ding_nodelist_change_widget'), first'),
    '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
    )
    );
@@ -481,17 +479,16 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   if (!empty($form_state['triggering_element'])
           && $form_state['triggering_element']['#name'] == 'widget_type') {
     $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
-
-    unset($conf['item_template']);
-    unset($form_state['conf']['item_template']);
-    unset($form_state['input']['item_template']);
-    unset($form_state['values']['item_template']);
-
-    // Rebuild the form.
     $form_state['rebuild'] = TRUE;
+  }
+  elseif (!empty($form_state['values']['widget_type'])) {
+    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['values']['widget_type']);
   }
   elseif (!empty($conf['widget_type'])) {
     $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $conf['widget_type']);
+  }
+  else {
+    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $default_conf['widget_type']);
   }
 
   $tpl_options = array();
@@ -671,6 +668,7 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
     '#value' => t('Delete'),
     '#parents' => array('selected_nodes', $key, 'node_delete_' . $key),
     '#submit' => array('ding_nodelist_node_delete_submit'),
+    '#limit_validation_errors' => array(),
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js_add_node',
@@ -756,6 +754,7 @@ function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
     '#value' => t('Delete'),
     '#parents' => array('taxonomy_filters', $key, 'filter_delete_' . $key),
     '#submit' => array('ding_nodelist_filter_delete_submit'),
+    '#limit_validation_errors' => array(),
     '#ajax' => array(
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
@@ -774,7 +773,6 @@ function ding_nodelist_add_node_submit($form, &$form_state) {
   // Add new node to list.
   $form_state['values']['selected_nodes_count'] = count($form_state['values']['selected_nodes']) + 1;
   unset($form_state['input']['selected_nodes']);
-
   foreach ($form_state['values']['selected_nodes'] as $key => $node) {
     if (!empty($node['node'])) {
       $tmp_nid = explode(':', $node['node']);
@@ -787,7 +785,8 @@ function ding_nodelist_add_node_submit($form, &$form_state) {
     }
   }
 
-  // Saving all the values of the form.
+  // Copy 'input' since limit_validation_errors empties 'values'.
+  $form_state['values'] += $form_state['input'];
   _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
 
@@ -797,9 +796,9 @@ function ding_nodelist_add_node_submit($form, &$form_state) {
 function ding_nodelist_add_filter_submit($form, &$form_state) {
   // Add new filter.
   $form_state['values']['taxonomy_filters_count'] = count($form_state['values']['taxonomy_filters']) + 1;
-  unset($form_state['input']['taxonomy_filters']);
 
-  // Saving all the values of the form.
+  // Copy 'input' since limit_validation_errors empties 'values'.
+  $form_state['values'] += $form_state['input'];
   _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
 
@@ -807,11 +806,15 @@ function ding_nodelist_add_filter_submit($form, &$form_state) {
  * Custom submit function for filter deletion.
  */
 function ding_nodelist_filter_delete_submit($form, &$form_state) {
+
   $deleted_filter = $form_state['triggering_element']['#parents'][1];
   unset($form_state['values']['taxonomy_filters'][$deleted_filter]);
   unset($form_state['input']['taxonomy_filters'][$deleted_filter]);
 
-  // Saving all the values of the form.
+
+  // Re-index after deletion and save.
+  $form_state['input']['taxonomy_filters'] = array_values($form_state['input']['taxonomy_filters']);
+  $form_state['values'] = $form_state['input'];
   _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
 
@@ -823,7 +826,9 @@ function ding_nodelist_node_delete_submit($form, &$form_state) {
   unset($form_state['values']['selected_nodes'][$deleted_node]);
   unset($form_state['input']['selected_nodes'][$deleted_node]);
 
-  // Saving all the values of the form.
+  // Re-index after deletion and save.
+  $form_state['input']['selected_nodes'] = array_values($form_state['input']['selected_nodes']);
+  $form_state['values'] = $form_state['input'];
   _ding_nodelist_content_type_form_save($form_state, TRUE);
 }
 
@@ -847,8 +852,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   $form_state['restore'] = TRUE;
 
   $te = empty($form_state['triggering_element']) ? NULL : $form_state['triggering_element'];
-  if (strpos($te['#name'], 'filter_delete_') === 0 || strpos($te['#name'], 'node_delete_') === 0
-         || strpos($te['#name'], 'widget_type') === 0 || $te['#name'] == 'filter_field') {
+  if (strpos($te['#name'], 'widget_type') === 0 || $te['#name'] == 'filter_field') {
     return;
   }
 
