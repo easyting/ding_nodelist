@@ -108,38 +108,35 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $form_state['original_form'] = $form;
   }
 
-  // Check if form is ment to be rebuild thanks to an ajax request from the select element.
-  if (!empty($form_state['triggering_element'])
-          && $form_state['triggering_element']['#name'] == 'content_type') {
-    // Reset node and filter count.
-    $node_count = 1;
-    $filter_count = 1;
+  $trigger = !empty($form_state['triggering_element']) ? $form_state['triggering_element'] : NULL;
 
-    // Refresh CT setting.
-    $node_type = $form_state['triggering_element']['#value'];
+  /**
+   * CT/widget select change handlers.
+   * Process them first since they affect the rest of the form.
+   */
+  if ($trigger) {
+    if ($trigger['#name'] == 'content_type') {
+      // Reset node and filter count.
+      $node_count = 1;
+      $filter_count = 1;
 
-    // Reset other form values.
-    $form_state['values']['content_type'] = $node_type;
-    $form_state['values']['selected_nodes'] = array();
-    $form_state['values']['taxonomy_filters'] = array();
-    unset($form_state['values']['item_template']);
+      // Refresh CT setting.
+      $node_type = $form_state['triggering_element']['#value'];
 
-    $form_state['conf']['content_type'] = $node_type;
-    $form_state['conf']['selected_nodes'] = array();
-    $form_state['conf']['taxonomy_filters'] = array();
-    unset($form_state['conf']['item_template']);
-
-    unset($form_state['input']['content_type']);
-    unset($form_state['input']['selected_nodes']);
-    unset($form_state['input']['taxonomy_filters']);
-    unset($form_state['input']['item_template']);
-
-    // Rebuild the form.
-    $form_state['rebuild'] = TRUE;
+      // Reset other form values.
+      $form_state['values']['content_type'] = $node_type;
+      $form_state['values']['selected_nodes'] = array();
+      $form_state['values']['taxonomy_filters'] = array();
+      unset($form_state['input']);
+      _ding_nodelist_content_type_form_save($form_state, TRUE);
+    }
+    elseif ($trigger['#name'] == 'widget_type') {
+      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
+      _ding_nodelist_content_type_form_save($form_state, TRUE);
+    }
   }
 
   $conf = $form_state['conf'];
-  drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/admin.js', 'file');
 
   // Show only allowed content types.
   $node_types = variable_get('ding_nodelist_node_types', array());
@@ -480,14 +477,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
-  // Check if form is meant to be rebuild thanks to an ajax request from widget select element.
-  $item_templates = array();
-  if (!empty($form_state['triggering_element'])
-          && $form_state['triggering_element']['#name'] == 'widget_type') {
-    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
-    $form_state['rebuild'] = TRUE;
-  }
-  elseif (!empty($form_state['values']['widget_type'])) {
+  if (!empty($form_state['values']['widget_type'])) {
     $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['values']['widget_type']);
   }
   elseif (!empty($conf['widget_type'])) {
@@ -816,7 +806,6 @@ function ding_nodelist_filter_delete_submit($form, &$form_state) {
   $deleted_filter = $form_state['triggering_element']['#parents'][1];
   unset($form_state['values']['taxonomy_filters'][$deleted_filter]);
   unset($form_state['input']['taxonomy_filters'][$deleted_filter]);
-
 
   // Re-index after deletion and save.
   $form_state['input']['taxonomy_filters'] = array_values($form_state['input']['taxonomy_filters']);
