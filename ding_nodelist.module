@@ -99,7 +99,6 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
  * Ctools plugin callback for settings form.
  */
 function ding_nodelist_content_type_edit_form($form, &$form_state) {
-
   // Cache the form for correct workflow.
   $form_state['cache'] = TRUE;
 
@@ -164,6 +163,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'columns' => NL_COL_FULL,
     'sort_field' => 'created',
     'sort_order' => 'desc',
+    'limit'     => 5,
     'more_text' => t('More'),
     'more_link' => '',
     'teaser_length' => 100,
@@ -394,6 +394,17 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
+  // Content filter.
+  $form['ding_nodelist_dynamic']['content_filter_promoted'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show "Promoted to front page" content only'),
+    '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
+  );
+
+  /**
+   * Sorting options.
+   * @todo: place next to Sort by field ie in one row (better UX).
+   */
   $form['ding_nodelist_dynamic']['sort_field'] = array(
     '#type' => 'select',
     '#title' => t('Sort by'),
@@ -404,7 +415,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : $default_conf['sort_field']
   );
 
-  // @todo: place next to Sort by field ie in one row (better UX).
   $form['ding_nodelist_dynamic']['sort_order'] = array(
     '#type' => 'select',
     '#title' => t('Sorting order'),
@@ -415,30 +425,26 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order']
   );
 
-  /**
-   * Content filters.
-   */
-  /*
-   $form['ding_nodelist_dynamic']['content_filters'] = array(
-   '#type'   => 'fieldset',
-   '#title'  => t('Content filters'),
-   '#weight' => 1,
-
-   'content_filter_promoted' => array(
-   '#type' => 'checkbox',
-   '#title' => t('Show "Promoted to front page" content'),
-   '#description' => t('Only promoted content will be shown'),
-   '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
-   ),
-
-   'content_filter_sticky' => array(
-   '#type' => 'checkbox',
-   '#title' => t('Show sticky content'),
-   '#description' => t('Sticky content will be shown    '#submit' => array('ding_nodelist_change_widget'), first'),
-   '#default_value' => isset($conf['content_filter_sticky']) ? $conf['content_filter_sticky'] : FALSE,
-   )
+  $form['ding_nodelist_dynamic']['sort_sticky'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show sticky content first'),
+    '#default_value' => isset($conf['sort_sticky']) ? $conf['sort_sticky'] : FALSE,
    );
-   */
+
+  $form['ding_nodelist_dynamic']['limit'] = array(
+    '#type' => 'select',
+    '#title' => t('Item limit'),
+    '#required' => TRUE,
+    '#default_value' => isset($conf['limit']) ? $conf['limit'] : $default_conf['limit'],
+    '#options' =>
+      array_merge(
+        array(0 => t('none')),
+        range(1, 25),
+        array(30, 35, 40, 45, 50, 60, 70, 80, 90, 100)
+      ),
+    '#description' => t('Show this amount of items only'),
+  );
+
   /**
    * Display settings.
    */
@@ -1401,16 +1407,18 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
  * Save CT plugin form values.
  */
 function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
-
   $form_state['conf']['content_type'] = $form_state['values']['content_type'];
   $form_state['conf']['override_title_text'] = $form_state['values']['override_title_text'];
   $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
   $form_state['conf']['taxonomy_filters'] = $form_state['values']['taxonomy_filters'];
+  $form_state['conf']['content_filter_promoted'] = $form_state['values']['content_filter_promoted'];
+  $form_state['conf']['limit'] = $form_state['values']['limit'];
   $form_state['conf']['columns'] = $form_state['values']['columns'];
   $form_state['conf']['widget_type'] = $form_state['values']['widget_type'];
   $form_state['conf']['item_template'] = $form_state['values']['item_template'];
   $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
   $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
+  $form_state['conf']['sort_sticky'] = $form_state['values']['sort_sticky'];
   $form_state['conf']['more_links'] = $form_state['values']['more_links'];
 
   // Not a final save yet.
@@ -1455,7 +1463,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  if (isset($conf['taxonomy_filters']) && count($conf['taxonomy_filters'])) {
+  if (!empty($conf['taxonomy_filters'])) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
     $ti_l = 'ti';
@@ -1473,13 +1481,23 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     $query->condition('n.type', $conf['content_type'])
           ->condition('n.status', NODE_PUBLISHED)
           ->distinct();
+    if (!empty($conf['content_filter_promoted'])) {
+      $query->condition('n.promote', NODE_PROMOTED);
+    }
 
     // Sorting.
+    if (!empty($conf['sort_sticky'])) {
+      $query->orderBy('n.sticky', 'DESC');
+    }
+
     $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
 
     // Limit to 1 for single node widget.
     if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
       $query->range(0, 1);
+    }
+    elseif ($conf['limit']) {
+      $query->range(0, $conf['limit']);
     }
 
     $nodes = $query->execute()->fetchCol();
