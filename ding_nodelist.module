@@ -853,6 +853,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
 
   // Check for empty nodes.
   $node_cnt = count($form_state['values']['selected_nodes']);
+  $no_custom_content = FALSE;
   foreach ($form_state['values']['selected_nodes'] as $key => $node) {
     if ($te['#name'] == 'add_node' || $node_cnt > 1) {
       if (empty($node['node'])) {
@@ -866,6 +867,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
 
   // Check for empty filters.
   $filter_cnt = count($form_state['values']['taxonomy_filters']);
+  $no_dynamic_content = FALSE;
   foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
     if ($te['#name'] == 'add_filter' || $filter_cnt > 1) {
       if (empty($filter['filter_terms'])) {
@@ -894,7 +896,9 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Ensure list has some content.
-  if (isset($no_custom_content) && isset($no_dynamic_content)) {
+  $no_other_options = empty($form_state['values']['content_filter_promoted'])
+                        && empty($form_state['values']['sort_sticky']);
+  if ($no_custom_content && $no_dynamic_content && $no_other_options) {
     form_set_error('selected_nodes', t('List contents is not specified. Enter custom and/or dynamic list settings.'));
   }
 }
@@ -1452,18 +1456,22 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  if (!empty($conf['taxonomy_filters'])) {
+  if (!empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted'])
+          || !empty($conf['sort_sticky'])) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
-    $ti_l = 'ti';
-    $query->join('taxonomy_index', $ti_l, "n.nid = $ti_l.nid");
-    $i = 1;
-    foreach ($conf['taxonomy_filters'] as $filter) {
-      $ti_r = 'ti' . $i++;
-      $filter['filter_terms'] = is_array($filter['filter_terms']) ?
-        $filter['filter_terms'] : array($filter['filter_terms']);
-      // Use $i in argument placeholder as workaround.
-      $ti_l = $query->join('taxonomy_index', $ti_r, "$ti_l.nid = $ti_r.nid AND $ti_r.tid IN (:tids$i)", array(":tids$i" => $filter['filter_terms']));
+
+    if (!empty($conf['taxonomy_filters'])) {
+      $ti_l = 'ti';
+      $query->join('taxonomy_index', $ti_l, "n.nid = $ti_l.nid");
+      $i = 1;
+      foreach ($conf['taxonomy_filters'] as $filter) {
+        $ti_r = 'ti' . $i++;
+        $filter['filter_terms'] = is_array($filter['filter_terms']) ?
+          $filter['filter_terms'] : array($filter['filter_terms']);
+        // Use $i in argument placeholder as workaround.
+        $ti_l = $query->join('taxonomy_index', $ti_r, "$ti_l.nid = $ti_r.nid AND $ti_r.tid IN (:tids$i)", array(":tids$i" => $filter['filter_terms']));
+      }
     }
 
     // Filter by content type/node settings.
@@ -1474,9 +1482,16 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
       $query->condition('n.promote', NODE_PROMOTED);
     }
 
-    // Sorting.
+    // Sticky flag may be used either as filter or sorting criteria.
     if (!empty($conf['sort_sticky'])) {
-      $query->orderBy('n.sticky', 'DESC');
+      // Only 'sticky' was selected - use it as filter.
+      if (empty($conf['content_filter_promoted']) && empty($conf['taxonomy_filters'])) {
+        $query->condition('n.sticky', NODE_STICKY);
+      }
+      // Use 'sticky' as sorting criteria.
+      else {
+        $query->orderBy('n.sticky', 'DESC');
+      }
     }
 
     $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
