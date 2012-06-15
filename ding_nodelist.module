@@ -1456,8 +1456,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  if (!empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted'])
-          || !empty($conf['sort_sticky'])) {
+  if (!empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted']) || !empty($conf['sort_sticky'])) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
 
