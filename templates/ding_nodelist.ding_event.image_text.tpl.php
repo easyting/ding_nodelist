@@ -23,7 +23,7 @@ $event_date = strtotime($event_date[0]['value']);
     <div class="event-day"><?php echo date('d', $event_date);?></div>
     <div class="event-month"><?php echo date('M', $event_date);?></div>
   </div>
-  <div class="event-image"><?php print theme('image_style', array('style_name' => 'node_list_accordeon', 'path' => $image[0]['#item']['uri']));?></div>
+  <div class="event-image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
   <div class="data">
     <div class="caption">
       <h3>

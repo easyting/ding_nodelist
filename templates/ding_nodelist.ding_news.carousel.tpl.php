@@ -19,7 +19,7 @@ $edbase = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
 	<div class="article_image">
     <?php 
     if ($image) {
-      print theme('image_style', array('style_name' => 'node_list_carousel', 'path' => $image[0]['#item']['uri']));
+      print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));
     }
     ?>
   </div>
