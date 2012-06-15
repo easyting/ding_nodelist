@@ -8,7 +8,8 @@
 define('NL_WIDGET_LIST', 'simple');
 define('NL_WIDGET_SINGLE', 'single');
 define('NL_WIDGET_CAROUSEL', 'carousel');
-define('NL_WIDGET_HOR_ACCORDEON', 'horizontal_accordeon');
+define('NL_WIDGET_HOR_ACCORDION', 'horizontal_accordion');
+define('NL_WIDGET_VER_ACCORDION', 'vertical_accordion');
 define('NL_WIDGET_SLIDER', 'slider');
 
 define('NL_COL_FULL', 'full');
@@ -1032,9 +1033,14 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_single',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
-    '_ding_nodelist_widget_horizontal_accordeon' => array(
+    '_ding_nodelist_widget_horizontal_accordion' => array(
       'path' => $path,
-      'template' => 'ding_nodelist_widget_horizontal_accordeon',
+      'template' => 'ding_nodelist_widget_horizontal_accordion',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+    ),
+    '_ding_nodelist_widget_vertical_accordion' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist_widget_vertical_accordion',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
     '_ding_nodelist_widget_carousel' => array(
@@ -1256,30 +1262,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load default CSS.
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
-  // Adding required JS libs
-  switch ($conf['widget_type']) {
-    case NL_WIDGET_CAROUSEL:
-    case NL_WIDGET_SLIDER:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
-      break;
-    case NL_WIDGET_HOR_ACCORDEON:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
-      break;
-  }
 
-  // Adding JS widget init stuff
-  switch ($conf['widget_type']) {
-    case NL_WIDGET_CAROUSEL:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
-      break;
-    case NL_WIDGET_SLIDER:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/slider.js', 'file');
-      break;
-    case NL_WIDGET_HOR_ACCORDEON:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/accordeon.js', 'file');
-      break;
-  }
 
   // Fetch content IDs.
   $nodes = _ding_nodelist_get_custom_list_nodes($conf);
@@ -1288,6 +1271,10 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
+  // Init JS for widgets
+  _ding_nodelist_add_js($conf['widget_type']);
+  $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
+
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
     'items' => $nodes,
@@ -1295,12 +1282,72 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     'links' => $conf['more_links'],
     'conf' => array(
       'title' => $title,
-      'classes' => join(' ', $classes)
+      'classes' => join(' ', $classes),
+      'image_style' => $image_style
     )));
 
   return $block;
 }
 
+/**
+ * Add required JS libraries and initialization scripts to run widgets
+ * @param type $widget
+ */
+function _ding_nodelist_add_js($widget) {
+  // Adding required JS libs
+  switch ($widget) {
+    case NL_WIDGET_CAROUSEL:
+    case NL_WIDGET_SLIDER:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
+      break;
+    case NL_WIDGET_HOR_ACCORDION:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
+      break;
+    case NL_WIDGET_VER_ACCORDION:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.vaccordion.js', 'file');
+      break;
+  }
+
+  // Adding JS widget init stuff
+  switch ($widget) {
+    case NL_WIDGET_CAROUSEL:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
+      break;
+    case NL_WIDGET_SLIDER:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/slider.js', 'file');
+      break;
+    case NL_WIDGET_HOR_ACCORDION:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/haccordion.js', 'file');
+      break;
+    case NL_WIDGET_VER_ACCORDION:
+      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/vaccordion.js', 'file');
+      break;
+  }
+}
+
+/**
+ * Init image styles based on widget and region
+ * @param type $widget
+ */
+function _ding_nodelist_init_image_style($widget, $region) {
+  // Get layout from theme panel settings
+  $display = panels_get_current_page_display();
+  $layout = panels_get_layout($display->layout);
+  // Init image_styles for region
+  switch ($widget) {
+    case NL_WIDGET_HOR_ACCORDION:
+      return 'ding_nodelist_medium';
+    case NL_WIDGET_CAROUSEL:
+    case NL_WIDGET_SINGLE:
+    case NL_WIDGET_VER_ACCORDION:
+      return $layout['regions_image_styles'][$region];
+    case NL_WIDGET_SLIDER:
+    default:
+      return '';
+  }
+}
 /**
  * Returns the most up-to-date list of nodelist templates.
  * @param   boolean   include or not hidden templates in return array
@@ -1575,10 +1622,10 @@ function _ding_nodelist_get_core_templates() {
  */
 function _ding_nodelist_get_widget_types() {
   return array(
-//    NL_WIDGET_LIST          => t('Simple list'),
     NL_WIDGET_SINGLE        => t('Single item'),
     NL_WIDGET_CAROUSEL      => t('Carousel'),
-    NL_WIDGET_HOR_ACCORDEON => t('Horizontal accordeon'),
+    NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
+    NL_WIDGET_VER_ACCORDION => t('Vertical accordion'),
     NL_WIDGET_SLIDER        => t('Slider'),
   );
 }
