@@ -700,7 +700,7 @@ function _ding_nodelist_links_form($key, $link) {
     '#title' => t('URL'),
     '#title_display' => 'invisible',
     '#required' => FALSE,
-    '#description' => check_plain(('Local path or external URL starting with http(s). Enter "<front>" to link to home page.')),
+    '#description' => check_plain(t('Local path or external URL starting with http(s). Enter "<front>" to link to home page.')),
     '#parents' => array('more_links', $key, 'links'),
     '#default_value' => (!empty($link['links'])) ? $link['links'] : '',
   );
@@ -1584,9 +1584,11 @@ function _ding_nodelist_get_core_templates() {
 }
 
 /**
- * Returns TRUE if the link provided is either a valid external link
- * or a valid local Drupal path (to views, pages, nodes, terms etc.)
- * and FALSE otherwise.
+ * Checks if the link provided is either a valid external link
+ * or a valid local Drupal path (to views, pages, nodes, terms etc).
+ *
+ * @param $link the link to validate
+ * @return boolean TRUE if the link is valid, FALSE otherwise
  */
 function _ding_nodelist_is_valid_link($link) {
   $langs = array_keys(language_list());
