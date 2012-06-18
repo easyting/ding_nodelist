@@ -25,16 +25,17 @@ $event_date = strtotime($event_date[0]['value']);
     }
     ?>
   </div>
+  <div class="event-label"><?php print t('Calendar');?></div>
   <div class="event-date">
-    <div class="event-day"><?php echo date('d', $event_date);?></div>
-    <div class="event-month"><?php echo date('M', $event_date);?></div>
+    <div class="event-day"><?php print date('d', $event_date);?></div>
+    <div class="event-month"><?php print date('M', $event_date);?></div>
   </div>
   <div class="article-info">
-    <div class="category"><?php print drupal_render($edbase); ?></div>
-    <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>
+    <div class="category"><?php print drupal_render($edbase);?></div>
+    <h3><a href="<?php print url('node/' . $item->nid);?>"><?php print $item->title;?></a></h3>
     <div class="node">
-      <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
+      <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));?>
     </div>
-    <div class="more"><?php print l(t('More'), 'node/' . $item->nid); ?></div>
+    <div class="more"><?php print l(t('More'), 'node/' . $item->nid);?></div>
   </div>
 </div>

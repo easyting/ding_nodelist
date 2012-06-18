@@ -4,14 +4,15 @@
       var c_width = $(this).width();
       var sum_height = 0;
       $(this).find('.va-slice').each(function(){
-        sum_height += $(this).height();
+        sum_height += $(this).height()/1.8;
       });
-      sum_height /= 1.8;
-      console.log(Math.round(sum_height));
+      var exp_height = $(this).find('.va-slice:first').height();
+      var slides = $(this).find('.va-slice').length;
       $(this).vaccordion({
         accordionH: Math.round(sum_height),
-        expandedHeight: $(this).find('.va-slice:first').height(),
+        expandedHeight: exp_height,
         accordionW: c_width,
+        visibleSlices: slides,
         animOpacity: 0.2
       });
     });
