@@ -986,11 +986,16 @@ function ding_nodelist_js_template($form, &$form_state) {
 /**
  * Autocomplete function that gives the available nodes
  */
-function ding_nodelist_autocomplete($type = FALSE, $title = '') {
+function ding_nodelist_autocomplete($type, $title = '') {
   $nodes = array();
 
-  $result = db_query("SELECT nid, title FROM {node} WHERE type = :type AND title LIKE :title", array(':type' => $type, ':title' => '%' . $title . '%'));
-  $nodes = $result->fetchAllKeyed();
+  // Fetch all published nodes.
+  $nodes = db_select('node', 'n')
+    ->fields('n', array('nid', 'title'))
+    ->condition('n.type', $type)
+    ->condition('n.title', "%$title%", 'LIKE')
+    ->condition('n.status', NODE_PUBLISHED)
+    ->execute()->fetchAllKeyed();
 
   // Make a beatifull select.
   $formatted_result = array();
