@@ -14,15 +14,16 @@
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 ?>
-<li class="news">
-  <div class="expand"><?php print l('', 'node/' . $item->nid); ?></div>
-  <div class="event-label"><?php print t('News');?></div>
-  <div class="news-image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
+<li class="item news">
+  <div class="expand"><?php print l('', 'node/' . $item->nid);?></div>
+  <div class="label"><?php print t('News');?></div>
+  <div class="image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
   <div class="data">
     <div class="caption">
       <h3>
-        <?php print l($item->title, 'node/' . $item->nid); ?>
+        <?php print l($item->title, 'node/' . $item->nid);?>
       </h3>
+      <div class="category"><?php print drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));?></div>
     </div>
   </div>
 </li>

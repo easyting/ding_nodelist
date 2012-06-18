@@ -16,23 +16,26 @@ $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $event_date = field_get_items('node', $item, 'field_event_date');
 $event_date = strtotime($event_date[0]['value']);
 ?>
-<li class="event">
-  <div class="expand"><?php print l('', 'node/' . $item->nid); ?></div>
-  <div class="event-label"><?php print t('Calendar');?></div>
+<li class="event item">
+  <div class="expand"><?php print l('', 'node/' . $item->nid);?></div>
+  <div class="label"><?php print t('Calendar');?></div>
   <div class="event-date">
-    <div class="event-day"><?php echo date('d', $event_date);?></div>
-    <div class="event-month"><?php echo date('M', $event_date);?></div>
+    <div class="event-day"><?php print date('d', $event_date);?></div>
+    <div class="event-month"><?php print date('M', $event_date);?></div>
   </div>
-  <div class="event-image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
+  <div class="image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
   <div class="data">
     <div class="caption">
       <h3>
-        <?php print l($item->title, 'node/' . $item->nid); ?>
+        <?php print l($item->title, 'node/' . $item->nid);?>
       </h3>
     </div>
     <div class="library">
-      <div class="event-time">Kl. <?php echo date('H:i', $event_date);?></div> 
-      <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser')); ?>
+      <div class="event-time">
+        <span><?php print t('Time');?></span>
+        <span><?php echo date('H:i', $event_date);?></span>
+      </div>
+      <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser'));?>
     </div>
   </div>
 </li>

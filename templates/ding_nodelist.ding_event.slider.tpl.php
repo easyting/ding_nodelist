@@ -19,11 +19,11 @@ $event_date = field_get_items('node', $item, 'field_event_date');
     <?php print date('d.m.Y', strtotime($event_date[0]['value']));?>
   </span> - 
   <span class="category">
-    <?php print drupal_render($edbase); ?>
+    <?php print drupal_render($edbase);?>
   </span>
-  <h3><a href="<?php print url('node/' . $item->nid) ?>"><?php	print $item->title; ?></a></h3>  
+  <h3><a href="<?php print url('node/' . $item->nid);?>"><?php	print $item->title;?></a></h3>
   <div class="node">
-    <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser')); ?>
+    <?php	print drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));?>
   </div>
-  <div class="more"><?php print l(t('More'), 'node/' . $item->nid); ?></div>
+  <div class="more"><?php print l(t('More'), 'node/' . $item->nid);?></div>
 </div>

@@ -22,6 +22,7 @@ $image = field_view_field('node', $item, 'field_list_image', 'teaser');
       <h3>
         <?php print l($item->title, 'node/' . $item->nid);?>
       </h3>
+      <div class="category"><?php print drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));?></div>
     </div>
   </div>
 </div>
