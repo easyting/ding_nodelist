@@ -8,6 +8,8 @@ version = 7.x-1.0
 package = "Alpha"
 configure = admin/config/ding/ding_nodelist
 
-features[image][] = "node_list_accordeon"
-features[image][] = "node_list_carousel"
-
+features[image][] = "ding_nodelist_extra_medium"
+features[image][] = "ding_nodelist_large"
+features[image][] = "ding_nodelist_medium"
+features[image][] = "ding_nodelist_mini"
+features[image][] = "ding_nodelist_small"

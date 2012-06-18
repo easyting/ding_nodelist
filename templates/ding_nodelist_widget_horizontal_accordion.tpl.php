@@ -1,27 +1,24 @@
 <?php
 /**
  * @file
- * Carousel list widget template.
+ * Simple list widget template.
  * Variables are:
- * $items - rendered items (HTML)
+ * $items - node items (objects)
  * $conf - list configuration with:
  *  - classes - widget-specific CSS classes
+ *  - title - list title
+ * $links - list of links (array)
  */
 ?>
 <?php if ($items): ?>
 <div class="<?php print $conf['classes']?>">
   <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
-  <div class="ding_nodelist-items">
+  <ul class="ding_nodelist-items">
     <?php
       foreach ($items as $node) {
         print theme($template, array('item' => $node, 'conf' => $conf));
       }
     ?>
-  </div>
-  <div class="next-prev">
-    <a class="prev" href="#"><span>prev</span></a>
-    <a class="next" href="#"><span>next</span></a>
-  </div>
-  <div class="pagination"></div>
+  </ul>
 </div>
 <?php endif; ?>

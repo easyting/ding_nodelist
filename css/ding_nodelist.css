@@ -234,3 +234,10 @@ h3 {
   height: 150px;
   width: 100%;
 }
+
+.grid-4 .ding_nodelist-vertical_accordion .item {
+  height: 328px;
+  background-color: #ffffff;
+  width: 286px;
+  background-repeat: no-repeat;
+}
