@@ -78,6 +78,7 @@ function ding_nodelist_permission() {
       'description' => t('Configure the behavior of nodelist'),
     ),
     // @todo: this permission is declared but not implemented.
+    // IPE is known to have additional non-documented features regarding permissions.
 //    'create nodelist instances' => array(
 //      'title' => t('Manage nodelist instances'),
 //      'description' => t('Create/edit/delete nodelist instances'),
@@ -97,9 +98,36 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
 }
 
 /**
+ * Implements hook_ajax_render_alter.
+ * This method is a workaround to impossiblity
+ * of telling Drupal the order of CSS files in order to
+ * cascade styles properly. See the link.
+ *
+ * @link http://drupal.org/node/561858#comment-3171846
+ * @global boolean $ipe_mode
+ * @param array $commands Ajax render commands
+ */
+function ding_nodelist_ajax_render_alter(&$commands) {
+  global $ipe_mode;
+  if ($ipe_mode) {
+    ctools_add_css('ipe', 'ding_nodelist');
+    $styles = drupal_get_css();
+    $commands[] = ajax_command_append('head', $styles);
+  }
+}
+
+/**
  * Ctools plugin callback for settings form.
  */
 function ding_nodelist_content_type_edit_form($form, &$form_state) {
+  global $ipe_mode;
+
+  // Tell to load additional CSS to make edit form look normally
+  // in case of IPE.
+  if (strpos($form_state['form_info']['path'], '/ipe/')) {
+    $ipe_mode = TRUE;
+  }
+
   // Cache the form for correct workflow.
   $form_state['cache'] = TRUE;
 
@@ -1267,8 +1295,6 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load default CSS.
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
-
-
   // Fetch content IDs.
   $nodes = _ding_nodelist_get_custom_list_nodes($conf);
   $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
@@ -1299,35 +1325,36 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
  * @param type $widget
  */
 function _ding_nodelist_add_js($widget) {
+  $mod_path = drupal_get_path('module', 'ding_nodelist');
   // Adding required JS libs
   switch ($widget) {
     case NL_WIDGET_CAROUSEL:
     case NL_WIDGET_SLIDER:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
+      drupal_add_js($mod_path . '/js/jquery.carouFredSel-5.5.0-packed.js', 'file');
       break;
     case NL_WIDGET_HOR_ACCORDION:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.zaccordion.min.js', 'file');
+      drupal_add_js($mod_path . '/js/jquery.easing.1.3.js', 'file');
+      drupal_add_js($mod_path . '/js/jquery.zaccordion.min.js', 'file');
       break;
     case NL_WIDGET_VER_ACCORDION:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.easing.1.3.js', 'file');
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/jquery.vaccordion.js', 'file');
+      drupal_add_js($mod_path . '/js/jquery.easing.1.3.js', 'file');
+      drupal_add_js($mod_path . '/js/jquery.vaccordion.js', 'file');
       break;
   }
 
   // Adding JS widget init stuff
   switch ($widget) {
     case NL_WIDGET_CAROUSEL:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/carousel.js', 'file');
+      drupal_add_js($mod_path . '/js/carousel.js', 'file');
       break;
     case NL_WIDGET_SLIDER:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/slider.js', 'file');
+      drupal_add_js($mod_path . '/js/slider.js', 'file');
       break;
     case NL_WIDGET_HOR_ACCORDION:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/haccordion.js', 'file');
+      drupal_add_js($mod_path . '/js/haccordion.js', 'file');
       break;
     case NL_WIDGET_VER_ACCORDION:
-      drupal_add_js(drupal_get_path('module', 'ding_nodelist') . '/js/vaccordion.js', 'file');
+      drupal_add_js($mod_path . '/js/vaccordion.js', 'file');
       break;
   }
 }
