@@ -701,7 +701,7 @@ function _ding_nodelist_links_form($key, $link) {
     '#title' => t('URL'),
     '#title_display' => 'invisible',
     '#required' => FALSE,
-    '#description' => check_plain(('Relative path or external URL starting with http(s). Enter "<front>" to link to home page.')),
+    '#description' => check_plain(t('Local path or external URL starting with http(s). Enter "<front>" to link to home page.')),
     '#parents' => array('more_links', $key, 'links'),
     '#default_value' => (!empty($link['links'])) ? $link['links'] : '',
   );
@@ -853,38 +853,41 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Check for empty nodes.
-  $node_cnt = count($form_state['values']['selected_nodes']);
-  foreach ($form_state['values']['selected_nodes'] as $key => $node) {
-    if ($te['#name'] == 'add_node' || $node_cnt > 1) {
-      if (empty($node['node'])) {
-        form_set_error("selected_nodes][$key", t('No custom list content specified.'));
+  if (!empty($form_state['values']['selected_nodes'])) {
+    $node_cnt = count($form_state['values']['selected_nodes']);
+    foreach ($form_state['values']['selected_nodes'] as $key => $node) {
+      if ($te['#name'] == 'add_node' || $node_cnt > 1) {
+        if (empty($node['node'])) {
+          form_set_error("selected_nodes][$key", t('No custom list content specified.'));
+        }
       }
-    }
-    elseif (empty($node['node']) && $node_cnt == 1) {
-      $no_custom_content = TRUE;
+      elseif (empty($node['node']) && $node_cnt == 1) {
+        $no_custom_content = TRUE;
+      }
     }
   }
 
   // Check for empty filters.
-  $filter_cnt = count($form_state['values']['taxonomy_filters']);
-  foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
-    if ($te['#name'] == 'add_filter' || $filter_cnt > 1) {
-      if (empty($filter['filter_terms'])) {
-        form_set_error("taxonomy_filters][$key][filter_terms", t('No terms specified for dynamic list filter.'));
+  if (!empty($form_state['values']['taxonomy_filters'])) {
+    $filter_cnt = count($form_state['values']['taxonomy_filters']);
+    foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
+      if ($te['#name'] == 'add_filter' || $filter_cnt > 1) {
+        if (empty($filter['filter_terms'])) {
+          form_set_error("taxonomy_filters][$key][filter_terms", t('No terms specified for dynamic list filter.'));
+        }
       }
-    }
-    elseif (empty($filter['filter_terms']) && $filter_cnt == 1) {
-      $no_dynamic_content = TRUE;
+      elseif (empty($filter['filter_terms']) && $filter_cnt == 1) {
+        $no_dynamic_content = TRUE;
+      }
     }
   }
 
   // Check if the link is valid.
   foreach ($form_state['values']['more_links'] as $key => &$bottom) {
     if (!empty($bottom['text']) || !empty($bottom['links'])) {
-      if (!drupal_valid_path($bottom['links'])) {
-        if (!valid_url($bottom['links'], TRUE)) {
-          form_set_error("more_links][$key][links", t('External links must begin with "http" or "https".'));
-        }
+      if (!_ding_nodelist_is_valid_link($bottom['links'])) {
+        form_set_error("more_links][$key][links", t('Invalid local or external link.'
+          . ' External links must begin with "http" or "https", local links should point to existing pages.'));
       }
     }
   }
@@ -905,33 +908,41 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
  */
 function ding_nodelist_content_type_edit_form_submit($form, &$form_state) {
 
-  // Removing empty nodes
-  foreach ($form_state['values']['selected_nodes'] as $key => $node) {
-    if (empty($node['node'])) {
-      unset($form_state['values']['selected_nodes'][$key]);
-    }
-    else {
-      $tmp_nid = explode(':', $node['node']);
-      $tmp_nid = array_pop($tmp_nid);
-      $tmp_nid = substr($tmp_nid, 0, -1);
-      // TODO: Implement more complex check for correct title of the given ID
-      if (ctype_digit($tmp_nid)) {
-        $form_state['values']['selected_nodes'][$key]['nid'] = $tmp_nid;
+  // Removing empty nodes.
+  if (!empty($form_state['values']['selected_nodes'])) {
+    foreach ($form_state['values']['selected_nodes'] as $key => $node) {
+      if (empty($node['node'])) {
+        unset($form_state['values']['selected_nodes'][$key]);
+      }
+      else {
+        $tmp_nid = explode(':', $node['node']);
+        $tmp_nid = array_pop($tmp_nid);
+        $tmp_nid = substr($tmp_nid, 0, -1);
+        // TODO: Implement more complex check for correct title of the given ID
+        if (ctype_digit($tmp_nid)) {
+          $form_state['values']['selected_nodes'][$key]['nid'] = $tmp_nid;
+        }
       }
     }
   }
 
   // Removing empty filters.
-  foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
-    if (empty($filter['filter_terms'])) {
-      unset($form_state['values']['taxonomy_filters'][$key]);
+  if (!empty($form_state['values']['taxonomy_filters'])) {
+    foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
+      if (empty($filter['filter_terms'])) {
+        unset($form_state['values']['taxonomy_filters'][$key]);
+      }
     }
   }
 
   // Check if there are any empty links.
-  foreach ($form_state['values']['more_links'] as $key => &$bottom) {
-    if (empty($bottom['text']) || empty($bottom['links'])) {
-      unset($form_state['values']['more_links'][$key]);
+  if (!empty($form_state['values']['more_links'])) {
+    foreach ($form_state['values']['more_links'] as $key => &$bottom) {
+      if (empty($bottom['text']) || empty($bottom['links'])) {
+        unset($form_state['values']['more_links'][$key]);
+      }
+      // Trim slashes.
+      $bottom['links'] = ltrim($bottom['links'], '/');
     }
   }
 
@@ -1450,8 +1461,10 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
 function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['content_type'] = $form_state['values']['content_type'];
   $form_state['conf']['override_title_text'] = $form_state['values']['override_title_text'];
-  $form_state['conf']['selected_nodes'] = $form_state['values']['selected_nodes'];
-  $form_state['conf']['taxonomy_filters'] = $form_state['values']['taxonomy_filters'];
+  $form_state['conf']['selected_nodes'] = !empty($form_state['values']['selected_nodes']) ?
+                                            $form_state['values']['selected_nodes'] : array();
+  $form_state['conf']['taxonomy_filters'] = !empty($form_state['values']['taxonomy_filters']) ?
+                                            $form_state['values']['taxonomy_filters'] : array();
   $form_state['conf']['content_filter_promoted'] = $form_state['values']['content_filter_promoted'];
   $form_state['conf']['limit'] = $form_state['values']['limit'];
   $form_state['conf']['columns'] = $form_state['values']['columns'];
@@ -1460,7 +1473,8 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
   $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
   $form_state['conf']['sort_sticky'] = $form_state['values']['sort_sticky'];
-  $form_state['conf']['more_links'] = $form_state['values']['more_links'];
+  $form_state['conf']['more_links'] = !empty($form_state['values']['more_links']) ?
+                                        $form_state['values']['more_links'] : array();
 
   // Not a final save yet.
   if ($rebuild) {
@@ -1619,6 +1633,34 @@ function _ding_nodelist_get_core_templates() {
   }
 
   return $templates;
+}
+
+/**
+ * Checks if the link provided is either a valid external link
+ * or a valid local Drupal path (to views, pages, nodes, terms etc).
+ *
+ * @param $link the link to validate
+ * @return boolean TRUE if the link is valid, FALSE otherwise
+ */
+function _ding_nodelist_is_valid_link($link) {
+  $langs = array_keys(language_list());
+
+  // Trim / and possible language prefix.
+  $link = ltrim($link, '/');
+  $lang = arg(0, $link);
+  if (in_array($lang, $langs)) {
+    $link = substr($link, 3);
+  }
+
+  // Check if local path exists or external link is well formed.
+  if (!valid_url($link, TRUE) && !drupal_valid_path($link, TRUE) && $link != '<front>') {
+    $path = drupal_lookup_path('source', $link);
+    if (!($path || drupal_valid_path($path))) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
 }
 
 /**
