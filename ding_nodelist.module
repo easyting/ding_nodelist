@@ -126,7 +126,7 @@ function ding_nodelist_ajax_render_alter(&$commands) {
  * Implements hook_BASE_FORM_ID_alter().
  * Add custom handler to IPE Save/Cancel buttons to force page reload.
  */
-function ding_nodelist_form_panels_ipe_edit_control_form_alter(&$form, &$form_state, $form_id) {
+function ding_nodelist_form_panels_ipe_edit_control_form_alter(&$form, &$form_state) {
   $form['buttons']['submit']['#submit'][] = '_ding_nodelist_ipe_buttons_submit';
   $form['buttons']['cancel']['#submit'][] = '_ding_nodelist_ipe_buttons_submit';
   // Add necessary scripts for later call in ding_nodelist_ajax_render_alter().
