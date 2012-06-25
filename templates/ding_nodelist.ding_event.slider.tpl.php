@@ -13,10 +13,14 @@
  */
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
 $event_date = field_get_items('node', $item, 'field_event_date');
+$event_date = strtotime($event_date[0]['value']);
+if (!empty($item->publish_on)) {
+  $event_date = $item->publish_on;
+}
 ?>
 <div class="item">
   <span class="date-created">
-    <?php print date('d.m.Y', strtotime($event_date[0]['value']));?>
+    <?php print date('d.m.Y', $event_date);?>
   </span> - 
   <span class="category">
     <?php print drupal_render($edbase);?>

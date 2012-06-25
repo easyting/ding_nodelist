@@ -1459,11 +1459,11 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       $ct_name = explode('.', $template_name);
 
       // Filter by CT.
-      if ($content_type && $content_type == $ct_name[1]) {
+      if (!$content_type || ($content_type && $content_type == $ct_name[1])) {
         $templates[$template_name] = $template;
         $templates[$template_name]['content_type'] = $ct_name[1];
       }
-      else {
+      elseif ($content_type != $ct_name[1]) {
         unset($templates[$template_name]);
       }
 
