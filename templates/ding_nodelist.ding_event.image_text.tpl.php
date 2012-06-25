@@ -9,12 +9,10 @@
  * field_list_image
  * field_main_image
  * field_materials
- * group_audience 
+ * group_audience
  */
-
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$event_date = field_get_items('node', $item, 'field_event_date');
-$event_date = strtotime($event_date[0]['value']);
+$event_date = (!empty($item->publish_on)) ? $item->publish_on : $item->created;
 ?>
 <li class="event item">
   <div class="expand"><?php print l('', 'node/' . $item->nid);?></div>
