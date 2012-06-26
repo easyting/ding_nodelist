@@ -108,12 +108,38 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
  * @param array $commands Ajax render commands
  */
 function ding_nodelist_ajax_render_alter(&$commands) {
-  global $ipe_mode;
+  global $ipe_mode, $ipe_redirect;
   if ($ipe_mode) {
     ctools_add_css('ipe', 'ding_nodelist');
     $styles = drupal_get_css();
     $commands[] = ajax_command_append('head', $styles);
   }
+
+  if ($ipe_redirect) {
+    ctools_include('ajax');
+    ctools_add_js('ajax-responder');
+    $commands[] = ctools_ajax_command_redirect($ipe_redirect);
+  }
+}
+
+/**
+ * Implements hook_BASE_FORM_ID_alter().
+ * Add custom handler to IPE Save/Cancel buttons to force page reload.
+ */
+function ding_nodelist_form_panels_ipe_edit_control_form_alter(&$form, &$form_state) {
+  $form['buttons']['submit']['#submit'][] = '_ding_nodelist_ipe_buttons_submit';
+  $form['buttons']['cancel']['#submit'][] = '_ding_nodelist_ipe_buttons_submit';
+  // Add necessary scripts for later call in ding_nodelist_ajax_render_alter().
+  ctools_include('ajax');
+  ctools_add_js('ajax-responder');
+}
+
+/**
+ * Save/Cancel IPE buttons submit handler.
+ */
+function _ding_nodelist_ipe_buttons_submit($form, &$form_state) {
+  global $ipe_redirect;
+  $ipe_redirect = $_SERVER['HTTP_REFERER'];
 }
 
 /**
