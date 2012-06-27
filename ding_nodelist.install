@@ -76,7 +76,7 @@ function ding_nodelist_install() {
     'ding_nodelist.ding_news.carousel' => 'carousel',
     'ding_nodelist.ding_news.haccordion' => 'horizontal_accordion',
     'ding_nodelist.ding_news.single' => 'single',
-    'ding_nodelist.ding_news.text' => 'carousel',
+    'ding_nodelist.ding_news.text' => 'slider',
     'ding_nodelist.ding_news.vaccordion' => 'vertical_accordion',
   );
 
