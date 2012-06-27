@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Installation functions for ding_nodelist module.
+ * Installation/uninstallation functions for ding_nodelist module.
  */
 
 /**
@@ -55,6 +55,18 @@ function ding_nodelist_schema() {
  * Provides basic configuration of nodelist templates/widgets.
  */
 function ding_nodelist_install() {
+  /**
+   * Set available node types.
+   */
+  $node_types = array(
+    'ding_event'  => 'ding_event',
+    'ding_news'   => 'ding_news',
+  );
+  variable_set('ding_nodelist_node_types', $node_types);
+
+  /**
+   * Create template/wid get settings.
+   */
   $mappings = array(
     'ding_nodelist.ding_event.carousel' => 'carousel',
     'ding_nodelist.ding_event.image_text' => 'horizontal_accordion',
@@ -77,4 +89,12 @@ function ding_nodelist_install() {
     );
     db_insert('ding_nodelist_templates')->fields($fields)->execute();
   }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ding_nodelist_uninstall() {
+  variable_del('ding_nodelist_node_types');
+  variable_del('ding_nodelist_cache_default_time');
 }
