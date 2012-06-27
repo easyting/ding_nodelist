@@ -160,6 +160,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       _ding_nodelist_content_type_form_save($form_state, TRUE);
     }
     elseif ($trigger['#name'] == 'widget_type') {
+      $node_type = $form_state['values']['content_type'];
       $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
       _ding_nodelist_content_type_form_save($form_state, TRUE);
     }
@@ -506,14 +507,17 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
-  if (!empty($form_state['values']['widget_type'])) {
-    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['values']['widget_type']);
-  }
-  elseif (!empty($conf['widget_type'])) {
-    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $conf['widget_type']);
-  }
-  else {
-    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $default_conf['widget_type']);
+  // Generate template list if it's not generated yet on widget change.
+  if (empty($item_templates)) {
+    if (!empty($form_state['values']['widget_type'])) {
+      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['values']['widget_type']);
+    }
+    elseif (!empty($conf['widget_type'])) {
+      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $conf['widget_type']);
+    }
+    else {
+      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $default_conf['widget_type']);
+    }
   }
 
   $tpl_options = array();
@@ -526,7 +530,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     // @todo: cannot make it require since it may be empty and fail validation
     // on any ajax submit (ct change, filter update etc.)
     '#required' => FALSE,
-    '#default_value' => isset($conf['item_template']) ? $conf['item_template'] : '',
+    '#default_value' => !empty($conf['item_template']) && !empty($tpl_options) ? $conf['item_template'] : '',
     '#options' => $tpl_options,
     '#description' => t('Choose a template responsible for item display mode'),
     '#prefix' => '<div id="ding_nodelist-item-template">',
@@ -881,6 +885,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Check for empty nodes.
+  $no_custom_content = FALSE;
   if (!empty($form_state['values']['selected_nodes'])) {
     $node_cnt = count($form_state['values']['selected_nodes']);
     foreach ($form_state['values']['selected_nodes'] as $key => $node) {
@@ -896,6 +901,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Check for empty filters.
+  $no_dynamic_content = FALSE;
   if (!empty($form_state['values']['taxonomy_filters'])) {
     $filter_cnt = count($form_state['values']['taxonomy_filters']);
     foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
