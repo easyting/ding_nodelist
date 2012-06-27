@@ -380,7 +380,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   // Check if filter vocabulary was changed.
   $changed_filter_id = NULL;
   if (!empty($form_state['triggering_element']) && isset($form_state['triggering_element']['#parents'][2])
-           && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
+            && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
     $changed_filter_id = $form_state['triggering_element']['#parents'][1];
     $changed_filter = $form_state['values']['taxonomy_filters'][$changed_filter_id];
 
@@ -1455,7 +1455,7 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       $tpl_record = array(
         'filename'  => $template_name,
         'title'     => $template_name,
-        'status'    => NL_TPL_HIDDEN   // @todo: show nodelist's native templates by default?
+        'status'    => NL_TPL_HIDDEN    // @todo: show nodelist's native templates by default?
       );
       try {
         db_insert('ding_nodelist_templates')->fields($tpl_record)->execute();
