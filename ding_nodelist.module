@@ -1151,15 +1151,10 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
  */
 function theme__ding_nodelist_items_table($variables) {
   $form = $variables['form'];
-
-  drupal_add_tabledrag('ding_nodelist-selected-table', 'order', 'sibling', 'ding_nodelist-weight');
-
-  $delta = 0;
   $rows = array();
   $headers = array('', t('Selected content'), t('Weight'), '');
 
   foreach (element_children($form) as $key) {
-    $delta++;
     // Set special classes for drag and drop updating.
     $form[$key]['weight']['#attributes']['class'] = array('ding_nodelist-weight');
 
@@ -1181,6 +1176,8 @@ function theme__ding_nodelist_items_table($variables) {
 
     $rows[] = $row;
   }
+
+  drupal_add_tabledrag('ding_nodelist-selected-table', 'order', 'sibling', 'ding_nodelist-weight');
 
   $output = theme('table', array('header' => $headers, 'rows' => $rows, 'attributes' => array('id' => 'ding_nodelist-selected-table')));
   $output .= drupal_render_children($form);
@@ -1262,7 +1259,9 @@ function theme__ding_nodelist_templates_table($variables) {
     );
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows));
+  return
+    theme('table', array('header' => $header, 'rows' => $rows))
+    . drupal_render_children($form);
 }
 
 /**
