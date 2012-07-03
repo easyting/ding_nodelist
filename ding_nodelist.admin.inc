@@ -71,7 +71,7 @@ function ding_nodelist_templates_form($form, &$form_state) {
     $form['templates'][$template_name]['widget'] = array(
       '#type' => 'select',
       '#empty_option' => t('- select -'),
-      '#required' => TRUE,
+      '#required' => FALSE,
       '#default_value' => isset($template['widget']) ? $template['widget'] : '',
       '#options' => $widgets,
     );
