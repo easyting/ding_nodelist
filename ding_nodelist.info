@@ -1,15 +1,17 @@
-; $id$
-
-name = Ding nodelist
-description = Module for creating lists.
-
-core = 7.x
-version = 7.x-1.0
-package = "Alpha"
-configure = admin/config/ding/ding_nodelist
-
+configure = "admin/config/ding/ding_nodelist"
+core = "7.x"
+dependencies[] = "image"
+dependencies[] = "strongarm"
+description = "Module for creating lists."
+features[ctools][] = "strongarm:strongarm:1"
 features[image][] = "ding_nodelist_extra_medium"
 features[image][] = "ding_nodelist_large"
 features[image][] = "ding_nodelist_medium"
 features[image][] = "ding_nodelist_mini"
 features[image][] = "ding_nodelist_small"
+features[variable][] = "ding_nodelist_cache_default_time"
+features[variable][] = "ding_nodelist_node_types"
+name = "Ding nodelist"
+package = "Alpha"
+php = "5.2.4"
+version = "7.x-1.0"
