@@ -72,15 +72,15 @@ function ding_nodelist_install() {
     'ding_nodelist.ding_event.image_text' => 'horizontal_accordion',
     'ding_nodelist.ding_event.single' => 'single',
     'ding_nodelist.ding_event.slider' => 'slider',
-    'ding_nodelist.ding_event.taxonomy_like' => 'single',
+    'ding_nodelist.ding_event.taxonomy_like' => 'taxonomy',
     'ding_nodelist.ding_event.vaccordion' => 'vertical_accordion',
     'ding_nodelist.ding_news.carousel' => 'carousel',
     'ding_nodelist.ding_news.haccordion' => 'horizontal_accordion',
     'ding_nodelist.ding_news.single' => 'single',
-    'ding_nodelist.ding_news.taxonomy_like' => 'single',
+    'ding_nodelist.ding_news.taxonomy_like' => 'taxonomy',
     'ding_nodelist.ding_news.text' => 'carousel',
     'ding_nodelist.ding_news.vaccordion' => 'vertical_accordion',
-    'ding_nodelist.ding_page.taxonomy_like' => 'single',
+    'ding_nodelist.ding_page.taxonomy_like' => 'taxonomy',
   );
 
   foreach ($mappings as $filename => $widget) {
