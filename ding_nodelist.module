@@ -1355,7 +1355,6 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type']);
   $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
-
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
     'items' => $nodes,
@@ -1425,7 +1424,9 @@ function _ding_nodelist_init_image_style($widget, $region) {
     case NL_WIDGET_SINGLE:
     case NL_WIDGET_VER_ACCORDION:
       return $layout['regions_image_styles'][$region];
+    case NL_WIDGET_TAXONOMY_LIKE:
     case NL_WIDGET_SLIDER:
+      return 'ding_large';
     default:
       return '';
   }
