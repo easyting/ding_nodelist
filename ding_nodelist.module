@@ -11,6 +11,7 @@ define('NL_WIDGET_CAROUSEL', 'carousel');
 define('NL_WIDGET_HOR_ACCORDION', 'horizontal_accordion');
 define('NL_WIDGET_VER_ACCORDION', 'vertical_accordion');
 define('NL_WIDGET_SLIDER', 'slider');
+define('NL_WIDGET_TAXONOMY_LIKE', 'taxonomy');
 
 define('NL_COL_FULL', 'full');
 define('NL_COL_HALF', 'half');
@@ -1131,6 +1132,11 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
       'template' => 'ding_nodelist_widget_slider',
       'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
     ),
+    '_ding_nodelist_widget_taxonomy' => array(
+      'path' => $path,
+      'template' => 'ding_nodelist_widget_taxonomy',
+      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+    ),
   );
 
   // Automatically register core templates.
@@ -1349,7 +1355,6 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type']);
   $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
-
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
     'items' => $nodes,
@@ -1419,7 +1424,9 @@ function _ding_nodelist_init_image_style($widget, $region) {
     case NL_WIDGET_SINGLE:
     case NL_WIDGET_VER_ACCORDION:
       return $layout['regions_image_styles'][$region];
+    case NL_WIDGET_TAXONOMY_LIKE:
     case NL_WIDGET_SLIDER:
+      return 'ding_large';
     default:
       return '';
   }
@@ -1744,6 +1751,7 @@ function _ding_nodelist_get_widget_types() {
     NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
     NL_WIDGET_VER_ACCORDION => t('Vertical accordion'),
     NL_WIDGET_SLIDER        => t('Slider'),
+    NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
   );
 }
 
