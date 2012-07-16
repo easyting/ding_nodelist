@@ -28,6 +28,8 @@ $author = $item->name;
  *   Node list image html tag.
  * $date
  *   Node date, created or published if set.
+ * $author
+ *   Node author name.
  */
 ?>
 <div class="item"></div>
