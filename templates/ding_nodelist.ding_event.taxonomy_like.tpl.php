@@ -15,6 +15,7 @@ if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }
 $date = date('D, d/m/Y - H:i', $date);
+$author = $item->name;
 
 /**
  * Available variables:

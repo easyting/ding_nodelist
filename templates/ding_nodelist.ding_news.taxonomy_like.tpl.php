@@ -9,12 +9,12 @@ $title = $item->title;
 $body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $image = theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));
-$base = drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));
 $date = $item->created;
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }
 $date = date('D, d/m/Y - H:i', $date);
+$author = $item->name;
 
 /**
  * Available variables:
@@ -25,10 +25,10 @@ $date = date('D, d/m/Y - H:i', $date);
  *   Node body teaser.
  * $image
  *   Node list image html tag.
- * $base
- *   Node editorial base taxonomy term.
  * $date
  *   Node date, created or published if set.
+ * $author
+ *   Node author name.
  */
 ?>
 <div class="item"></div>
