@@ -85,7 +85,7 @@ function ding_nodelist_install() {
 
   foreach ($mappings as $filename => $widget) {
     $fields = array(
-      'filename'=> $filename,
+      'filename' => $filename,
       'title'   => $filename,
       'widget'  => $widget,
       'status'  => 0
