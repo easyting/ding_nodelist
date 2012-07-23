@@ -9,7 +9,7 @@
  * field_list_image
  * field_main_image
  * field_materials
- * group_audience 
+ * group_audience
  */
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
@@ -36,6 +36,13 @@ $event_date = strtotime($event_date[0]['value']);
         <span><?php print date('H:i', $event_date);?></span>
       </div>
       <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser'));?>
+      <div class="event-fee">
+      <?php
+        $fee = current(field_get_items('node', $item, 'field_event_fee'));
+        $fee = $fee['value'] ? $fee['value'] . ' Kr.' : t('Gratis');
+        print '&mdash; ' . $fee;
+      ?>
+      </div>
     </div>
   </div>
 </div>
