@@ -1767,6 +1767,7 @@ function _ding_nodelist_get_widget_types($content_type = NULL) {
     $supported_widgets = db_select('ding_nodelist_templates', 't')
       ->fields('t', array('widget'))
       ->condition('t.filename', "%.$content_type.%", 'LIKE')
+      ->condition('t.status', NL_TPL_ACTIVE)
       ->execute()->fetchAllKeyed(0, 0);
     $supported_widgets = array_intersect_key($widgets, $supported_widgets);
     return $supported_widgets;
