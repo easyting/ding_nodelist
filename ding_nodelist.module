@@ -182,6 +182,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       // Reset other form values.
       $form_state['values']['content_type'] = $node_type;
       $form_state['values']['selected_nodes'] = array();
+      $form_state['values']['widget_type'] = array();
       $form_state['values']['taxonomy_filters'] = array();
       unset($form_state['input']);
       _ding_nodelist_content_type_form_save($form_state, TRUE);
@@ -517,7 +518,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $node_formats[$view_mode] = $settings['label'];
   }
 
-  $widget_types = _ding_nodelist_get_widget_types();
+  $widget_types = _ding_nodelist_get_widget_types($node_type);
   $form['ding_nodelist_display']['widget_type'] = array(
     '#type' => 'select',
     '#title' => t('List type'),
@@ -912,7 +913,6 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Check for empty nodes.
-  $no_custom_content = FALSE;
   if (!empty($form_state['values']['selected_nodes'])) {
     $node_cnt = count($form_state['values']['selected_nodes']);
     foreach ($form_state['values']['selected_nodes'] as $key => $node) {
@@ -926,9 +926,11 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
       }
     }
   }
+  else {
+    $no_custom_content = TRUE;
+  }
 
   // Check for empty filters.
-  $no_dynamic_content = FALSE;
   if (!empty($form_state['values']['taxonomy_filters'])) {
     $filter_cnt = count($form_state['values']['taxonomy_filters']);
     foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
@@ -941,6 +943,9 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
         $no_dynamic_content = TRUE;
       }
     }
+  }
+  else {
+    $no_dynamic_content = TRUE;
   }
 
   // Check if the link is valid.
@@ -1024,6 +1029,7 @@ function ding_nodelist_js($form, &$form_state) {
       ajax_command_replace('#ding_nodelist-selected-nodes', drupal_render($form['ding_nodelist_nodes']['selected_nodes'])),
       ajax_command_replace('#ding_nodelist-taxonomy-filters', drupal_render($form['ding_nodelist_dynamic']['taxonomy_filters'])),
       ajax_command_replace('.form-item-item-template', drupal_render($form['ding_nodelist_display']['item_template'])),
+      ajax_command_replace('.form-item-widget-type', drupal_render($form['ding_nodelist_display']['widget_type'])),
     )
   );
 }
@@ -1741,10 +1747,13 @@ function _ding_nodelist_is_valid_link($link) {
 
 /**
  * Returns an array of widget types that can be used as #options
- * in a select input.
+ * in a select input otionally for a specific content type.
+ *
+ * @param $content_type content type
+ * @return list of widget options
  */
-function _ding_nodelist_get_widget_types() {
-  return array(
+function _ding_nodelist_get_widget_types($content_type = NULL) {
+  $widgets = array(
     NL_WIDGET_SINGLE        => t('Single item'),
     NL_WIDGET_CAROUSEL      => t('Carousel'),
     NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
@@ -1752,6 +1761,18 @@ function _ding_nodelist_get_widget_types() {
     NL_WIDGET_SLIDER        => t('Slider'),
     NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
   );
+
+  // Fetch only widgets that have templates configured.
+  if ($content_type) {
+    $supported_widgets = db_select('ding_nodelist_templates', 't')
+      ->fields('t', array('widget'))
+      ->condition('t.filename', "%.$content_type.%", 'LIKE')
+      ->execute()->fetchAllKeyed(0, 0);
+    $supported_widgets = array_intersect_key($widgets, $supported_widgets);
+    return $supported_widgets;
+  }
+
+  return $widgets;
 }
 
 /**
