@@ -36,7 +36,7 @@ function ding_nodelist_menu() {
     'page arguments' => array('ding_nodelist_settings_form'),
     'access arguments' => array('configure nodelist'),
     'type' => MENU_NORMAL_ITEM,
-    'file' => 'ding_nodelist.admin.inc'
+    'file' => 'ding_nodelist.admin.inc',
   );
 
   $items['admin/config/ding/ding_nodelist/settings'] = array(
@@ -44,7 +44,7 @@ function ding_nodelist_menu() {
     'description' => 'Configure general settings.',
     'tab_parent' => 'admin/config/ding/ding_nodelist',
     'type' => MENU_DEFAULT_LOCAL_TASK,
-    'file' => 'ding_nodelist.admin.inc'
+    'file' => 'ding_nodelist.admin.inc',
   );
 
   $items['admin/config/ding/ding_nodelist/templates'] = array(
@@ -54,7 +54,7 @@ function ding_nodelist_menu() {
     'page arguments' => array('ding_nodelist_templates_form'),
     'access arguments' => array('configure nodelist'),
     'type' => MENU_LOCAL_TASK,
-    'file' => 'ding_nodelist.admin.inc'
+    'file' => 'ding_nodelist.admin.inc',
   );
 
   $items['ding_nodelist/autocomplete/%'] = array(
@@ -79,11 +79,7 @@ function ding_nodelist_permission() {
       'description' => t('Configure the behavior of nodelist'),
     ),
     // @todo: this permission is declared but not implemented.
-    // IPE is known to have additional non-documented features regarding permissions.
-//    'create nodelist instances' => array(
-//      'title' => t('Manage nodelist instances'),
-//      'description' => t('Create/edit/delete nodelist instances'),
-//    ),
+    // IPE is known to have additional non-documented features regarding permissions. //    'create nodelist instances' => array( //      'title' => t('Manage nodelist instances'), //      'description' => t('Create/edit/delete nodelist instances'), //    ),
   );
 }
 
@@ -218,7 +214,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'columns' => NL_COL_FULL,
     'sort_field' => 'created',
     'sort_order' => 'desc',
-    'limit'     => 5,
+    'limit' => 5,
     'more_text' => t('More'),
     'more_link' => '',
     'teaser_length' => 100,
@@ -250,15 +246,14 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
 
   $form['ding_nodelist_basic']['override_title_text'] = array(
     '#type' => 'textfield',
     '#title' => t('List title'),
-    '#description' =>
-      t('Enter a title to be shown above the list items. Leave empty to omit the title.')
+    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.')
       . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
     '#required' => FALSE,
     '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
@@ -332,7 +327,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js_add_node',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
 
@@ -348,8 +343,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   // Render selected filters.
   $form['ding_nodelist_dynamic']['taxonomy_filters'] = array(
-    '#type'   => 'fieldset',
-    '#title'  => t('Taxonomy filters'),
+    '#type' => 'fieldset',
+    '#title' => t('Taxonomy filters'),
     '#description' => t('Create one or more taxonomy filters. The content selected will match all of them.'),
     '#prefix' => '<div id="ding_nodelist-taxonomy-filters">',
     '#suffix' => '</div>',
@@ -383,7 +378,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   // Check if filter vocabulary was changed.
   $changed_filter_id = NULL;
   if (!empty($form_state['triggering_element']) && isset($form_state['triggering_element']['#parents'][2])
-             && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
+              && $form_state['triggering_element']['#parents'][2] == 'filter_field') {
     $changed_filter_id = $form_state['triggering_element']['#parents'][1];
     $changed_filter = $form_state['values']['taxonomy_filters'][$changed_filter_id];
 
@@ -428,8 +423,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     // Set default field value.
     $first_field = array_shift(array_keys($allowed_fields));
     $filter = array(
-      'filter_field'  => $first_field,
-      'filter_vocab'  => $field_vocabulary[$first_field]
+      'filter_field' => $first_field,
+      'filter_vocab' => $field_vocabulary[$first_field],
     );
     $form['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_fields, $filter, $key);
   }
@@ -445,7 +440,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
 
@@ -465,9 +460,9 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Sort by'),
     '#options' => array(
       'created' => t('Creation date'),
-      'title'   => t('Title'),
+      'title' => t('Title'),
     ),
-    '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : $default_conf['sort_field']
+    '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : $default_conf['sort_field'],
   );
 
   $form['ding_nodelist_dynamic']['sort_order'] = array(
@@ -477,22 +472,21 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'asc' => t('Ascending'),
       'desc' => t('Descending'),
     ),
-    '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order']
+    '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order'],
   );
 
   $form['ding_nodelist_dynamic']['sort_sticky'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show sticky content first'),
     '#default_value' => isset($conf['sort_sticky']) ? $conf['sort_sticky'] : FALSE,
-   );
+  );
 
   $form['ding_nodelist_dynamic']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
     '#required' => TRUE,
     '#default_value' => isset($conf['limit']) ? $conf['limit'] : $default_conf['limit'],
-    '#options' =>
-      array_merge(
+    '#options' => array_merge(
         array(0 => t('none')),
         range(1, 25),
         array(30, 35, 40, 45, 50, 60, 70, 80, 90, 100)
@@ -531,7 +525,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       'wrapper' => 'ding_nodelist-item-template',
       'callback' => 'ding_nodelist_js_template',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
 
@@ -569,12 +563,12 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'select',
     '#title' => t('Width (columns)'),
     '#options' => array(
-      NL_COL_FULL   => t('Full width'),
-      NL_COL_HALF   => '1/2',
-      NL_COL_THIRD  => '1/3',
-      NL_COL_QRT    => '1/4'
+      NL_COL_FULL => t('Full width'),
+      NL_COL_HALF => '1/2',
+      NL_COL_THIRD => '1/3',
+      NL_COL_QRT => '1/4',
     ),
-    '#default_value' => isset($conf['columns']) ? $conf['columns'] : $default_conf['columns']
+    '#default_value' => isset($conf['columns']) ? $conf['columns'] : $default_conf['columns'],
   );
 
   // Forms for Bottom settings.
@@ -647,7 +641,10 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   ctools_plugin_load_includes($simple_cache_plugin);
   $pane = $form_state['pane'];
   $settings = !empty($pane->cache['settings']) ? $pane->cache['settings'] :
-              array('lifetime' => variable_get('ding_nodelist_cache_default_time', NL_CACHE_LIFETIME), 'granularity' => 'context');
+              array(
+    'lifetime' => variable_get('ding_nodelist_cache_default_time', NL_CACHE_LIFETIME),
+    'granularity' => 'context',
+  );
   $cache_form = panels_simple_cache_settings_form($settings, $form_state['display'], $pane->pid);
   // @todo: Granularity is forced to 'context' now.
   unset($cache_form['granularity']);
@@ -730,7 +727,7 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
       'wrapper' => 'ding_nodelist-selected-nodes',
       'callback' => 'ding_nodelist_js_add_node',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
   return $form;
@@ -775,7 +772,7 @@ function _ding_nodelist_links_form($key, $link) {
 function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
   $form = array(
     '#tree' => TRUE,
-    '#weight' => $key
+    '#weight' => $key,
   );
 
   $form['filter_field'] = array(
@@ -787,7 +784,7 @@ function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
     '#parents' => array('taxonomy_filters', $key, 'filter_field'),
   );
@@ -816,7 +813,7 @@ function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
       'wrapper' => 'ding_nodelist-taxonomy-filters',
       'callback' => 'ding_nodelist_js_add_filter',
       'method' => 'replace',
-      'effect' => 'fade'
+      'effect' => 'fade',
     ),
   );
 
@@ -1030,7 +1027,7 @@ function ding_nodelist_js($form, &$form_state) {
       ajax_command_replace('#ding_nodelist-taxonomy-filters', drupal_render($form['ding_nodelist_dynamic']['taxonomy_filters'])),
       ajax_command_replace('.form-item-item-template', drupal_render($form['ding_nodelist_display']['item_template'])),
       ajax_command_replace('.form-item-widget-type', drupal_render($form['ding_nodelist_display']['widget_type'])),
-    )
+    ),
   );
 }
 
@@ -1111,37 +1108,72 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_widget_simple' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_simple',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_single' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_single',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_horizontal_accordion' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_horizontal_accordion',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_vertical_accordion' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_vertical_accordion',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_carousel' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_carousel',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_slider' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_slider',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
     '_ding_nodelist_widget_taxonomy' => array(
       'path' => $path,
       'template' => 'ding_nodelist_widget_taxonomy',
-      'variables' => array('items' => NULL, 'template' => NULL, 'links' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'items' => NULL,
+        'template' => NULL,
+        'links' => NULL,
+        'conf' => NULL,
+      ),
     ),
   );
 
@@ -1151,7 +1183,10 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     $themes[$template_name] = array(
       'path' => $path,
       'template' => $template_name,
-      'variables' => array('item' => NULL, 'conf' => NULL),
+      'variables' => array(
+        'item' => NULL,
+        'conf' => NULL,
+      ),
     );
   }
 
@@ -1368,8 +1403,9 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
     'conf' => array(
       'title' => $title,
       'classes' => join(' ', $classes),
-      'image_style' => $image_style
-    )));
+      'image_style' => $image_style,
+    ),
+  ));
 
   return $block;
 }
@@ -1470,9 +1506,9 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
   foreach ($templates as $template_name => $template) {
     if (!in_array($template_name, $db_template_names)) {
       $tpl_record = array(
-        'filename'  => $template_name,
-        'title'     => $template_name,
-        'status'    => NL_TPL_HIDDEN     // @todo: show nodelist's native templates by default?
+        'filename' => $template_name,
+        'title' => $template_name,
+        'status' => NL_TPL_HIDDEN     , // @todo: show nodelist's native templates by default?
       );
       try {
         db_insert('ding_nodelist_templates')->fields($tpl_record)->execute();
@@ -1567,7 +1603,8 @@ function _ding_nodelist_simple_cache_save(&$form_state) {
   $pane_cache['method'] = 'simple';
   $pane_cache['settings'] = array(
     'lifetime' => $form_state['values']['lifetime'],
-    'granularity' => 'context');
+    'granularity' => 'context',
+  );
 
   // Invalidate old cache.
   // @todo: check if any changes were introduced.
@@ -1754,11 +1791,11 @@ function _ding_nodelist_is_valid_link($link) {
  */
 function _ding_nodelist_get_widget_types($content_type = NULL) {
   $widgets = array(
-    NL_WIDGET_SINGLE        => t('Single item'),
-    NL_WIDGET_CAROUSEL      => t('Carousel'),
+    NL_WIDGET_SINGLE => t('Single item'),
+    NL_WIDGET_CAROUSEL => t('Carousel'),
     NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
     NL_WIDGET_VER_ACCORDION => t('Vertical accordion'),
-    NL_WIDGET_SLIDER        => t('Slider'),
+    NL_WIDGET_SLIDER => t('Slider'),
     NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
   );
 
@@ -1781,10 +1818,10 @@ function _ding_nodelist_get_widget_types($content_type = NULL) {
  */
 function _ding_nodelist_get_column_map() {
   return array(
-    NL_COL_FULL   => 1,
-    NL_COL_HALF   => 1 / 2,
-    NL_COL_THIRD  => 1 / 3,
-    NL_COL_QRT    => 1 / 4,
+    NL_COL_FULL => 1,
+    NL_COL_HALF => 1 / 2,
+    NL_COL_THIRD => 1 / 3,
+    NL_COL_QRT => 1 / 4,
   );
 }
 
