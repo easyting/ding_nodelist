@@ -59,8 +59,8 @@ function ding_nodelist_install() {
    * Set available node types.
    */
   $node_types = array(
-    'ding_event'  => 'ding_event',
-    'ding_news'   => 'ding_news',
+    'ding_event' => 'ding_event',
+    'ding_news' => 'ding_news',
   );
   variable_set('ding_nodelist_node_types', $node_types);
 
@@ -86,9 +86,9 @@ function ding_nodelist_install() {
   foreach ($mappings as $filename => $widget) {
     $fields = array(
       'filename' => $filename,
-      'title'   => $filename,
-      'widget'  => $widget,
-      'status'  => 0
+      'title' => $filename,
+      'widget' => $widget,
+      'status' => 0,
     );
     db_insert('ding_nodelist_templates')->fields($fields)->execute();
   }
