@@ -38,6 +38,13 @@ if (!empty($item->publish_on)) {
         <span><?php echo date('H:i', $event_date);?></span>
       </div>
       <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser'));?>
+      <div class="event-fee">
+      <?php
+        $fee = current(field_get_items('node', $item, 'field_event_fee'));
+        $fee = $fee['value'] ? $fee['value'] . ' Kr.' : t('Gratis');
+        print '&mdash; ' . $fee;
+      ?>
+      </div>
     </div>
   </div>
 </li>
