@@ -446,6 +446,17 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     ),
   );
 
+  // Date field filtering.
+  // @todo: remove hard code and make more unversal.
+  $form['ding_nodelist_dynamic']['content_filter_date'] = array(
+    '#type' => $node_type == 'ding_event' ? 'checkbox' : 'hidden',
+    '#title' => t('Show upcoming events only'),
+    '#description' => t('If checked only future events will be shown'),
+    '#default_value' => $node_type == 'ding_event' && isset($conf['content_filter_date']) ? $conf['content_filter_date'] : FALSE,
+    '#prefix' => '<div id="ding_nodelist-content-filter-date">',
+    '#suffix' => '</div>',
+  );
+
   // Content filter.
   $form['ding_nodelist_dynamic']['content_filter_promoted'] = array(
     '#type' => 'checkbox',
@@ -1029,6 +1040,7 @@ function ding_nodelist_js($form, &$form_state) {
       ajax_command_replace('#ding_nodelist-taxonomy-filters', drupal_render($form['ding_nodelist_dynamic']['taxonomy_filters'])),
       ajax_command_replace('.form-item-item-template', drupal_render($form['ding_nodelist_display']['item_template'])),
       ajax_command_replace('.form-item-widget-type', drupal_render($form['ding_nodelist_display']['widget_type'])),
+      ajax_command_replace('#ding_nodelist-content-filter-date', drupal_render($form['ding_nodelist_dynamic']['content_filter_date'])),
     ),
   );
 }
@@ -1576,6 +1588,7 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['taxonomy_filters'] = !empty($form_state['values']['taxonomy_filters']) ?
                                             $form_state['values']['taxonomy_filters'] : array();
   $form_state['conf']['content_filter_promoted'] = $form_state['values']['content_filter_promoted'];
+  $form_state['conf']['content_filter_date'] = $form_state['values']['content_filter_date'];
   $form_state['conf']['limit'] = $form_state['values']['limit'];
   $form_state['conf']['columns'] = $form_state['values']['columns'];
   $form_state['conf']['widget_type'] = $form_state['values']['widget_type'];
@@ -1629,7 +1642,9 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  if (!empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted']) || !empty($conf['sort_sticky'])) {
+  $filter_exists = !empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted'])
+                    || !empty($conf['sort_sticky']) || !empty($conf['content_filter_date']);
+  if ($filter_exists) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
 
@@ -1652,6 +1667,17 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
           ->distinct();
     if (!empty($conf['content_filter_promoted'])) {
       $query->condition('n.promote', NODE_PROMOTED);
+    }
+
+    // Filter by date field.
+    // @todo: remove hardcode.
+    if (!empty($conf['content_filter_date'])) {
+      $query->join('field_data_field_event_date', 'fed', 'n.nid = fed.entity_id');
+      // @todo: NOW() works for visitors from the same timezone.
+      $query->where(
+        'DATE_FORMAT(fed.field_event_date_value, :format) >= CURRENT_DATE()'
+        . ' OR DATE_FORMAT(fed.field_event_date_value2, :format) >= CURRENT_DATE()',
+        array(':format' => '%Y-%m-%d'));
     }
 
     // Sticky flag may be used either as filter or sorting criteria.
