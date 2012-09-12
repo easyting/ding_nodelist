@@ -559,7 +559,32 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   foreach ($item_templates as $filename => $template) {
     $tpl_options[$filename] = empty($template['title']) ? $filename : $template['title'];
   }
-  $form['ding_nodelist_display']['item_template'] = array(
+
+  $form['ding_nodelist_display']['widget_dependent'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#title' => t('Additional options'),
+    '#prefix' => '<div id="ding_nodelist-item-template">',
+    '#suffix' => '</div>',
+  );
+
+  $widget_type = $conf['widget_type'];
+  $autoscrolling_widgets = array('slider', 'carousel', 'horizontal_accordion', 'vertical_accordion');
+  if (in_array($widget_type, $autoscrolling_widgets)) {
+    $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', 0);
+    if ($conf['autoscroll_delay'] == 0) {
+      $conf['autoscroll_delay'] = $generic_autoscroll_delay;
+    }
+    unset($form_state['input']['autoscroll_delay']);
+    $form['ding_nodelist_display']['widget_dependent']['autoscroll_delay'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Autoscroll delay'),
+      '#default_value' => !empty($conf['autoscroll_delay']) ? $conf['autoscroll_delay'] : $generic_autoscroll_delay,
+      '#description' => t('Time in milliseconds an item will be shown before switching to the next one'),
+    );
+  }
+
+  $form['ding_nodelist_display']['widget_dependent']['item_template'] = array(
     '#type' => 'select',
     '#title' => t('Item template'),
     // @todo: cannot make it require since it may be empty and fail validation
@@ -568,8 +593,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => !empty($conf['item_template']) && !empty($tpl_options) ? $conf['item_template'] : '',
     '#options' => $tpl_options,
     '#description' => t('Choose a template responsible for item display mode'),
-    '#prefix' => '<div id="ding_nodelist-item-template">',
-    '#suffix' => '</div>',
   );
 
   $form['ding_nodelist_display']['columns'] = array(
@@ -1071,7 +1094,7 @@ function ding_nodelist_js_add_filter($form, &$form_state) {
  * Returns eligible item templates based on configuration.
  */
 function ding_nodelist_js_template($form, &$form_state) {
-  return $form['ding_nodelist_display']['item_template'];
+  return $form['ding_nodelist_display']['widget_dependent'];
 }
 
 /**
@@ -1370,6 +1393,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   $classes[] = 'ding_nodelist';
   $classes[] = 'ding_nodelist-' . $conf['widget_type'];
   $classes[] = 'ding_nodelist-col-' . $columns;
+  $classes[] = $conf['unique_id'];
 
   // Build title
   $title = NULL;
@@ -1407,7 +1431,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   $nodes = node_load_multiple($nodes);
 
   // Init JS for widgets
-  _ding_nodelist_add_js($conf['widget_type']);
+  _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
   $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
   $theme_func = '_ding_nodelist_widget_' . $conf['widget_type'];
   $block->content = theme($theme_func, array(
@@ -1428,7 +1452,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
  * Add required JS libraries and initialization scripts to run widgets
  * @param type $widget
  */
-function _ding_nodelist_add_js($widget) {
+function _ding_nodelist_add_js($widget, $autoscroll_delay = NULL, $unique_id = NULL) {
   $mod_path = drupal_get_path('module', 'ding_nodelist');
   // Adding required JS libs
   switch ($widget) {
@@ -1449,15 +1473,19 @@ function _ding_nodelist_add_js($widget) {
   // Adding JS widget init stuff
   switch ($widget) {
     case NL_WIDGET_CAROUSEL:
+      drupal_add_js(array('ding_nodelist' => array($unique_id => $autoscroll_delay)), 'setting');
       drupal_add_js($mod_path . '/js/carousel.js', 'file');
       break;
     case NL_WIDGET_SLIDER:
+      drupal_add_js(array('ding_nodelist' => array($unique_id => $autoscroll_delay)), 'setting');
       drupal_add_js($mod_path . '/js/slider.js', 'file');
       break;
     case NL_WIDGET_HOR_ACCORDION:
+      drupal_add_js(array('ding_nodelist' => array($unique_id => $autoscroll_delay)), 'setting');
       drupal_add_js($mod_path . '/js/haccordion.js', 'file');
       break;
     case NL_WIDGET_VER_ACCORDION:
+      drupal_add_js(array('ding_nodelist' => array($unique_id => $autoscroll_delay)), 'setting');
       drupal_add_js($mod_path . '/js/vaccordion.js', 'file');
       break;
   }
@@ -1581,23 +1609,25 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
  * Save CT plugin form values.
  */
 function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
-  $form_state['conf']['content_type'] = $form_state['values']['content_type'];
-  $form_state['conf']['override_title_text'] = $form_state['values']['override_title_text'];
-  $form_state['conf']['selected_nodes'] = !empty($form_state['values']['selected_nodes']) ?
-                                            $form_state['values']['selected_nodes'] : array();
-  $form_state['conf']['taxonomy_filters'] = !empty($form_state['values']['taxonomy_filters']) ?
-                                            $form_state['values']['taxonomy_filters'] : array();
+  $form_state['conf']['autoscroll_delay']        = $form_state['values']['autoscroll_delay'];
+  $form_state['conf']['columns']                 = $form_state['values']['columns'];
   $form_state['conf']['content_filter_promoted'] = $form_state['values']['content_filter_promoted'];
-  $form_state['conf']['content_filter_date'] = $form_state['values']['content_filter_date'];
-  $form_state['conf']['limit'] = $form_state['values']['limit'];
-  $form_state['conf']['columns'] = $form_state['values']['columns'];
-  $form_state['conf']['widget_type'] = $form_state['values']['widget_type'];
-  $form_state['conf']['item_template'] = $form_state['values']['item_template'];
-  $form_state['conf']['sort_field'] = $form_state['values']['sort_field'];
-  $form_state['conf']['sort_order'] = $form_state['values']['sort_order'];
-  $form_state['conf']['sort_sticky'] = $form_state['values']['sort_sticky'];
-  $form_state['conf']['more_links'] = !empty($form_state['values']['more_links']) ?
-                                        $form_state['values']['more_links'] : array();
+  $form_state['conf']['content_filter_date']     = $form_state['values']['content_filter_date'];
+  $form_state['conf']['content_type']            = $form_state['values']['content_type'];
+  $form_state['conf']['item_template']           = $form_state['values']['item_template'];
+  $form_state['conf']['limit']                   = $form_state['values']['limit'];
+  $form_state['conf']['more_links']              = !empty($form_state['values']['more_links']) ?
+                                                  $form_state['values']['more_links'] : array();
+  $form_state['conf']['override_title_text']     = $form_state['values']['override_title_text'];
+  $form_state['conf']['selected_nodes']          = !empty($form_state['values']['selected_nodes']) ?
+                                                  $form_state['values']['selected_nodes'] : array();
+  $form_state['conf']['sort_field']              = $form_state['values']['sort_field'];
+  $form_state['conf']['sort_order']              = $form_state['values']['sort_order'];
+  $form_state['conf']['sort_sticky']             = $form_state['values']['sort_sticky'];
+  $form_state['conf']['taxonomy_filters']        = !empty($form_state['values']['taxonomy_filters']) ?
+                                                  $form_state['values']['taxonomy_filters'] : array();
+  $form_state['conf']['unique_id']               = 'pane-' . $form_state['pane']->pid;
+  $form_state['conf']['widget_type']             = $form_state['values']['widget_type'];
 
   // Not a final save yet.
   if ($rebuild) {
