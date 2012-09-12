@@ -39,13 +39,6 @@ function ding_nodelist_settings_form() {
     '#description' => t('The delay to show an item for various nodelist widgets (in milliseconds).'),
   );
 
-  $form['ding_nodelist_autoscroll_delay']['ding_nodelist_slider_delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Slider'),
-    '#default_value' => variable_get('ding_nodelist_slider_delay', 200),
-    '#size' => 5,
-  );
-
   $form['ding_nodelist_autoscroll_delay']['ding_nodelist_carousel_delay'] = array(
     '#type' => 'textfield',
     '#title' => t('Carousel'),
