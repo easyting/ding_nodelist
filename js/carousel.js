@@ -1,13 +1,16 @@
 (function ($) {
   $(document).ready(function () {
     $('.ding_nodelist-carousel').each(function(){
+      // The delay will always be the last class to be added
+      var delay = $(this).attr('class').split(' ').pop();
+      delay = parseInt(Drupal.settings.ding_nodelist[delay]);
       $(this).find('.ding_nodelist-items').carouFredSel({
         circular: true,
         infinite: true,
         direction: 'left',
         auto : {
           pauseOnHover: true,
-          pauseDuration: 5000
+          pauseDuration: delay
         },
         width: '100%',
         responsive: true,
@@ -28,6 +31,5 @@
         }
       });
     });
-    
   });
 })(jQuery);
