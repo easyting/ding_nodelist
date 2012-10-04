@@ -9,7 +9,7 @@ $title = $item->title;
 $body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
 $category = drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$image = theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));
+$image = (!empty($image[0]['#item']['uri'])) ? theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri'])) : '';
 $date = $item->created;
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
