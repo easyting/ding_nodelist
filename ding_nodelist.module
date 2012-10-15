@@ -567,7 +567,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   );
 
   $widget_type = $conf['widget_type'];
-  $autoscrolling_widgets = array('carousel', 'horizontal_accordion', 'vertical_accordion');
+  $autoscrolling_widgets = array(NL_WIDGET_CAROUSEL, NL_WIDGET_HOR_ACCORDION, NL_WIDGET_VER_ACCORDION);
   if (in_array($widget_type, $autoscrolling_widgets)) {
     $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', 0);
     if ($conf['autoscroll_delay'] == 0) {

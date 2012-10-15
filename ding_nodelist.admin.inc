@@ -38,27 +38,19 @@ function ding_nodelist_settings_form() {
     '#title' => t('Autoscroll delay'),
     '#description' => t('The delay to show an item for various nodelist widgets (in milliseconds).'),
   );
-
-  $form['ding_nodelist_autoscroll_delay']['ding_nodelist_carousel_delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Carousel'),
-    '#default_value' => variable_get('ding_nodelist_carousel_delay', 200),
-    '#size' => 5,
+  $autoscrolling_widgets = array(
+    NL_WIDGET_CAROUSEL => array('Carousel', 3000),
+    NL_WIDGET_HOR_ACCORDION => array('Vertical accordion', 3000),
+    NL_WIDGET_VER_ACCORDION => array('Horizontal accordion', 3000),
   );
-
-  $form['ding_nodelist_autoscroll_delay']['ding_nodelist_vertical_accordion_delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Vertical accordion'),
-    '#default_value' => variable_get('ding_nodelist_vertical_accordion_delay', 200),
-    '#size' => 5,
-  );
-
-  $form['ding_nodelist_autoscroll_delay']['ding_nodelist_horizontal_accordion_delay'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Horizontal accordion'),
-    '#default_value' => variable_get('ding_nodelist_horizontal_accordion_delay', 200),
-    '#size' => 5,
-  );
+  foreach ($autoscrolling_widgets as $widget => $conf) {
+    $form['ding_nodelist_autoscroll_delay']['ding_nodelist_' . $widget . '_delay'] = array(
+      '#type' => 'textfield',
+      '#title' => t($conf[0]),
+      '#default_value' => variable_get('ding_nodelist_' . $widget . '_delay', $conf[1]),
+      '#size' => 5,
+    );
+  }
 
   return system_settings_form($form);
 }
