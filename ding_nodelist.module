@@ -1624,7 +1624,7 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['sort_sticky']             = $form_state['values']['sort_sticky'];
   $form_state['conf']['taxonomy_filters']        = !empty($form_state['values']['taxonomy_filters']) ?
                                                   $form_state['values']['taxonomy_filters'] : array();
-  $form_state['conf']['unique_id']               = 'pane-' . $form_state['pane']->pid;
+  $form_state['conf']['unique_id']               = 'pane-' . (microtime(TRUE) * 10000);
   $form_state['conf']['widget_type']             = $form_state['values']['widget_type'];
 
   // Not a final save yet.
