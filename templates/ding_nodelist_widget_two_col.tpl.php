@@ -15,6 +15,8 @@
   <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
   <div class="ding_nodelist-items">
     <?php
+      // @todo
+      // Add logic for splitting every two items into separate rows.
       foreach ($items as $node) {
         print theme($template, array('item' => $node));
       }
