@@ -234,3 +234,14 @@ h3 {
   height: 150px;
   width: 100%;
 }
+
+/* Two column widget styles */
+.ding_nodelist-two_col .ding_nodelist-items .item {
+  float: left;
+  width: 50%;
+}
+
+.ding_nodelist-two_col .ding_nodelist-items:after {
+  clear: both;
+  float: none;
+}
