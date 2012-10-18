@@ -567,7 +567,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   );
 
   $widget_type = $conf['widget_type'];
-  $autoscrolling_widgets = array('carousel', 'horizontal_accordion', 'vertical_accordion');
+  $autoscrolling_widgets = array(NL_WIDGET_CAROUSEL, NL_WIDGET_HOR_ACCORDION);
   if (in_array($widget_type, $autoscrolling_widgets)) {
     $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', 0);
     if ($conf['autoscroll_delay'] == 0) {
@@ -1624,7 +1624,7 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['sort_sticky']             = $form_state['values']['sort_sticky'];
   $form_state['conf']['taxonomy_filters']        = !empty($form_state['values']['taxonomy_filters']) ?
                                                   $form_state['values']['taxonomy_filters'] : array();
-  $form_state['conf']['unique_id']               = 'pane-' . $form_state['pane']->pid;
+  $form_state['conf']['unique_id']               = 'pane-' . (microtime(TRUE) * 10000);
   $form_state['conf']['widget_type']             = $form_state['values']['widget_type'];
 
   // Not a final save yet.

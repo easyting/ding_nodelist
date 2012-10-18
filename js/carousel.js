@@ -1,9 +1,14 @@
 (function ($) {
   $(document).ready(function () {
-    $('.ding_nodelist-carousel').each(function(){
-      // The delay will always be the last class to be added
-      var delay = $(this).attr('class').split(' ').pop();
-      delay = parseInt(Drupal.settings.ding_nodelist[delay]);
+    $('.ding_nodelist-carousel').each(function() {
+      var classes = $(this).attr('class').split(' ');
+      delay = 0;
+      // Find pane's ID to get its delay settings.
+      $(classes).each(function(i, item){
+        if (item.match(/pane\-\d+/)) {
+          delay = parseInt(Drupal.settings.ding_nodelist[item]);
+        }
+      })
       $(this).find('.ding_nodelist-items').carouFredSel({
         circular: true,
         infinite: true,
