@@ -17,4 +17,5 @@ $plugin = array(
   'admin title' => 'ding_nodelist_content_type_admin_title',
   'admin info' => 'ding_nodelist_content_type_admin_info',
   'edit form' => 'ding_nodelist_content_type_edit_form',
+  'all contexts' => TRUE,
 );
