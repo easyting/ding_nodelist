@@ -8,6 +8,7 @@
 }
 
 .ding_nodelist-title {
+  clear: both;
   margin-bottom: 4px;
 }
 
@@ -241,7 +242,7 @@ h3 {
   width: 50%;
 }
 
-.ding_nodelist-two_col .ding_nodelist-items:after {
+.ding_nodelist-two_col .ding_nodelist-items .row {
   clear: both;
   float: none;
 }

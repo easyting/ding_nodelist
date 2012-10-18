@@ -1393,7 +1393,6 @@ function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL)
  *   An object with at least title and content members.
  */
 function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
-
   $block = new stdClass();
 
   // Prepare classes for widget container.
