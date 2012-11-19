@@ -22,7 +22,7 @@ if (!empty($item->publish_on)) {
 ?>
 <div class="item">
 	<div class="event-image">
-    <?php 
+    <?php
     if ($image) {
       print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));
     }
@@ -30,8 +30,8 @@ if (!empty($item->publish_on)) {
   </div>
   <div class="event-label"><?php print t('Calendar');?></div>
   <div class="event-date">
-    <div class="event-day"><?php print date('d', $event_date);?></div>
-    <div class="event-month"><?php print date('M', $event_date);?></div>
+    <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
+    <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
   </div>
   <div class="article-info">
     <div class="category"><?php print drupal_render($edbase);?></div>
