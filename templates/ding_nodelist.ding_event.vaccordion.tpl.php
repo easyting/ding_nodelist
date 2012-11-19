@@ -20,8 +20,8 @@ $event_date = strtotime($event_date[0]['value']);
   <div class="va-title">
     <div class="event-label"><?php print t('Calendar');?></div>
     <div class="event-date">
-      <div class="event-day"><?php print date('d', $event_date);?></div>
-      <div class="event-month"><?php print date('M', $event_date);?></div>
+      <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
+      <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
     </div>
   </div>
   <div class="va-content">

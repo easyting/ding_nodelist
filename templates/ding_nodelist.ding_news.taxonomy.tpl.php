@@ -13,7 +13,7 @@ $date = $item->created;
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }
-$date = date('D, d/m/Y - H:i', $date);
+$date = format_date($date, 'medium');
 $author = $item->name;
 
 /**
