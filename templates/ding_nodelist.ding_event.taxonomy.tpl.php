@@ -10,7 +10,8 @@ $body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $image = (!empty($image[0]['#item']['uri'])) ? theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri'])) : '';
 $date = field_get_items('node', $item, 'field_event_date');
-$date = strtotime($date[0]['value']);
+$date_obj = new DateTime($date[0]['value'], new DateTimeZone('UTC'));
+$date = $date_obj->getTimestamp();
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }

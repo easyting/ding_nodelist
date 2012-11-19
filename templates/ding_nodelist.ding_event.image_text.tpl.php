@@ -13,7 +13,8 @@
  */
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $event_date = field_get_items('node', $item, 'field_event_date');
-$event_date = strtotime($event_date[0]['value']);
+$date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
+$event_date = $date_obj->getTimestamp();
 if (!empty($item->publish_on)) {
   $event_date = $item->publish_on;
 }
@@ -35,7 +36,7 @@ if (!empty($item->publish_on)) {
     <div class="library">
       <div class="event-time">
         <span><?php print t('Time');?></span>
-        <span><?php echo date('H:i', $event_date);?></span>
+        <span><?php print format_date($event_date, 'custom', 'H:i');?></span>
       </div>
       <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser'));?>
       <div class="event-fee">
