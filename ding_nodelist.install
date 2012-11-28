@@ -80,6 +80,7 @@ function ding_nodelist_install() {
     'ding_nodelist.ding_news.taxonomy' => 'taxonomy',
     'ding_nodelist.ding_news.text' => 'carousel',
     'ding_nodelist.ding_news.vaccordion' => 'vertical_accordion',
+    'ding_nodelist.ding_news.slider' => 'slider',
     'ding_nodelist.ding_page.taxonomy' => 'taxonomy',
   );
 
