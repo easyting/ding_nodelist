@@ -222,6 +222,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'more_text' => t('More'),
     'more_link' => '',
     'teaser_length' => 100,
+    'autoscroll_delay' => 3000
   );
 
   $form['#prefix'] = '<div id="ding_nodelist-form-wrapper">';
@@ -581,7 +582,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $widget_type = $conf['widget_type'];
   $autoscrolling_widgets = array(NL_WIDGET_CAROUSEL, NL_WIDGET_HOR_ACCORDION);
   if (in_array($widget_type, $autoscrolling_widgets)) {
-    $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', 0);
+    $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', $default_conf['autoscroll_delay']);
     if ($conf['autoscroll_delay'] == 0) {
       $conf['autoscroll_delay'] = $generic_autoscroll_delay;
     }
