@@ -1896,4 +1896,17 @@ function _ding_nodelist_get_column_map() {
   );
 }
 
+/**
+ * Method used for receiving event date
+ * Used in ding_event nodelist templates
+ *
+ * @param object $event_node
+ * @return string
+ */
+function _get_event_date($event_node) {
+  $event_date = field_get_items('node', $event_node, 'field_event_date');
+  $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
+  return $date_obj->getTimestamp();
+}
+
 include_once('ding_nodelist.features.inc');
