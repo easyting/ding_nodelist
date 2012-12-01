@@ -14,14 +14,7 @@
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
-if (!empty($item->publish_on)) {
-  $event_date = $item->publish_on;
-}
-else {
-  $event_date = field_get_items('node', $item, 'field_event_date');
-  $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
-  $event_date = $date_obj->getTimestamp();
-}
+$event_date = _get_event_date($item);
 ?>
 <div class="item">
 	<div class="event-image">
