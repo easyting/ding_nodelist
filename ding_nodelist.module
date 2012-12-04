@@ -521,7 +521,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#states' => array(
       // Hide the settings when the sorting order is not applicable.
       'invisible' => array(
-        ':input[name="sort_field"]' => array(array('value' => ''), array('value' => 'sticky'))
+        ':input[name="sort_field"]' => array(array('value' => ''), array('value' => 'sticky')),
       )
     )
   );
@@ -1693,8 +1693,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  $filter_exists = !empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted'])
-                    || !empty($conf['content_filter_date']);
+  $filter_exists = !empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted']) || !empty($conf['content_filter_date']);
   if ($filter_exists) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
@@ -1780,8 +1779,10 @@ function _ding_nodelist_get_custom_list_nodes(&$conf) {
 /**
  * Sorts the nodes according to the settings.
  *
- * @param array $nodes list of loaded node objects.
- * @param array $conf nodelist configuration.
+ * @param array $nodes
+ *   list of loaded node objects.
+ * @param array $conf
+ *   nodelist configuration.
  * @return array of sorted nodes.
  */
 function _ding_nodelist_sort_nodes($nodes, $conf) {
@@ -1801,7 +1802,8 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
       // Sticky nodes will be always shown first.
       elseif ($conf['sort_field'] == 'sticky') {
         // S (in 'sticky') goes after N (in 'nonsticky'), use them for sorting.
-        $sorted_nodes[$node->sticky ? 'sticky' . $node->nid : 'notsticky' . $node->nid] = $node;
+        $node_index = $node->sticky ? 'sticky' . $node->nid : 'notsticky' . $node->nid;
+        $sorted_nodes[$node_index] = $node;
         $conf['sort_order'] = 'desc';
       }
     }
