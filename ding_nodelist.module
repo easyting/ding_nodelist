@@ -1808,12 +1808,21 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
       }
     }
 
-    // Apply custom sorting.
-    if ($conf['sort_order'] == 'asc') {
-      ksort($sorted_nodes);
+    // Use natural sorting for strings.
+    if ($conf['sort_field'] == 'title') {
+      uksort($sorted_nodes, 'strnatcasecmp');
+      if ($conf['sort_order'] == 'desc') {
+        $sorted_nodes = array_reverse($sorted_nodes);
+      }
     }
+    // And common sorting for other cases.
     else {
-      krsort($sorted_nodes);
+      if ($conf['sort_order'] == 'asc') {
+        ksort($sorted_nodes);
+      }
+      else {
+        krsort($sorted_nodes);
+      }
     }
     return array_values($sorted_nodes);
   }
