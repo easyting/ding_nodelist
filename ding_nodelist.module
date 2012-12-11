@@ -1791,7 +1791,7 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
     foreach ($nodes as $node) {
       // Prepare for custom sorting.
       if ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
-        $sorted_nodes[_get_event_date($node)] = $node;
+        $sorted_nodes[_ding_nodelist_get_event_date($node)] = $node;
       }
       elseif ($conf['sort_field'] == 'created') {
         $sorted_nodes[$node->created] = $node;
@@ -1961,7 +1961,7 @@ function _ding_nodelist_get_column_map() {
  * @param object $event_node
  * @return string
  */
-function _get_event_date($event_node) {
+function _ding_nodelist_get_event_date($event_node) {
   $event_date = field_get_items('node', $event_node, 'field_event_date');
   $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
   return $date_obj->getTimestamp();
