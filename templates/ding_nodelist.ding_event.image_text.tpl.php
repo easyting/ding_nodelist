@@ -12,7 +12,7 @@
  * group_audience
  */
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$event_date = _get_event_date($item);
+$event_date = _ding_nodelist_get_event_date($item);
 ?>
 <li class="event item">
   <div class="expand"><?php print l('', 'node/' . $item->nid);?></div>

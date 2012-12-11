@@ -13,7 +13,7 @@
  */
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$event_date = _get_event_date($item);
+$event_date = _ding_nodelist_get_event_date($item);
 ?>
 <div class="item event va-slice" style="background-image: url('<?php print image_style_url($conf['image_style'], $image[0]['#item']['uri']);?>')">
   <div class="va-title">
