@@ -172,17 +172,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
    */
   if ($trigger) {
     if ($trigger['#name'] == 'content_type') {
-      // Reset node and filter count.
-      $node_count = 1;
-      $filter_count = 1;
-
       // Refresh CT setting.
       $node_type = $form_state['triggering_element']['#value'];
 
       // Reset other form values.
       $form_state['values']['content_type'] = $node_type;
       $form_state['values']['selected_nodes'] = array();
-      $form_state['values']['widget_type'] = array();
+      $form_state['values']['widget_type'] = '';
       $form_state['values']['taxonomy_filters'] = array();
       unset($form_state['input']);
       _ding_nodelist_content_type_form_save($form_state, TRUE);
@@ -190,6 +186,9 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     elseif ($trigger['#name'] == 'widget_type') {
       $node_type = $form_state['values']['content_type'];
       $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
+      // Reset default scrolling delay.
+      unset($form_state['input']['autoscroll_delay']);
+      $form_state['values']['autoscroll_delay'] = '';
       _ding_nodelist_content_type_form_save($form_state, TRUE);
     }
   }
@@ -214,7 +213,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $default_conf = array(
     'content_type' => $node_type,
-    'widget_type' => NL_WIDGET_SINGLE,
+    'widget_type' => NL_WIDGET_CAROUSEL,
     'columns' => NL_COL_FULL,
     'sort_field' => 'created',
     'limit' => 5,
@@ -293,13 +292,11 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $node_count = NULL;
   $filter_count = NULL;
 
-  if (is_null($node_count)) {
-    if (isset($form_state['values']['selected_nodes_count'])) {
-      $node_count = $form_state['values']['selected_nodes_count'];
-    }
-    else {
-      $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
-    }
+  if (isset($form_state['values']['selected_nodes_count'])) {
+    $node_count = $form_state['values']['selected_nodes_count'];
+  }
+  else {
+    $node_count = empty($form_state['values']['selected_nodes']) ? 1 : count($form_state['values']['selected_nodes']);
   }
 
   if (!empty($conf['selected_nodes'])) {
@@ -357,13 +354,11 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#weight' => -1,
   );
 
-  if (is_null($filter_count)) {
-    if (isset($form_state['values']['taxonomy_filters_count'])) {
-      $filter_count = $form_state['values']['taxonomy_filters_count'];
-    }
-    else {
-      $filter_count = empty($form_state['values']['taxonomy_filters']) ? 1 : count($form_state['values']['taxonomy_filters']);
-    }
+  if (isset($form_state['values']['taxonomy_filters_count'])) {
+    $filter_count = $form_state['values']['taxonomy_filters_count'];
+  }
+  else {
+    $filter_count = empty($form_state['values']['taxonomy_filters']) ? 1 : count($form_state['values']['taxonomy_filters']);
   }
 
   // Retrieve vocabularies current CT references.
@@ -401,7 +396,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $delta = count($conf['taxonomy_filters']);
     foreach ($conf['taxonomy_filters'] as $key => $filter) {
       // Skip just changed filter.
-      if ($changed_filter_id === $key || empty($filter['filter_terms'])) {
+      if ($changed_filter_id === $key) {
         continue;
       }
 
@@ -545,11 +540,12 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   }
 
   $widget_types = _ding_nodelist_get_widget_types($node_type);
+  $widget_type = isset($conf['widget_type']) ? $conf['widget_type'] : $default_conf['widget_type'];
   $form['ding_nodelist_display']['widget_type'] = array(
     '#type' => 'select',
     '#title' => t('List type'),
     '#required' => TRUE,
-    '#default_value' => isset($conf['widget_type']) ? $conf['widget_type'] : '',
+    '#default_value' => $widget_type,
     '#options' => $widget_types,
     '#empty_option' => t('- Select -'),
     '#description' => t('If single item selected, only the first item will be rendered'),
@@ -563,15 +559,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   // Generate template list if it's not generated yet on widget change.
   if (empty($item_templates)) {
-    if (!empty($form_state['values']['widget_type'])) {
-      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['values']['widget_type']);
-    }
-    elseif (!empty($conf['widget_type'])) {
-      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $conf['widget_type']);
-    }
-    else {
-      $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $default_conf['widget_type']);
-    }
+    $item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $widget_type);
   }
 
   $tpl_options = array();
@@ -587,14 +575,9 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#suffix' => '</div>',
   );
 
-  $widget_type = $conf['widget_type'];
   $autoscrolling_widgets = array(NL_WIDGET_CAROUSEL, NL_WIDGET_HOR_ACCORDION);
   if (in_array($widget_type, $autoscrolling_widgets)) {
     $generic_autoscroll_delay = variable_get('ding_nodelist_' . $widget_type . '_delay', $default_conf['autoscroll_delay']);
-    if ($conf['autoscroll_delay'] == 0) {
-      $conf['autoscroll_delay'] = $generic_autoscroll_delay;
-    }
-    unset($form_state['input']['autoscroll_delay']);
     $form['ding_nodelist_display']['widget_dependent']['autoscroll_delay'] = array(
       '#type' => 'textfield',
       '#title' => t('Autoscroll delay'),
@@ -956,15 +939,16 @@ function ding_nodelist_add_bottom_link_submit(&$form, &$form_state) {
  * Edit form validation function.
  */
 function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
-  // Do not validate if filter was changed or deleted.
   $form_state['restore'] = TRUE;
 
+  // Do not validate if filter was changed or deleted.
   $te = empty($form_state['triggering_element']) ? NULL : $form_state['triggering_element'];
   if (strpos($te['#name'], 'widget_type') === 0 || $te['#name'] == 'filter_field') {
     return;
   }
 
   // Check for empty nodes.
+  $no_custom_content = FALSE;
   if (!empty($form_state['values']['selected_nodes'])) {
     $node_cnt = count($form_state['values']['selected_nodes']);
     foreach ($form_state['values']['selected_nodes'] as $key => $node) {
@@ -983,6 +967,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Check for empty filters.
+  $no_dynamic_content = FALSE;
   if (!empty($form_state['values']['taxonomy_filters'])) {
     $filter_cnt = count($form_state['values']['taxonomy_filters']);
     foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
@@ -1674,6 +1659,7 @@ function _ding_nodelist_simple_cache_save(&$form_state) {
 
   // Invalidate old cache.
   // @todo: check if any changes were introduced.
+  ctools_include('plugins');
   $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
   ctools_plugin_load_includes($simple_cache_plugin);
   $cid = panels_simple_cache_get_id($pane_cache['settings'], $form_state['display'],

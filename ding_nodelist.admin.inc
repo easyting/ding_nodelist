@@ -40,7 +40,7 @@ function ding_nodelist_settings_form() {
   );
   $autoscrolling_widgets = array(
     NL_WIDGET_CAROUSEL => array('Carousel', 3000),
-    NL_WIDGET_HOR_ACCORDION => array('Vertical accordion', 3000),
+    NL_WIDGET_HOR_ACCORDION => array('Horizontal accordion', 3000),
   );
   foreach ($autoscrolling_widgets as $widget => $conf) {
     $form['ding_nodelist_autoscroll_delay']['ding_nodelist_' . $widget . '_delay'] = array(
