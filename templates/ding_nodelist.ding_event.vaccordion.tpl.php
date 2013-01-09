@@ -12,10 +12,10 @@
  * group_audience
  */
 
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_get_event_date($item);
 ?>
-<div class="item event va-slice" style="background-image: url('<?php print image_style_url($conf['image_style'], $image[0]['#item']['uri']);?>')">
+<div class="item event va-slice" <?php print $image ? 'style="background-image: url(\'' . file_create_url($image['path']) . '\')" title="' . $image['title'] . '"' : ''; ?>>
   <div class="va-title">
     <div class="event-label"><?php print t('Calendar');?></div>
     <div class="event-date">

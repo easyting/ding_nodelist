@@ -1750,13 +1750,13 @@ function _ding_nodelist_get_custom_list_nodes(&$conf) {
   if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
     foreach ($conf['selected_nodes'] as $key => $node) {
       $nodes[$node['weight']] = $node['nid'];
-      if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
-        break;
-      }
     }
     // Sort the nodes according to their weight.
     ksort($nodes);
     $conf['custom_content'] = TRUE;
+    if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+      return array_slice($nodes, 0, 1);
+    }
   }
 
   return $nodes;
@@ -1873,7 +1873,8 @@ function _ding_nodelist_get_core_templates() {
  * Checks if the link provided is either a valid external link
  * or a valid local Drupal path (to views, pages, nodes, terms etc).
  *
- * @param $link the link to validate
+ * @param $link
+ *   the link to validate
  * @return boolean TRUE if the link is valid, FALSE otherwise
  */
 function _ding_nodelist_is_valid_link($link) {
@@ -1951,6 +1952,27 @@ function _ding_nodelist_get_event_date($event_node) {
   $event_date = field_get_items('node', $event_node, 'field_event_date');
   $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
   return $date_obj->getTimestamp();
+}
+
+/**
+ * Method used for receiving image details like path, alt and title.
+ * Used in ding_nodelist templates
+ *
+ * @param object $node
+ *  the node object
+ * @return array of image details ready to be used as options to theme_image_style
+ *   or empty array if no image/attributes were found.
+ */
+function _ding_nodelist_get_dams_image_info($node, $image_field) {
+  $image = field_get_items('node', $node, $image_field);
+  if ($image) {
+    $image = reset($image);
+    $path = $image['uri'];
+    $title = !empty($image['field_dams_title']) ? $image['field_dams_title']['und'][0]['safe_value'] : '';
+    $alt = !empty($image['field_dams_alt_name']) ? $image['field_dams_alt_name']['und'][0]['safe_value'] : '';
+    return array('path' => $path, 'title' => $title, 'alt' => $alt);
+  }
+  return array();
 }
 
 include_once('ding_nodelist.features.inc');
