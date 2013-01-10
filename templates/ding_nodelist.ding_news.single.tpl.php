@@ -12,16 +12,12 @@
  * group_audience
  */
 
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
 ?>
 <div class="item">
 	<div class="article_image">
-    <?php 
-    if ($image) {
-      print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));
-    }
-    ?>
+  <?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?>
   </div>
   <div class="article-info">
   <div class="category"><?php print drupal_render($edbase);?></div>

@@ -7,8 +7,7 @@
 
 $title = $item->title;
 $body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$image = (!empty($image[0]['#item']['uri'])) ? theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri'])) : '';
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }
@@ -34,7 +33,7 @@ $author = $item->name;
  */
 ?>
 <div class="item">
-  <div class="item-list-image"><?php print $image ?></div>
+  <div class="item-list-image"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></div>
   <div class="item-details">
     <h2 class="item-title"><?php print l($title, 'node/' . $item->nid); ?></h2>
     <span class="item-date"><?php print $date ?></span><span class="item-author"><?php print $author ?></span>

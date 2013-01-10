@@ -11,7 +11,7 @@
  * field_materials
  * group_audience
  */
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_get_event_date($item);
 ?>
 <li class="event item">
@@ -21,7 +21,9 @@ $event_date = _ding_nodelist_get_event_date($item);
     <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
     <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
   </div>
-  <div class="image"><?php print theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri']));?></div>
+  <div class="image">
+  <?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?>
+  </div>
   <div class="data">
     <div class="caption">
       <h3>

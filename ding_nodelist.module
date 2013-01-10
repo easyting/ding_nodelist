@@ -106,7 +106,8 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
  *
  * @link http://drupal.org/node/561858#comment-3171846
  * @global boolean $ipe_mode
- * @param array $commands Ajax render commands
+ * @param array $commands
+ *   Ajax render commands.
  */
 function ding_nodelist_ajax_render_alter(&$commands) {
   global $ipe_mode, $ipe_redirect;
@@ -859,7 +860,7 @@ function _ding_nodelist_taxonomy_filter($fields, $filter, $key) {
 }
 
 /**
- * Custom submit function to add more choices
+ * Custom submit function to add more choices.
  */
 function ding_nodelist_add_node_submit($form, &$form_state) {
   // Add new node to list.
@@ -1102,7 +1103,7 @@ function ding_nodelist_js_template($form, &$form_state) {
 }
 
 /**
- * Autocomplete function that gives the available nodes
+ * Autocomplete function that gives the available nodes.
  */
 function ding_nodelist_autocomplete($type, $title = '') {
   $nodes = array();
@@ -1235,7 +1236,7 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
 }
 
 /**
- * Helper theming function
+ * Helper theming function.
  */
 function theme__ding_nodelist_items_table($variables) {
   $form = $variables['form'];
@@ -1273,7 +1274,7 @@ function theme__ding_nodelist_items_table($variables) {
 }
 
 /**
- * Helper theming function
+ * Helper theming function.
  */
 function theme__ding_nodelist_filters_table($variables) {
   $form = $variables['form'];
@@ -1365,8 +1366,7 @@ function ding_nodelist_content_type_admin_title($subtype, $conf, $context = NULL
 }
 
 /**
- * Callback to provide administrative info (the preview in panels when building
- * a panel).
+ * Callback to provide administrative info (the preview in panels when building a panel).
  */
 function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL) {
   // @todo: show details about nodelist configuration here.
@@ -1379,10 +1379,14 @@ function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL)
 /**
  * Run-time rendering of the body of the list.
  *
- * @param $subtype Content type sub-type
- * @param $conf Configuration as done at admin time.
+ * @param $subtype
+ *   Content type sub-type
+ * @param $conf
+ *   Configuration as done at admin time.
  * @param $args
+ *   Special arguments to use.
  * @param $context
+ *  Possible context details.
  *
  * @return
  *   An object with at least title and content members.
@@ -1456,7 +1460,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 }
 
 /**
- * Add required JS libraries and initialization scripts to run widgets
+ * Add required JS libraries and initialization scripts to run widgets.
  * @param type $widget
  */
 function _ding_nodelist_add_js($widget, $autoscroll_delay = NULL, $unique_id = NULL) {
@@ -1499,7 +1503,7 @@ function _ding_nodelist_add_js($widget, $autoscroll_delay = NULL, $unique_id = N
 }
 
 /**
- * Init image styles based on widget and region
+ * Init image styles based on widget and region.
  * @param type $widget
  */
 function _ding_nodelist_init_image_style($widget, $region) {
@@ -1523,8 +1527,10 @@ function _ding_nodelist_init_image_style($widget, $region) {
 }
 /**
  * Returns the most up-to-date list of nodelist templates.
- * @param   boolean   include or not hidden templates in return array
- * @return  array found nodelist template details
+ * @param boolean
+ *   Include or not hidden templates in return array.
+ * @return array
+ *   Found nodelist template details.
  */
 function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NULL, $widget_type = NULL) {
   static $templates = array();
@@ -1750,13 +1756,13 @@ function _ding_nodelist_get_custom_list_nodes(&$conf) {
   if (isset($conf['selected_nodes']) && count($conf['selected_nodes'])) {
     foreach ($conf['selected_nodes'] as $key => $node) {
       $nodes[$node['weight']] = $node['nid'];
-      if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
-        break;
-      }
     }
     // Sort the nodes according to their weight.
     ksort($nodes);
     $conf['custom_content'] = TRUE;
+    if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+      return array_slice($nodes, 0, 1);
+    }
   }
 
   return $nodes;
@@ -1766,9 +1772,9 @@ function _ding_nodelist_get_custom_list_nodes(&$conf) {
  * Sorts the nodes according to the settings.
  *
  * @param array $nodes
- *   list of loaded node objects.
+ *   List of loaded node objects.
  * @param array $conf
- *   nodelist configuration.
+ *   Nodelist configuration.
  * @return array of sorted nodes.
  */
 function _ding_nodelist_sort_nodes($nodes, $conf) {
@@ -1819,7 +1825,7 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
 
 /**
  * Customized function for taxononmy autocomplete element validation
- * (copied from core's taxonomy_autocomplete_validate)
+ * (copied from core's taxonomy_autocomplete_validate).
  * @see taxonomy_autocomplete_validate
  */
 function _ding_nodelist_taxonomy_autocomplete_validate($element, &$form_state) {
@@ -1873,8 +1879,10 @@ function _ding_nodelist_get_core_templates() {
  * Checks if the link provided is either a valid external link
  * or a valid local Drupal path (to views, pages, nodes, terms etc).
  *
- * @param $link the link to validate
- * @return boolean TRUE if the link is valid, FALSE otherwise
+ * @param $link
+ *   The link to validate.
+ * @return boolean
+ *   TRUE if the link is valid, FALSE otherwise.
  */
 function _ding_nodelist_is_valid_link($link) {
   $langs = array_keys(language_list());
@@ -1901,7 +1909,8 @@ function _ding_nodelist_is_valid_link($link) {
  * Returns an array of widget types that can be used as #options
  * in a select input otionally for a specific content type.
  *
- * @param $content_type content type
+ * @param $content_type
+ *   Content type.
  * @return list of widget options
  */
 function _ding_nodelist_get_widget_types($content_type = NULL) {
@@ -1941,8 +1950,8 @@ function _ding_nodelist_get_column_map() {
 }
 
 /**
- * Method used for receiving event date
- * Used in ding_event nodelist templates
+ * Method used for receiving event date.
+ * Used in ding_event nodelist templates.
  *
  * @param object $event_node
  * @return string
@@ -1951,6 +1960,28 @@ function _ding_nodelist_get_event_date($event_node) {
   $event_date = field_get_items('node', $event_node, 'field_event_date');
   $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
   return $date_obj->getTimestamp();
+}
+
+/**
+ * Method used for receiving image details like path, alt and title.
+ * Used in ding_nodelist templates.
+ *
+ * @param object $node
+ *  The node object.
+ * @return array
+ *   Image details ready to be used as options to theme_image_style
+ *   or empty array if no image/attributes were found.
+ */
+function _ding_nodelist_get_dams_image_info($node, $image_field) {
+  $image = field_get_items('node', $node, $image_field);
+  if ($image) {
+    $image = reset($image);
+    $path = $image['uri'];
+    $title = !empty($image['field_dams_title']) ? $image['field_dams_title']['und'][0]['safe_value'] : '';
+    $alt = !empty($image['field_dams_alt_name']) ? $image['field_dams_alt_name']['und'][0]['safe_value'] : '';
+    return array('path' => $path, 'title' => $title, 'alt' => $alt);
+  }
+  return array();
 }
 
 include_once('ding_nodelist.features.inc');
