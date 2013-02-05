@@ -218,7 +218,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'widget_type' => NL_WIDGET_SINGLE,
     'columns' => NL_COL_FULL,
     'sort_field' => 'created',
-    'sort_order' => 'desc',
     'limit' => 5,
     'more_text' => t('More'),
     'more_link' => '',
@@ -468,44 +467,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
   );
 
-  /**
-   * Sorting options.
-   * @todo: place next to Sort by field ie in one row (better UX).
-   */
-  $sort_options = array(
-    'created' => t('Creation date'),
-    'title' => t('Title'),
-  );
-
-  if ($node_type == 'ding_event') {
-    $sort_options['event_date'] = t('Event date');
-  }
-
-  $form['ding_nodelist_dynamic']['sort_field'] = array(
-    '#type' => 'select',
-    '#title' => t('Sort by'),
-    '#options' => $sort_options,
-    '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : $default_conf['sort_field'],
-    '#prefix' => '<div id="ding_nodelist-sort-field">',
-    '#suffix' => '</div>',
-  );
-
-  $form['ding_nodelist_dynamic']['sort_order'] = array(
-    '#type' => 'select',
-    '#title' => t('Sorting order'),
-    '#options' => array(
-      'asc' => t('Ascending'),
-      'desc' => t('Descending'),
-    ),
-    '#default_value' => isset($conf['sort_order']) ? $conf['sort_order'] : $default_conf['sort_order'],
-  );
-
-  $form['ding_nodelist_dynamic']['sort_sticky'] = array(
-    '#type' => 'checkbox',
-    '#title' => t('Show sticky content first'),
-    '#default_value' => isset($conf['sort_sticky']) ? $conf['sort_sticky'] : FALSE,
-  );
-
   $form['ding_nodelist_dynamic']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
@@ -520,6 +481,53 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   );
 
   /**
+   * Sorting options.
+   * @todo: place next to Sort by field ie in one row (better UX).
+   */
+  $sort_options = array(
+    'created' => t('Creation date'),
+    'title' => t('Title'),
+    'sticky' => t('Sticky first'),
+  );
+
+  if ($node_type == 'ding_event') {
+    $sort_options['event_date'] = t('Event date');
+  }
+
+  $form['ding_nodelist_sorting'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Sorting'),
+    '#weight' => -1,
+  );
+
+  $form['ding_nodelist_sorting']['sort_field'] = array(
+    '#type' => 'select',
+    '#title' => t('Sort by'),
+    '#options' => $sort_options,
+    '#empty_option' => t('No sorting'),
+    '#default_value' => isset($conf['sort_field']) ? $conf['sort_field'] : '',
+    '#prefix' => '<div id="ding_nodelist-sort-field">',
+    '#suffix' => '</div>',
+  );
+
+  $sort_order = isset($conf['sort_order']) ? $conf['sort_order'] : '';
+  $form['ding_nodelist_sorting']['sort_order'] = array(
+    '#type' => 'select',
+    '#title' => t('Sorting order'),
+    '#options' => array(
+      'asc' => t('Ascending'),
+      'desc' => t('Descending'),
+    ),
+    '#default_value' => $sort_order,
+    '#states' => array(
+      // Hide the settings when the sorting order is not applicable.
+      'invisible' => array(
+        ':input[name="sort_field"]' => array(array('value' => ''), array('value' => 'sticky')),
+      )
+    )
+  );
+
+  /**
    * Display settings.
    */
   $form['ding_nodelist_display'] = array(
@@ -527,7 +535,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Display settings'),
     '#collapsible' => FALSE,
     '#description' => t('Define custom visualization settings'),
-    '#weight' => -1,
+    '#weight' => 0,
   );
 
   // Set up all the available view modes for this type of nodes.
@@ -625,7 +633,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Bottom links'),
     '#collapsible' => FALSE,
     '#description' => t('List of "read more" links.'),
-    '#weight' => 0,
+    '#weight' => 1,
   );
 
   // Container for bottom links
@@ -680,7 +688,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#collapsed' => TRUE,
     '#tree' => FALSE,
     '#title' => t('Cache settings'),
-    '#weight' => 1,
+    '#weight' => 2,
   );
 
   // Load cache settigns and prepare form.
@@ -1009,8 +1017,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
   }
 
   // Ensure list has some content.
-  $no_other_options = empty($form_state['values']['content_filter_promoted'])
-                        && empty($form_state['values']['sort_sticky']);
+  $no_other_options = empty($form_state['values']['content_filter_promoted']);
   if ($no_custom_content && $no_dynamic_content && $no_other_options) {
     form_set_error('selected_nodes', t('List contents is not specified. Enter custom and/or dynamic list settings.'));
   }
@@ -1452,6 +1459,9 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
+  // Apply sorting.
+  $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
+
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
   $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
@@ -1646,7 +1656,6 @@ function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
                                                   $form_state['values']['selected_nodes'] : array();
   $form_state['conf']['sort_field']              = $form_state['values']['sort_field'];
   $form_state['conf']['sort_order']              = $form_state['values']['sort_order'];
-  $form_state['conf']['sort_sticky']             = $form_state['values']['sort_sticky'];
   $form_state['conf']['taxonomy_filters']        = !empty($form_state['values']['taxonomy_filters']) ?
                                                   $form_state['values']['taxonomy_filters'] : array();
   $form_state['conf']['unique_id']               = 'pane-' . (microtime(TRUE) * 10000);
@@ -1695,8 +1704,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     return array();
   }
 
-  $filter_exists = !empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted'])
-                    || !empty($conf['sort_sticky']) || !empty($conf['content_filter_date']);
+  $filter_exists = !empty($conf['taxonomy_filters']) || !empty($conf['content_filter_promoted']) || !empty($conf['content_filter_date']);
   if ($filter_exists) {
     // Support for slave-master DB servers.
     $query = db_select('node', 'n', array('target' => 'slave'))->fields('n', array('nid'));
@@ -1733,24 +1741,14 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
         array(':format' => '%Y-%m-%d'));
     }
 
-    // Sticky flag may be used either as filter or sorting criteria.
-    if (!empty($conf['sort_sticky'])) {
-      // Only 'sticky' was selected - use it as filter.
-      if (empty($conf['content_filter_promoted']) && empty($conf['taxonomy_filters'])) {
-        $query->condition('n.sticky', NODE_STICKY);
+    if ($conf['sort_field']) {
+      if ($conf['sort_field'] == 'event_date') {
+        $query->join('field_data_field_event_date', 'fed', 'fed.entity_id = n.nid');
+        $query->orderBy('fed.field_event_date_value', $conf['sort_order']);
       }
-      // Use 'sticky' as sorting criteria.
       else {
-        $query->orderBy('n.sticky', 'DESC');
+        $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
       }
-    }
-
-    if ($conf['sort_field'] == 'event_date') {
-      $query->join('field_data_field_event_date', 'fed', 'fed.entity_id = n.nid');
-      $query->orderBy('fed.field_event_date_value', $conf['sort_order']);
-    }
-    else {
-      $query->orderBy('n.' . $conf['sort_field'], $conf['sort_order']);
     }
 
     // Limit to 1 for single node widget.
@@ -1787,6 +1785,52 @@ function _ding_nodelist_get_custom_list_nodes(&$conf) {
   }
 
   return $nodes;
+}
+
+/**
+ * Sorts the nodes according to the settings.
+ *
+ * @param array $nodes
+ *   list of loaded node objects.
+ * @param array $conf
+ *   nodelist configuration.
+ * @return array of sorted nodes.
+ */
+function _ding_nodelist_sort_nodes($nodes, $conf) {
+  if ($conf['sort_field']) {
+    $sorted_nodes = array();
+    foreach ($nodes as $node) {
+      // Prepare for custom sorting.
+      if ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
+        $sorted_nodes[_get_event_date($node)] = $node;
+      }
+      elseif ($conf['sort_field'] == 'created') {
+        $sorted_nodes[$node->created] = $node;
+      }
+      elseif ($conf['sort_field'] == 'title') {
+        $sorted_nodes[$node->title] = $node;
+      }
+      // Sticky nodes will be always shown first.
+      elseif ($conf['sort_field'] == 'sticky') {
+        // S (in 'sticky') goes after N (in 'nonsticky'), use them for sorting.
+        $node_index = $node->sticky ? 'sticky' . $node->nid : 'notsticky' . $node->nid;
+        $sorted_nodes[$node_index] = $node;
+        $conf['sort_order'] = 'desc';
+      }
+    }
+
+    // Apply custom sorting.
+    if ($conf['sort_order'] == 'asc') {
+      ksort($sorted_nodes);
+    }
+    else {
+      krsort($sorted_nodes);
+    }
+    return array_values($sorted_nodes);
+  }
+  else {
+    return $nodes;
+  }
 }
 
 /**

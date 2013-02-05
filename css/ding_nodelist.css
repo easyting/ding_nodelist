@@ -191,11 +191,11 @@ h3 {
 * More Links.
 */
 
-.item-list {
+/* .item-list {
   text-align: justify;
   margin-left: 10px;
   text-shadow: 1px 1px 1px #EAF1EA;
-}
+} */
 
 .ding_nodelist-horizontal_accordeon li.slide-closed .data {
   display: none;
