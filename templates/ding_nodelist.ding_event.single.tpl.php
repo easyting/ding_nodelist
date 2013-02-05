@@ -14,7 +14,7 @@
 
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
-$event_date = _get_event_date($item);
+$event_date = _ding_nodelist_get_event_date($item);
 ?>
 <div class="item">
 	<div class="event-image">
