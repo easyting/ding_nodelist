@@ -11,7 +11,7 @@ $category = drupal_render(field_view_field('node', $item, 'group_audience', 'tea
 $image = field_view_field('node', $item, 'field_list_image', 'teaser');
 $image = (!empty($image[0]['#item']['uri'])) ? theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri'])) : '';
 $event_date = _get_event_date($item);
-$date = format_date($date, 'medium');
+$event_date = format_date($event_date, 'medium');
 $author = $item->name;
 
 /**
