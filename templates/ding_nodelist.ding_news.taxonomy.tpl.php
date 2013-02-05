@@ -8,15 +8,14 @@
 $title = $item->title;
 $body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
 $category = drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
-$image = (!empty($image[0]['#item']['uri'])) ? theme('image_style', array('style_name' => $conf['image_style'], 'path' => $image[0]['#item']['uri'])) : '';
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
 }
 else {
   $date = $item->created;
 }
-$date = format_date($date, 'medium');
+$date = format_date($date, 'date_combined');
 $author = $item->name;
 
 /**
@@ -35,7 +34,7 @@ $author = $item->name;
  */
 ?>
 <div class="item news-item">
-  <div class="item-list-image"><?php print $image ?></div>
+  <div class="item-list-image"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></div>
   <div class="item-details">
     <div class="item-category"><?php print $category ?></div>
 	<span class="item-date"><?php print $date ?></span>

@@ -9,11 +9,11 @@
  * field_list_image
  * field_main_image
  * field_materials
- * group_audience 
+ * group_audience
  */
-$image = field_view_field('node', $item, 'field_list_image', 'teaser');
+$image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 ?>
-<div class="item news va-slice" style="background-image: url('<?php print image_style_url($conf['image_style'], $image[0]['#item']['uri']);?>')">
+<div class="item news va-slice" <?php print $image ? 'style="background-image: url(\'' . file_create_url($image['path']) . '\')" title="' . $image['title'] . '"' : ''; ?>>
   <div class="va-title">
     <div class="event-label"><?php print t('News');?></div>
   </div>
