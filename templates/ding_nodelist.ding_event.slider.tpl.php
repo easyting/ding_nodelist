@@ -16,7 +16,7 @@ $event_date = _ding_nodelist_get_event_date($item);
 ?>
 <div class="item">
   <span class="date-created">
-    <?php print format_date($event_date, 'custom', 'd.m.Y'); ?>
+    <?php print format_date($event_date, 'custom', 'd/m/Y'); ?>
   </span> -
   <span class="category">
     <?php print drupal_render($edbase);?>

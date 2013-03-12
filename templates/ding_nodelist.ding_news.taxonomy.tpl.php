@@ -14,7 +14,7 @@ if (!empty($item->publish_on)) {
 else {
   $date = $item->created;
 }
-$date = format_date($date, 'date_combined');
+$date = format_date($date, 'custom', 'd/m/Y');
 $author = $item->name;
 
 /**
