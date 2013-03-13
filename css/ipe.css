@@ -1,49 +1,49 @@
 /* Form-related styles to make nodelist edit form look nice. */
 
-a {
+#modalContent a {
   color: #0074BD;
   text-decoration: none;
 }
-a:hover {
+#modalContent a:hover {
   text-decoration: underline;
 }
-legend {
+#modalContent legend {
   font-weight: bold;
 }
 
 /**
  * Tables.
  */
-table {
+#modalContent table {
   width: 100%;
   font-size: 0.923em;
   margin: 0 0 10px;
   border: 1px solid #bebfb9;
 }
-table td,
-table th {
+#modalContent table td,
+#modalContent table th {
   vertical-align: middle;
   padding: 8px 10px;
   border: 0;
   color: #000;
 }
-tr.even,
-tr.odd {
+#modalContent tr.even,
+#modalContent tr.odd {
   border-width: 0 1px 0 1px;
   border-style: solid;
   border-color: #bebfb9;
   background: #f3f4ee;
 }
-tr.odd {
+#modalContent tr.odd {
   background: #fff;
 }
-tr.drag {
+#modalContent tr.drag {
   background: #fe7;
 }
-tr.drag-previous {
+#modalContent tr.drag-previous {
   background: #ffb;
 }
-table th {
+#modalContent table th {
   text-transform: uppercase;
   background: #e1e2dc;
   font-weight: normal;
@@ -52,48 +52,48 @@ table th {
   border-color: #bebfb9;
   padding: 3px 10px;
 }
-table th.active {
+#modalContent table th.active {
   background: #bdbeb9;
 }
-table th a {
+#modalContent table th a {
   display: block;
   position: relative;
 }
-table th.active a {
+#modalContent table th.active a {
   padding: 0 25px 0 0; /* LTR */
 }
-table th.active img {
+#modalContent table th.active img {
   position: absolute;
   top: 3px;
   right: 3px; /* LTR */
 }
-table td.active {
+#modalContent table td.active {
   background: #e9e9dd;
 }
-table tr.odd td.active {
+#modalContent table tr.odd td.active {
   background: #f3f4ee;
 }
-table tr.selected td.active,
-table tr.selected td {
+#modalContent table tr.selected td.active,
+#modalContent table tr.selected td {
   background: #ffc;
   border-color: #eeb;
 }
-table.system-status-report tr {
+#modalContent table.system-status-report tr {
   border-bottom: 1px solid #ccc;
 }
-table.system-status-report tr.ok {
+#modalContent table.system-status-report tr.ok {
   color: #255b1e;
   background-color: #e5ffe2;
 }
-table.system-status-report tr.info {
+#modalContent table.system-status-report tr.info {
   color: #040f37;
   background-color: #bdf;
 }
-table.system-status-report tr.warning {
+#modalContent table.system-status-report tr.warning {
   color: #840;
   background-color: #fffce5;
 }
-table.system-status-report tr.error {
+#modalContent table.system-status-report tr.error {
   color: #8c2e0b;
   background-color: #fef5f1;
 }
@@ -101,7 +101,7 @@ table.system-status-report tr.error {
  * Exception for webkit bug with the right border of the last cell
  * in some tables, since it's webkit only, we can use :last-child
  */
-tr td:last-child {
+#modalContent tr td:last-child {
   border-right: 1px solid #bebfb9; /* LTR */
 }
 
@@ -124,106 +124,106 @@ tr td:last-child {
  *   positioning even to absolute positioned elements within; we therefore have
  *   to apply all padding to the inner .fieldset-wrapper instead.
  */
-fieldset {
+#modalContent fieldset {
   border: 1px solid #ccc;
   padding: 2.5em 0 0 0; /* LTR */
   position: relative;
   margin: 1em 0;
 }
-fieldset .fieldset-legend {
+#modalContent fieldset .fieldset-legend {
   margin-top: 0.5em;
   padding-left: 15px; /* LTR */
   position: absolute;
   text-transform: uppercase;
 }
-fieldset .fieldset-wrapper {
+#modalContent fieldset .fieldset-wrapper {
   padding: 0 13px 13px 15px; /* LTR */
 }
-fieldset.collapsed {
+#modalContent fieldset.collapsed {
   background-color: transparent;
 }
 html.js fieldset.collapsed {
   border-width: 1px;
   height: auto;
 }
-fieldset fieldset {
+#modalContent fieldset fieldset {
   background-color: #fff;
 }
-fieldset fieldset fieldset {
+#modalContent fieldset fieldset fieldset {
   background-color: #f8f8f8;
 }
 
 /**
  * Form elements.
  */
-.form-item {
+#modalContent .form-item {
   padding: 9px 0;
   margin: 0 0 10px;
 }
-.filter-wrapper .form-item,
-div.teaser-checkbox .form-item,
-.form-item .form-item {
+#modalContent .filter-wrapper .form-item,
+#modalContent div.teaser-checkbox .form-item,
+#modalContent .form-item .form-item {
   padding: 5px 0;
   margin: 0;
   border: 0;
 }
-.form-type-checkbox {
+#modalContent .form-type-checkbox {
   padding: 0;
 }
-.text-format-wrapper .form-item {
+#modalContent .text-format-wrapper .form-item {
   padding-bottom: 0;
 }
-.form-item label {
+#modalContent .form-item label {
   margin: 0;
   padding: 0;
 }
-.form-item label.option {
+#modalContent .form-item label.option {
   font-size: 0.923em;
   text-transform: none;
 }
-.form-item label.option input {
+#modalContent .form-item label.option input {
   vertical-align: middle;
 }
-.form-disabled input.form-autocomplete,
-.form-disabled input.form-text,
-.form-disabled input.form-file,
-.form-disabled textarea.form-textarea,
-.form-disabled select.form-select {
+#modalContent .form-disabled input.form-autocomplete,
+#modalContent .form-disabled input.form-text,
+#modalContent .form-disabled input.form-file,
+#modalContent .form-disabled textarea.form-textarea,
+#modalContent .form-disabled select.form-select {
   background-color: #eee;
   color: #777;
 }
 
 /* Filter */
-.filter-wrapper {
+#modalContent .filter-wrapper {
   border-top: 0;
   padding: 10px 2px;
 }
-.filter-wrapper .fieldset-wrapper {
+#modalContent .filter-wrapper .fieldset-wrapper {
   padding: 0 6px;
 }
-.filter-wrapper .form-item,
-.filter-wrapper .filter-guidelines,
-.filter-wrapper .filter-help {
+#modalContent .filter-wrapper .form-item,
+#modalContent .filter-wrapper .filter-guidelines,
+#modalContent .filter-wrapper .filter-help {
   font-size: 0.923em;
   padding: 2px 0 0 0; /* LTR */
 }
-ul.tips,
-div.description,
-.form-item div.description {
+#modalContent ul.tips,
+#modalContent div.description,
+#modalContent .form-item div.description {
   margin: 5px 0;
   line-height: 1.231em;
   font-size: 0.923em;
   color: #666;
 }
-ul.tips li {
+#modalContent ul.tips li {
   margin: 0.25em 0 0.25em 1.5em; /* LTR */
 }
-body div.form-type-radio div.description,
-body div.form-type-checkbox div.description {
+#modalContent div.form-type-radio div.description,
+#modalContent div.form-type-checkbox div.description {
   margin-left: 1.5em; /* LTR */
 }
-input.form-submit,
-a.button {
+#modalContent input.form-submit,
+#modalContent a.button {
   cursor: pointer;
   padding: 4px 17px;
   margin-bottom: 1em;
@@ -242,41 +242,41 @@ a.button {
   -webkit-border-radius: 20px;
   border-radius: 20px;
 }
-a.button:link,
-a.button:visited,
-a.button:hover,
-a.button:active {
+#modalContent a.button:link,
+#modalContent a.button:visited,
+#modalContent a.button:hover,
+#modalContent a.button:active {
   text-decoration: none;
   color: #5a5a5a;
 }
-input.form-submit:active {
+#modalContent input.form-submit:active {
   background: #666;
   color: #fff;
   border-color: #555;
   text-shadow: #222 0 -1px 0;
 }
-input.form-button-disabled,
-input.form-button-disabled:active {
+#modalContent input.form-button-disabled,
+#modalContent input.form-button-disabled:active {
   background: #eee none;
   border-color: #eee;
   text-shadow: none;
   color: #999;
 }
-input.form-autocomplete,
-input.form-text,
-input.form-file,
-textarea.form-textarea,
-select.form-select {
+#modalContent input.form-autocomplete,
+#modalContent input.form-text,
+#modalContent input.form-file,
+#modalContent textarea.form-textarea,
+#modalContent select.form-select {
   padding: 2px;
   border: 1px solid #ccc;
   border-top-color: #999;
   background: #fff;
   color: #333;
 }
-input.form-text:focus,
-input.form-file:focus,
-textarea.form-textarea:focus,
-select.form-select:focus {
+#modalContent input.form-text:focus,
+#modalContent input.form-file:focus,
+#modalContent textarea.form-textarea:focus,
+#modalContent select.form-select:focus {
   color: #000;
   border-color: #ace;
 }
@@ -286,17 +286,17 @@ html.js input.form-autocomplete {
 html.js input.throbbing {
   background-position: 100% -16px;
 }
-ul.action-links {
+#modalContent ul.action-links {
   margin: 1em 0;
   padding: 0 20px 0 20px; /* LTR */
   list-style-type: none;
   overflow: hidden;
 }
-ul.action-links li {
+#modalContent ul.action-links li {
   float: left; /* LTR */
   margin: 0 1em 0 0; /* LTR */
 }
-ul.action-links a {
+#modalContent ul.action-links a {
   padding-left: 15px; /* LTR */
   background: transparent url(images/add.png) no-repeat 0 center;
   line-height: 30px;

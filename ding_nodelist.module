@@ -112,8 +112,8 @@ function ding_nodelist_ctools_plugin_directory($module, $plugin) {
 function ding_nodelist_ajax_render_alter(&$commands) {
   global $ipe_mode, $ipe_redirect;
   if ($ipe_mode) {
-    ctools_add_css('ipe', 'ding_nodelist');
-    $styles = drupal_get_css();
+    $path = drupal_get_path('module', 'ding_nodelist') . "/css/ipe.css";
+    $styles = '<style type="text/css" media="all">@import url("' . $path . '");</style>';
     $commands[] = ajax_command_append('head', $styles);
   }
 
