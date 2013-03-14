@@ -35,7 +35,10 @@ $event_date = _ding_nodelist_get_event_date($item);
         <span><?php print t('Time');?></span>
         <span><?php print format_date($event_date, 'custom', 'H:i');?></span>
       </div>
-      <?php print drupal_render(field_view_field('node', $item, 'group_audience', 'teaser'));?>
+      <?php
+        $audience = field_view_field('node', $item, 'group_audience', 'teaser');
+        print drupal_render($audience);
+      ?>
       <div class="event-fee">
       <?php
         $fee = current(field_get_items('node', $item, 'field_event_fee'));

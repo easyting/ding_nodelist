@@ -1435,6 +1435,8 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Apply sorting.
   $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
 
+  $nodes = _ding_nodelist_striptags($nodes);
+
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
   $image_style = _ding_nodelist_init_image_style($conf['widget_type'], $conf['region']);
@@ -1973,6 +1975,18 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
     return array('path' => $path, 'title' => $title, 'alt' => $alt);
   }
   return array();
+}
+
+/**
+ * Strips all HTML tags in body.
+ */
+function _ding_nodelist_striptags($nodes) {
+  foreach ($nodes as $n=>$node) {
+    foreach ($node->field_ding_body as $lng=>$body) {
+      $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+    }
+  }
+  return $nodes;
 }
 
 include_once('ding_nodelist.features.inc');
