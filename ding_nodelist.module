@@ -1427,13 +1427,22 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // Fetch content IDs.
   $nodes = _ding_nodelist_get_custom_list_nodes($conf);
-  $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+
+  // Check if dynamic nodes must be loaded
+  $custom_content = !empty($conf['selected_nodes']);
+  $dynamic_content = !empty($conf['taxonomy_filters']);
+  $only_custom_content = (($custom_content == TRUE) && ($dynamic_content == FALSE)) ? TRUE : FALSE;
+  if (!$only_custom_content) {
+    $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+  }
 
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
   // Apply sorting.
   $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
+
+  $nodes = _ding_nodelist_striptags($nodes);
 
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
@@ -1973,6 +1982,18 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
     return array('path' => $path, 'title' => $title, 'alt' => $alt);
   }
   return array();
+}
+
+/**
+ * Strips all HTML tags in body.
+ */
+function _ding_nodelist_striptags($nodes) {
+  foreach ($nodes as $n=>$node) {
+    foreach ($node->field_ding_body as $lng=>$body) {
+      $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+    }
+  }
+  return $nodes;
 }
 
 include_once('ding_nodelist.features.inc');
