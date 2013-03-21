@@ -6,7 +6,8 @@
  */
 
 $title = $item->title;
-$body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
+$body = field_view_field('node', $item, 'field_ding_body', 'teaser');
+$body = drupal_render($body);
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
