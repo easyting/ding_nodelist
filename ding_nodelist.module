@@ -1427,7 +1427,14 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // Fetch content IDs.
   $nodes = _ding_nodelist_get_custom_list_nodes($conf);
-  $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+
+  // Check if dynamic nodes must be loaded
+  $custom_content = !empty($conf['selected_nodes']);
+  $dynamic_content = !empty($conf['taxonomy_filters']);
+  $only_custom_content = (($custom_content == TRUE) && ($dynamic_content == FALSE)) ? TRUE : FALSE;
+  if (!$only_custom_content) {
+    $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+  }
 
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
