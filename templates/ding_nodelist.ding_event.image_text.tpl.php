@@ -15,7 +15,7 @@ $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_get_event_date($item);
 ?>
 <li class="event item">
-  <div class="expand"><?php print l('', 'node/' . $item->nid);?></div>
+  <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
   <div class="label"><?php print t('Calendar');?></div>
   <div class="event-date">
     <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
