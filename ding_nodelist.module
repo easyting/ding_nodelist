@@ -1958,8 +1958,20 @@ function _ding_nodelist_get_column_map() {
  */
 function _ding_nodelist_get_event_date($event_node) {
   $event_date = field_get_items('node', $event_node, 'field_event_date');
-  $date_obj = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
-  return $date_obj->getTimestamp();
+
+  $start = new DateTime($event_date[0]['value'], new DateTimeZone('UTC'));
+  $start = $start->getTimestamp();
+
+  $end = new DateTime($event_date[0]['value2'], new DateTimeZone('UTC'));
+  $end = $end->getTimestamp();
+
+  $result = $start;
+  $now = time();
+  if ($start <= $now && $now <= $end) {
+    $result = $now;
+  }
+
+  return $result;
 }
 
 /**
