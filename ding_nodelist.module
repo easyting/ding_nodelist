@@ -221,7 +221,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     'more_text' => t('More'),
     'more_link' => '',
     'teaser_length' => 100,
-    'autoscroll_delay' => 3000
+    'autoscroll_delay' => 3000,
   );
 
   $form['#prefix'] = '<div id="ding_nodelist-form-wrapper">';
@@ -518,8 +518,8 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       // Hide the settings when the sorting order is not applicable.
       'invisible' => array(
         ':input[name="sort_field"]' => array(array('value' => ''), array('value' => 'sticky')),
-      )
-    )
+      ),
+    ),
   );
 
   /**
@@ -679,8 +679,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
   ctools_plugin_load_includes($simple_cache_plugin);
   $pane = $form_state['pane'];
-  $settings = !empty($pane->cache['settings']) ? $pane->cache['settings'] :
-              array(
+  $settings = !empty($pane->cache['settings']) ? $pane->cache['settings'] : array(
     'lifetime' => variable_get('ding_nodelist_cache_default_time', NL_CACHE_LIFETIME),
     'granularity' => 'context',
   );
@@ -709,7 +708,7 @@ function _ding_nodelist_selected_node($key, $type, $node = NULL, $weight = 0) {
   );
 
   // Set default value for 'node'
-  $node_default =  (!is_null($node) && isset($node['node'])) ? $node['node'] : '';
+  $node_default = (!is_null($node) && isset($node['node'])) ? $node['node'] : '';
   $form['node'] = array(
     '#type' => 'textfield',
     '#title' => t('Select new node to add to list'),
@@ -1342,8 +1341,7 @@ function theme__ding_nodelist_templates_table($variables) {
     );
   }
 
-  return theme('table', array('header' => $header, 'rows' => $rows))
-    . drupal_render_children($form);
+  return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($form);
 }
 
 /**
@@ -1566,7 +1564,7 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
       $tpl_record = array(
         'filename' => $template_name,
         'title' => $template_name,
-        'status' => NL_TPL_HIDDEN     , // @todo: show nodelist's native templates by default?
+        'status' => NL_TPL_HIDDEN, // @todo: show nodelist's native templates by default?
       );
       try {
         db_insert('ding_nodelist_templates')->fields($tpl_record)->execute();
@@ -1671,8 +1669,7 @@ function _ding_nodelist_simple_cache_save(&$form_state) {
   ctools_include('plugins');
   $simple_cache_plugin = ctools_plugin_get_info('panels', 'cache');
   ctools_plugin_load_includes($simple_cache_plugin);
-  $cid = panels_simple_cache_get_id($pane_cache['settings'], $form_state['display'],
-    array() /* args not used */, $form_state['contexts'], $form_state['pane']);
+  $cid = panels_simple_cache_get_id($pane_cache['settings'], $form_state['display'], array() /* args not used */, $form_state['contexts'], $form_state['pane']);
   cache_clear_all($cid, 'cache');
 }
 
@@ -1697,8 +1694,7 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
     $i = 1;
     foreach ($conf['taxonomy_filters'] as $filter) {
       $ti_r = 'ti' . $i++;
-      $filter['filter_terms'] = is_array($filter['filter_terms']) ?
-        $filter['filter_terms'] : array($filter['filter_terms']);
+      $filter['filter_terms'] = is_array($filter['filter_terms']) ? $filter['filter_terms'] : array($filter['filter_terms']);
       // Use $i in argument placeholder as workaround.
       $ti_l = $query->join('taxonomy_index', $ti_r, "$ti_l.nid = $ti_r.nid AND $ti_r.tid IN (:tids$i)", array(":tids$i" => $filter['filter_terms']));
     }
@@ -1991,7 +1987,11 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
     $path = $image['uri'];
     $title = !empty($image['field_dams_title']) ? $image['field_dams_title']['und'][0]['safe_value'] : '';
     $alt = !empty($image['field_dams_alt_name']) ? $image['field_dams_alt_name']['und'][0]['safe_value'] : '';
-    return array('path' => $path, 'title' => $title, 'alt' => $alt);
+    return array(
+      'path' => $path,
+      'title' => $title,
+      'alt' => $alt
+    );
   }
   return array();
 }
@@ -2000,8 +2000,8 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
  * Strips all HTML tags in body.
  */
 function _ding_nodelist_striptags($nodes) {
-  foreach ($nodes as $n=>$node) {
-    foreach ($node->field_ding_body as $lng=>$body) {
+  foreach ($nodes as $n => $node) {
+    foreach ($node->field_ding_body as $lng => $body) {
       $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
     }
   }
