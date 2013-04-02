@@ -12,8 +12,9 @@
  * group_audience
  */
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
+$background_image_style = $image ? ' style="background-image: url(\'' . image_style_url($conf['image_style'], $image['path']) . '\')" title="' . $image['title'] . '"' : '';
 ?>
-<div class="item news va-slice" <?php print $image ? 'style="background-image: url(\'' . file_create_url($image['path']) . '\')" title="' . $image['title'] . '"' : ''; ?>>
+<div class="item news va-slice"<?php print $background_image_style; ?>>
   <div class="va-title">
     <div class="event-label"><?php print t('News');?></div>
   </div>
@@ -22,7 +23,12 @@ $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
       <h3>
         <?php print l($item->title, 'node/' . $item->nid);?>
       </h3>
-      <div class="category"><?php print drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));?></div>
+      <div class="category">
+      <?php
+        $body = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
+        print drupal_render($body);
+      ?>
+      </div>
     </div>
   </div>
 </div>

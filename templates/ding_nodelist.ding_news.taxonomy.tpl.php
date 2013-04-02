@@ -6,8 +6,10 @@
  */
 
 $title = $item->title;
-$body = drupal_render(field_view_field('node', $item, 'field_ding_body', 'teaser'));
-$category = drupal_render(field_view_field('node', $item, 'field_editorial_base_n', 'teaser'));
+$body = field_view_field('node', $item, 'field_ding_body', 'teaser');
+$body = drupal_render($body);
+$category = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
+$cateogry = drupal_render($category);
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 if (!empty($item->publish_on)) {
   $date = $item->publish_on;
@@ -15,7 +17,7 @@ if (!empty($item->publish_on)) {
 else {
   $date = $item->created;
 }
-$date = format_date($date, 'date_combined');
+$date = format_date($date, 'custom', 'd/m/Y');
 $author = $item->name;
 
 /**
