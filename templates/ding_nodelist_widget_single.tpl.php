@@ -12,10 +12,8 @@
 ?>
 <?php if ($items): ?>
 <div class="<?php print $conf['classes']?>">
-<?php if (isset($conf['title'])): ?>
-<?php if (!empty($conf['title'])): ?>  
+<?php if (isset($conf['title']) && !empty($conf['title'])): ?>
 <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
-<?php endif; ?>
 <?php endif; ?>
   <div class="ding_nodelist-items">
   <?php
