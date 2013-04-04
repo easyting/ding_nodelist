@@ -11,16 +11,16 @@
  */
 ?>
 <?php if ($items): ?>
-<div class="<?php print $conf['classes']?>">
-<?php if (!empty($conf['title'])): ?>
-<h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
-<?php endif; ?>
-  <div class="ding_nodelist-items va-wrapper">
-    <?php
+  <div class="<?php print $conf['classes'] ?>">
+    <?php if (!empty($conf['title'])): ?>
+      <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
+    <?php endif; ?>
+    <div class="ding_nodelist-items va-wrapper">
+      <?php
       foreach ($items as $node) {
         print theme($template, array('item' => $node, 'conf' => $conf));
       }
-    ?>
- </div>
-</div>
+      ?>
+    </div>
+  </div>
 <?php endif; ?>
