@@ -13,7 +13,7 @@
 <?php if ($items): ?>
 <div class="<?php print $conf['classes']?>">
   <div class="legend">
-    <?php if (isset($conf['title']) && !empty($conf['title'])): ?>
+    <?php if (!empty($conf['title'])): ?>
     <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
     <?php endif; ?>
     <?php foreach ($links as $key => $bottom) : ?>
