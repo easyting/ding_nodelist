@@ -994,17 +994,10 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
               form_set_error("selected_nodes][$key", t('No custom list content specified.'));
             }
           }
-          elseif (empty($node['node']) && $node_cnt == 1) {
-            //$no_custom_content = TRUE;
-          }
         }
-      }
-      else {
-        //$no_custom_content = TRUE;
       }
 
       // Check for empty filters.
-      //$no_dynamic_content = FALSE;
       if (!empty($form_state['values']['taxonomy_filters']) && $form_state['values']['dynamic_switch']) {
         $filter_cnt = count($form_state['values']['taxonomy_filters']);
         foreach ($form_state['values']['taxonomy_filters'] as $key => $filter) {
@@ -1013,13 +1006,7 @@ function ding_nodelist_content_type_edit_form_validate($form, &$form_state) {
               form_set_error("taxonomy_filters][$key][filter_terms", t('No terms specified for dynamic list filter.'));
             }
           }
-          elseif (empty($filter['filter_terms']) && $filter_cnt == 1) {
-            //$no_dynamic_content = TRUE;
-          }
         }
-      }
-      else {
-        //$no_dynamic_content = TRUE;
       }
     }
   }
