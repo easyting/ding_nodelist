@@ -173,7 +173,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   $trigger = !empty($form_state['triggering_element']) ? $form_state['triggering_element'] : NULL;
 
   // CT/widget select change handlers.
-  //Process them first since they affect the rest of the form.
+  // Process them first since they affect the rest of the form.
   if ($trigger) {
     if ($trigger['#name'] == 'content_type') {
       // Refresh CT setting.
@@ -189,7 +189,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     }
     elseif ($trigger['#name'] == 'widget_type') {
       $node_type = $form_state['values']['content_type'];
-      //$item_templates = _ding_nodelist_get_templates(FALSE, $node_type, $form_state['triggering_element']['#value']);
       // Reset default scrolling delay.
       unset($form_state['input']['autoscroll_delay']);
       $form_state['values']['autoscroll_delay'] = '';
@@ -229,8 +228,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
 
   $form['#prefix'] = '<div id="ding_nodelist-form-wrapper">';
   $form['#suffix'] = '</div>';
-
-
 
   // Initial settings.
   $form['ding_nodelist_wrapper'] = array(
@@ -1123,11 +1120,12 @@ function ding_nodelist_autocomplete($type, $title = '') {
 
   // Fetch all published nodes.
   $nodes = db_select('node', 'n')
-      ->fields('n', array('nid', 'title'))
-      ->condition('n.type', $type)
-      ->condition('n.title', "%$title%", 'LIKE')
-      ->condition('n.status', NODE_PUBLISHED)
-      ->execute()->fetchAllKeyed();
+    ->fields('n', array('nid', 'title'))
+    ->condition('n.type', $type)
+    ->condition('n.title', "%$title%", 'LIKE')
+    ->condition('n.status', NODE_PUBLISHED)
+    ->execute()
+    ->fetchAllKeyed();
 
   // Make a beatifull select.
   $formatted_result = array();
@@ -1709,7 +1707,7 @@ function _ding_nodelist_simple_cache_save(&$form_state) {
   $pane_cache['method'] = 'simple';
   $pane_cache['settings'] = array(
     // Defaults the setting for users w/o cache access to 30 minutes.
-    'lifetime' => user_access('nodelist cache settings') && isset($form_state['values']['lifetime']) ? $form_state['values']['lifetime'] : 1800,
+    'lifetime' => user_access('nodelist cache settings') && isset($form_state['values']['lifetime']) ? $form_state['values']['lifetime'] : variable_get('ding_nodelist_cache_default_time', NL_CACHE_LIFETIME),
     'granularity' => 'context',
   );
 
@@ -1970,10 +1968,11 @@ function _ding_nodelist_get_widget_types($content_type = NULL) {
   // Fetch only widgets that have templates configured.
   if ($content_type) {
     $supported_widgets = db_select('ding_nodelist_templates', 't')
-        ->fields('t', array('widget'))
-        ->condition('t.filename', "%.$content_type.%", 'LIKE')
-        ->condition('t.status', NL_TPL_ACTIVE)
-        ->execute()->fetchAllKeyed(0, 0);
+      ->fields('t', array('widget'))
+      ->condition('t.filename', "%.$content_type.%", 'LIKE')
+      ->condition('t.status', NL_TPL_ACTIVE)
+      ->execute()
+      ->fetchAllKeyed(0, 0);
     $supported_widgets = array_intersect_key($widgets, $supported_widgets);
     return $supported_widgets;
   }
