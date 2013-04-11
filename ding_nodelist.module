@@ -12,7 +12,7 @@ define('NL_WIDGET_HOR_ACCORDION', 'horizontal_accordion');
 define('NL_WIDGET_VER_ACCORDION', 'vertical_accordion');
 define('NL_WIDGET_SLIDER', 'slider');
 define('NL_WIDGET_TAXONOMY_LIKE', 'taxonomy');
-define('NL_WIDGET_TWO_COL', 'two_col');
+define('NL_WIDGET_TAXONOMY_TWO_COL', 'two_col');
 
 define('NL_COL_FULL', 'full');
 define('NL_COL_HALF', 'half');

@@ -24,7 +24,7 @@
           echo '</div>';
           echo '<div class="row">';
         }
-        print theme($template, array('item' => $node));
+        print theme($template, array('item' => $node, 'conf' => $conf));
         $i++;
       }
     ?>
