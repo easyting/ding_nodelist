@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function ding_nodelist_schema() {
   $schema['ding_nodelist_templates'] = array(
@@ -55,18 +55,14 @@ function ding_nodelist_schema() {
  * Provides basic configuration of nodelist templates/widgets.
  */
 function ding_nodelist_install() {
-  /**
-   * Set available node types.
-   */
+  // Set available node types.
   $node_types = array(
     'ding_event' => 'ding_event',
     'ding_news' => 'ding_news',
   );
   variable_set('ding_nodelist_node_types', $node_types);
 
-  /**
-   * Create template/wid get settings.
-   */
+  // Create template/wid get settings.
   $mappings = array(
     'ding_nodelist.ding_event.carousel' => 'carousel',
     'ding_nodelist.ding_event.image_text' => 'horizontal_accordion',
