@@ -546,13 +546,22 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#title' => t('Various'),
   );
 
+  // Initialize drop-down array's values.
+  $options = array_merge(
+    array(0 => t('none')), range(1, 25)
+  );
+  for ($i = 30; $i <= 100; $i+=10) {
+    $options[$i] = $i ;
+    if ($i < 50) {
+      $options[$i + 5] = $i + 5;
+    }
+  }
+
   $form['ding_nodelist_wrapper']['nodelist_various_settings']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
     '#default_value' => isset($conf['limit']) ? $conf['limit'] : $default_conf['limit'],
-    '#options' => array_merge(
-      array(0 => t('none')), range(1, 25), array(30, 35, 40, 45, 50, 60, 70, 80, 90, 100)
-    ),
+    '#options' => $options,
     '#description' => t('Limit amount of items displayed. This value is used only for Dynamic and All content displays.'),
     '#states' => array(
       'invisible' => array(
