@@ -545,18 +545,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Various'),
   );
-
+  
   // Initialize drop-down array's values.
-  $options = array_merge(
-    array(0 => t('none')), range(1, 25)
-  );
-  for ($i = 30; $i <= 100; $i+=10) {
-    $options[$i] = $i ;
-    if ($i < 50) {
-      $options[$i + 5] = $i + 5;
-    }
-  }
-
+  $options = array(0 => 'none') 
+  + array_combine(range(1, 25), range(1, 25))
+  + array_combine(range(30, 50, 5), range(30, 50, 5))
+  + array_combine(range(50, 100, 10), range(50, 100, 10));
+  
   $form['ding_nodelist_wrapper']['nodelist_various_settings']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
