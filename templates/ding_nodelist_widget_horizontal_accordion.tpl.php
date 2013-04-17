@@ -18,7 +18,9 @@
     <ul class="ding_nodelist-items">
       <?php
       foreach ($items as $node) {
-        print theme($template, array('item' => $node, 'conf' => $conf));
+        if (count($node->field_main_image) > 0){
+          print theme($template, array('item' => $node, 'conf' => $conf));
+        }
       }
       ?>
     </ul>
