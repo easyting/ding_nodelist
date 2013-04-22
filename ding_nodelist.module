@@ -1454,7 +1454,16 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
 
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
-
+  
+  // Remove elements if they are of type carousel, single item, vertical 
+  // accordion or horizontal accordion and do not contain main image.
+  if (($conf['widget_type'] == 'single') || ($conf['widget_type'] == 'carousel') || ($conf['widget_type'] == 'horizontal_accordion') || ($conf['widget_type'] == 'vertical_accordion')) {
+   foreach ($nodes as $key => $node) {
+     if (count($node->field_main_image) <= 0) {
+       unset($nodes[$key]);
+     }  
+   }
+  }
   // Apply sorting.
   $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
 

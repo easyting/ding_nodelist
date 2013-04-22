@@ -18,9 +18,7 @@
     <div class="ding_nodelist-items va-wrapper">
       <?php
       foreach ($items as $node) {
-        if (count($node->field_main_image) > 0){ 
-          print theme($template, array('item' => $node, 'conf' => $conf));
-        }
+        print theme($template, array('item' => $node, 'conf' => $conf));
       }
       ?>
     </div>
