@@ -1459,7 +1459,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // accordion or horizontal accordion and do not contain main image.
   if (in_array($conf['widget_type'], array('single', 'carousel', 'horizontal_accordion', 'vertical_accordion'))) {
    foreach ($nodes as $key => $node) {
-     if (count($node->field_main_image) <= 0) {
+     if (count($node->field_list_image) <= 0) {
        unset($nodes[$key]);
      }  
    }
