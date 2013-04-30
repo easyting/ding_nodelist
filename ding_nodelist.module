@@ -2046,8 +2046,8 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
   if ($image) {
     $image = reset($image);
     $path = $image['uri'];
-    $title = !empty($image['field_dams_title']) ? $image['field_dams_title']['und'][0]['safe_value'] : '';
-    $alt = !empty($image['field_dams_alt_name']) ? $image['field_dams_alt_name']['und'][0]['safe_value'] : '';
+    $title = !empty($image['field_file_image_title_text']) ? $image['field_file_image_title_text']['und'][0]['safe_value'] : '';
+    $alt = !empty($image['field_file_image_alt_text']) ? $image['field_file_image_alt_text']['und'][0]['safe_value'] : $title;
     return array(
       'path' => $path,
       'title' => $title,
