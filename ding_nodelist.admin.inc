@@ -38,14 +38,17 @@ function ding_nodelist_settings_form() {
     '#title' => t('Autoscroll delay'),
     '#description' => t('The delay to show an item for various nodelist widgets (in milliseconds).'),
   );
+
   $autoscrolling_widgets = array(
     NL_WIDGET_CAROUSEL => array('Carousel', 3000),
     NL_WIDGET_HOR_ACCORDION => array('Horizontal accordion', 3000),
   );
+
   foreach ($autoscrolling_widgets as $widget => $conf) {
+    $title = isset($conf[0]) ? t(check_plain($conf[0])) : '';
     $form['ding_nodelist_autoscroll_delay']['ding_nodelist_' . $widget . '_delay'] = array(
       '#type' => 'textfield',
-      '#title' => t($conf[0]),
+      '#title' => $title,
       '#default_value' => variable_get('ding_nodelist_' . $widget . '_delay', $conf[1]),
       '#size' => 5,
     );
