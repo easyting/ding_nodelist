@@ -192,6 +192,11 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       // Reset default scrolling delay.
       unset($form_state['input']['autoscroll_delay']);
       $form_state['values']['autoscroll_delay'] = '';
+
+      // Reset nodelist title.
+      unset($form_state['input']['override_title_text']);
+      $form_state['values']['override_title_text'] = '';
+
       _ding_nodelist_content_type_form_save($form_state, TRUE);
     }
   }
@@ -297,14 +302,18 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     );
   }
 
-  $form['ding_nodelist_wrapper']['override_title_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('List title'),
-    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.')
-    . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
-    '#required' => FALSE,
-    '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
-  );
+  // Make title appear only on some widgets.
+  $widgets_with_title = _ding_nodelist_widgets_with_titles();
+  if (in_array($widget_type, $widgets_with_title)) {
+    $form['ding_nodelist_wrapper']['widget_dependent']['override_title_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('List title'),
+      '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.')
+      . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
+      '#required' => FALSE,
+      '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
+    );
+  }
 
   // Manually controlled list.
   $form['ding_nodelist_wrapper']['nodelist_content'] = array(
@@ -545,13 +554,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Various'),
   );
-  
+
   // Initialize drop-down array's values.
-  $options = array(0 => 'none') 
+  $options = array(0 => 'none')
   + array_combine(range(1, 25), range(1, 25))
   + array_combine(range(30, 50, 5), range(30, 50, 5))
   + array_combine(range(50, 100, 10), range(50, 100, 10));
-  
+
   $form['ding_nodelist_wrapper']['nodelist_various_settings']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
@@ -1459,13 +1468,13 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
-  // Remove elements if they are of type carousel, single item, vertical 
+  // Remove elements if they are of type carousel, single item, vertical
   // accordion or horizontal accordion and do not contain list image.
   if (in_array($conf['widget_type'], array('single', 'carousel', 'horizontal_accordion', 'vertical_accordion'))) {
    foreach ($nodes as $key => $node) {
      if (count($node->field_list_image) <= 0) {
        unset($nodes[$key]);
-     }  
+     }
    }
   }
 
@@ -2067,6 +2076,25 @@ function _ding_nodelist_striptags($nodes) {
     }
   }
   return $nodes;
+}
+
+/**
+ * Get the list of widgets with titles.
+ *
+ * @return array
+ *   List of widgets with titles.
+ */
+function _ding_nodelist_widgets_with_titles() {
+  // For more info search ".ding_nodelist-title" in core.css file.
+  // Without title: horizontal_accordion, single
+
+  return array(
+    NL_WIDGET_CAROUSEL,
+    NL_WIDGET_LIST,
+    NL_WIDGET_SLIDER,
+    NL_WIDGET_TAXONOMY_LIKE,
+    NL_WIDGET_VER_ACCORDION,
+  );
 }
 
 include_once('ding_nodelist.features.inc');
