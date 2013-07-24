@@ -18,7 +18,7 @@ $background_image_style = $image ? ' style="background-image: url(\'' . image_st
   <div class="va-title">
     <div class="event-label"><?php print t('News');?></div>
   </div>
-  <div class="va-content">
+  <div class="va-content" data-destination="<?php print url('node/' . $item->nid);?>">
     <div class="caption">
       <h3>
         <?php print l($item->title, 'node/' . $item->nid);?>

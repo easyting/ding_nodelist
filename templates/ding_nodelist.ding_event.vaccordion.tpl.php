@@ -25,7 +25,7 @@ $background_image_style = $image ? ' style="background-image: url(\'' . image_st
       <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
     </div>
   </div>
-  <div class="va-content">
+  <div class="va-content" data-destination="<?php print url('node/' . $item->nid) ?>">
     <div class="caption">
       <h3>
         <?php print l($item->title, 'node/' . $item->nid);?>
