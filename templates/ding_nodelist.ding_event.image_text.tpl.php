@@ -22,7 +22,7 @@ $event_date = _ding_nodelist_get_event_date($item);
     <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
   </div>
   <div class="image">
-  <?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?>
+    <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
   </div>
   <div class="data">
     <div class="caption">

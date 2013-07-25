@@ -17,8 +17,8 @@ $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
 $event_date = _ding_nodelist_get_event_date($item);
 ?>
 <div class="item">
-	<div class="event-image">
-    <?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?>
+  <div class="event-image">
+    <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
   </div>
   <div class="event-label"><?php print t('Calendar');?></div>
   <div class="event-date">
