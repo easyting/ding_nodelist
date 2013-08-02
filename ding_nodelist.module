@@ -1875,10 +1875,10 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
     // In the case of events sorted by date.
     elseif ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
       if ($conf['sort_order'] == 'asc') {
-        uksort($sorted_nodes, 'ding_nodelist_event_date_sort');
+        ding_nodelist_event_date_sort_ascending($sorted_nodes);
       }
       else {
-        uksort($sorted_nodes, 'ding_nodelist_event_date_sort_reverse');
+        ding_nodelist_event_date_sort_ascending($sorted_nodes);
       }
       return $sorted_nodes;
     }
@@ -1898,16 +1898,62 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
   }
 }
 
-function ding_nodelist_event_date_sort($a, $b) {
-    global $_array;
-    return strcmp($_array[$a]['db'], $_array[$b]['db']);
+/**
+ * Implements ascending sorting of events by date.
+ *
+ * @param array $event_nodes
+ *   An array containing:
+ *     Associative arrays which themeselves contain single elements of:
+ *     - date: Is the key of the element.
+ *     - event: An event object as value of the element.
+ */
+function ding_nodelist_event_date_sort_ascending($event_nodes) {
+  // This will hold the sorted events.
+  $sorted_event_nodes = array();
+  // Create an array of dates. Keep the $key in order
+  // to have faster access later on.
+  $dates = array();
+  foreach ($event_nodes as $key => $event_array) {
+    $dates[$key] = array_shift(array_values($event_array));
+  }
+  // Sort dates in a ascending order by value.
+  asort($dates);
+  // Loop through sorted dates and add their corresponding element
+  // from the unsorted input.
+  foreach ($dates as $key => $date) {
+    $sorted_event_nodes[] = $event_nodes[$key];
+  }
+  return $sorted_event_nodes;
 }
 
-function ding_nodelist_event_date_sort_reverse($a, $b) {
-    global $_array;
-    return strcmp($_array[$b]['db'], $_array[$a]['db']);
-}
 
+/**
+ * Implements descending sorting of events by date.
+ *
+ * @param array $event_nodes
+ *   An array containing:
+ *     Associative arrays which themeselves contain:
+ *     - date: Is the key of the array.
+ *     - event: An event object.
+ */
+function ding_nodelist_event_date_sort_descending($event_nodes) {
+  // This will hold the sorted events.
+  $sorted_event_nodes = array();
+  // Create an array of dates. Keep the $key in order
+  // to have faster access later on.
+  $dates = array();
+  foreach ($event_nodes as $key => $event_array) {
+    $dates[$key] = array_shift(array_values($event_array));
+  }
+  // Sort dates in a descending order by value.
+    arsort($dates);
+  // Loop through sorted dates and add their corresponding element
+  // from the unsorted input.
+  foreach ($dates as $key => $date) {
+    $sorted_event_nodes[] = $event_nodes[$key];
+  }
+  return $sorted_event_nodes;
+}
 
 /**
  * Customized function for taxononmy autocomplete element validation
