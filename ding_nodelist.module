@@ -1878,7 +1878,7 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
         ding_nodelist_event_date_sort_ascending($sorted_nodes);
       }
       else {
-        ding_nodelist_event_date_sort_ascending($sorted_nodes);
+        ding_nodelist_event_date_sort_descending($sorted_nodes);
       }
       return $sorted_nodes;
     }
@@ -1932,7 +1932,7 @@ function ding_nodelist_event_date_sort_ascending($event_nodes) {
  *
  * @param array $event_nodes
  *   An array containing:
- *     Associative arrays which themeselves contain:
+ *     Associative arrays which themeselves contain single elements of:
  *     - date: Is the key of the array.
  *     - event: An event object.
  */
