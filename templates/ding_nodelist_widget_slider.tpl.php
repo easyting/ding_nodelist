@@ -25,7 +25,12 @@
     <div class="ding_nodelist-items">
       <?php
       foreach ($items as $node) {
-        print theme($template, array('item' => $node));
+        if ($conf['sorting']=='event_date') {
+          print theme($template, array('item' => array_shift(array_values($node))));
+        }
+        else {
+          print theme($template, array('item' => $node));
+        }
       }
       ?>
     </div>

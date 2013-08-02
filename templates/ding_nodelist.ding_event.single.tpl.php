@@ -12,6 +12,10 @@
  * group_audience
  */
 
+if ($variables['conf']['sorting'] == 'event_date') {
+  // Get the object from the array in the case we are sorting by date.
+  $item = array_shift(array_values($item));
+}
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
 $event_date = _ding_nodelist_get_event_date($item);
