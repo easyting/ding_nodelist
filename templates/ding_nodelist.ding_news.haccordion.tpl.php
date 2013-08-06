@@ -17,7 +17,9 @@ $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 <li class="item news">
   <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
   <div class="label"><?php print t('News');?></div>
-  <div class="image"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : '';?></div>
+  <div class="image">
+    <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : '';?></a>
+  </div>
   <div class="data">
     <div class="caption">
       <h3>

@@ -234,3 +234,7 @@ h3 {
   height: 150px;
   width: 100%;
 }
+
+.ding_nodelist-vertical_accordion .va-slice {
+  cursor: pointer;
+}

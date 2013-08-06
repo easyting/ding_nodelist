@@ -15,6 +15,9 @@
         visibleSlices: slides,
         animOpacity: 0.2
       });
+    }).find('.va-content').click(function(e){
+      document.location.href = $(this).data('destination');
+      e.stopPropagation();
     });
   });
 })(jQuery);

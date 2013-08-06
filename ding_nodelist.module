@@ -1415,7 +1415,6 @@ function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL)
  *   An object with at least title and content members.
  */
 function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
-
   $block = new stdClass();
 
   // Prepare classes for widget container.
@@ -1495,6 +1494,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
       'title' => $title,
       'classes' => join(' ', $classes),
       'image_style' => $image_style,
+      'sorting' => $conf['sort_field'],
     ),
   ));
 
@@ -1848,7 +1848,7 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
     foreach ($nodes as $node) {
       // Prepare for custom sorting.
       if ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
-        $sorted_nodes[_ding_nodelist_get_event_date($node)] = $node;
+        $sorted_nodes[][_ding_nodelist_get_event_date($node)] = $node;
       }
       elseif ($conf['sort_field'] == 'created') {
         $sorted_nodes[$node->created] = $node;
@@ -1872,6 +1872,10 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
         $sorted_nodes = array_reverse($sorted_nodes);
       }
     }
+    // In the case of events sorted by date.
+    elseif ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
+      return ding_nodelist_event_date_sort($sorted_nodes, $conf['sort_order']);
+    }
     // And common sorting for other cases.
     else {
       if ($conf['sort_order'] == 'asc') {
@@ -1886,6 +1890,41 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
   else {
     return $nodes;
   }
+}
+
+/**
+ * Implements ascending sorting of events by date.
+ *
+ * @param array $event_nodes
+ *   An array containing:
+ *     Associative arrays which themeselves contain single elements of:
+ *     - date: Is the key of the element.
+ *     - event: An event object as value of the element.
+ * @param string $sorting_order
+ *    A string containing 'asc' when sorting by ascending way.
+ */
+function ding_nodelist_event_date_sort($event_nodes, $sorting_order) {
+  // This will hold the sorted events.
+  $sorted_event_nodes = array();
+  // Create an array of dates. Keep the $key in order
+  // to have faster access later on.
+  $dates = array();
+
+  foreach ($event_nodes as $key => $event_array) {
+    $dates[$key] = array_shift(array_keys($event_array));
+  }
+  if ($sorting_order == 'asc') {
+    asort($dates);
+  }
+  else {
+    arsort($dates);
+  }
+  // Loop through sorted dates and add their corresponding element
+  // from the unsorted input.
+  foreach ($dates as $key => $date) {
+    $sorted_event_nodes[] = $event_nodes[$key];
+  }
+  return $sorted_event_nodes;
 }
 
 /**
@@ -2071,8 +2110,17 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
  */
 function _ding_nodelist_striptags($nodes) {
   foreach ($nodes as $n => $node) {
-    foreach ($node->field_ding_body as $lng => $body) {
-      $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+    if (!is_array($node)) {
+      foreach ($node->field_ding_body as $lng => $body) {
+        $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+      }
+    }
+    else {
+      foreach ($node as $event_date => $event_node) {
+        foreach ($event_node->field_ding_body as $lng => $body) {
+          $nodes[$n][$event_date]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+        }
+      }
     }
   }
   return $nodes;
