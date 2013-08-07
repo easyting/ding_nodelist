@@ -1819,6 +1819,15 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
   return $nodes;
 }
 
+/**
+ * Fetch all nodes, for a specific content type.
+ *
+ * @param Array $conf
+ *   Configuration array, as passed from ctools panel.
+ *
+ * @return Array
+ *   List of node id's.
+ */
 function _ding_nodelist_get_all_nodes($conf) {
   $type = isset($conf['content_type']) ? $conf['content_type'] : '';
   $limit = isset($conf['limit']) ? $conf['limit'] : 10;
