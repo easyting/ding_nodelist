@@ -1393,9 +1393,11 @@ function ding_nodelist_content_type_admin_title($subtype, $conf, $context = NULL
  */
 function ding_nodelist_content_type_admin_info($subtype, $conf, $context = NULL) {
   // @todo: show details about nodelist configuration here.
+  $block = new stdClass();
   $block->title = t('No information');
   $info = '';
   $block->content = $info;
+
   return $block;
 }
 
@@ -1453,15 +1455,22 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load default CSS.
   drupal_add_css(drupal_get_path('module', 'ding_nodelist') . '/css/ding_nodelist.css', 'file');
 
-  // Fetch content IDs.
-  $nodes = _ding_nodelist_get_custom_list_nodes($conf);
+  $nodes = array();
+  if ($conf['list_type'] == 'custom-dynamic') {
+    $custom_content = !empty($conf['selected_nodes']);
+    $dynamic_content = !empty($conf['taxonomy_filters']);
 
-  // Check if dynamic nodes must be loaded
-  $custom_content = !empty($conf['selected_nodes']);
-  $dynamic_content = !empty($conf['taxonomy_filters']);
-  $only_custom_content = (($custom_content == TRUE) && ($dynamic_content == FALSE)) ? TRUE : FALSE;
-  if (!$only_custom_content) {
-    $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+    if ($custom_content) {
+      $nodes = _ding_nodelist_get_custom_list_nodes($conf);
+    }
+
+    // Check if dynamic nodes must be loaded
+    if ($dynamic_content) {
+      $nodes = array_merge($nodes, _ding_nodelist_get_dynamic_list_nodes($conf));
+    }
+  }
+  else {
+    $nodes = _ding_nodelist_get_all_nodes($conf);
   }
 
   // Load items by their IDs.
@@ -1803,6 +1812,26 @@ function _ding_nodelist_get_dynamic_list_nodes($conf) {
   }
   elseif ($conf['limit']) {
     $query->range(0, $conf['limit']);
+  }
+
+  $nodes = $query->execute()->fetchCol();
+
+  return $nodes;
+}
+
+function _ding_nodelist_get_all_nodes($conf) {
+  $type = isset($conf['content_type']) ? $conf['content_type'] : '';
+  $limit = isset($conf['limit']) ? $conf['limit'] : 10;
+
+  $query = db_select('node', 'n')
+    ->fields('n', array('nid'))
+    ->condition('n.type', $type, '=');
+
+  if ($conf['widget_type'] == NL_WIDGET_SINGLE) {
+    $query->range(0, 1);
+  }
+  elseif ($conf['limit']) {
+    $query->range(0, $limit);
   }
 
   $nodes = $query->execute()->fetchCol();
