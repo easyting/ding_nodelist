@@ -246,3 +246,7 @@ h3 {
   clear: both;
   float: none;
 }
+
+.ding_nodelist-vertical_accordion .va-slice {
+  cursor: pointer;
+}

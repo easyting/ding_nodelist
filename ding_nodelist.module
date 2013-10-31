@@ -193,6 +193,11 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       // Reset default scrolling delay.
       unset($form_state['input']['autoscroll_delay']);
       $form_state['values']['autoscroll_delay'] = '';
+
+      // Reset nodelist title.
+      unset($form_state['input']['override_title_text']);
+      $form_state['values']['override_title_text'] = '';
+
       _ding_nodelist_content_type_form_save($form_state, TRUE);
     }
   }
@@ -298,14 +303,18 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     );
   }
 
-  $form['ding_nodelist_wrapper']['override_title_text'] = array(
-    '#type' => 'textfield',
-    '#title' => t('List title'),
-    '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.')
-    . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
-    '#required' => FALSE,
-    '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
-  );
+  // Make title appear only on some widgets.
+  $widgets_with_title = _ding_nodelist_widgets_with_titles();
+  if (in_array($widget_type, $widgets_with_title)) {
+    $form['ding_nodelist_wrapper']['widget_dependent']['override_title_text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('List title'),
+      '#description' => t('Enter a title to be shown above the list items. Leave empty to omit the title.')
+      . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
+      '#required' => FALSE,
+      '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
+    );
+  }
 
   // Manually controlled list.
   $form['ding_nodelist_wrapper']['nodelist_content'] = array(
@@ -546,13 +555,13 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => t('Various'),
   );
-  
+
   // Initialize drop-down array's values.
-  $options = array(0 => 'none') 
+  $options = array(0 => 'none')
   + array_combine(range(1, 25), range(1, 25))
   + array_combine(range(30, 50, 5), range(30, 50, 5))
   + array_combine(range(50, 100, 10), range(50, 100, 10));
-  
+
   $form['ding_nodelist_wrapper']['nodelist_various_settings']['limit'] = array(
     '#type' => 'select',
     '#title' => t('Item limit'),
@@ -1469,13 +1478,13 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
   // Load items by their IDs.
   $nodes = node_load_multiple($nodes);
 
-  // Remove elements if they are of type carousel, single item, vertical 
+  // Remove elements if they are of type carousel, single item, vertical
   // accordion or horizontal accordion and do not contain list image.
   if (in_array($conf['widget_type'], array('single', 'carousel', 'horizontal_accordion', 'vertical_accordion'))) {
    foreach ($nodes as $key => $node) {
      if (count($node->field_list_image) <= 0) {
        unset($nodes[$key]);
-     }  
+     }
    }
   }
 
@@ -1496,6 +1505,7 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
       'title' => $title,
       'classes' => join(' ', $classes),
       'image_style' => $image_style,
+      'sorting' => $conf['sort_field'],
     ),
   ));
 
@@ -1572,7 +1582,7 @@ function _ding_nodelist_init_image_style($widget, $region) {
     case NL_WIDGET_SINGLE:
     case NL_WIDGET_TAXONOMY_TWO_COL:
     case NL_WIDGET_VER_ACCORDION:
-      return $layout['regions_image_styles'][$region];
+      return $layout  ? $layout['regions_image_styles'][$region] : 'ding_large';
     case NL_WIDGET_TAXONOMY_LIKE:
     case NL_WIDGET_SLIDER:
       return 'ding_large';
@@ -1850,7 +1860,7 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
     foreach ($nodes as $node) {
       // Prepare for custom sorting.
       if ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
-        $sorted_nodes[_ding_nodelist_get_event_date($node)] = $node;
+        $sorted_nodes[][_ding_nodelist_get_event_date($node)] = $node;
       }
       elseif ($conf['sort_field'] == 'created') {
         $sorted_nodes[$node->created] = $node;
@@ -1874,6 +1884,10 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
         $sorted_nodes = array_reverse($sorted_nodes);
       }
     }
+    // In the case of events sorted by date.
+    elseif ($node->type == 'ding_event' && $conf['sort_field'] == 'event_date') {
+      return ding_nodelist_event_date_sort($sorted_nodes, $conf['sort_order']);
+    }
     // And common sorting for other cases.
     else {
       if ($conf['sort_order'] == 'asc') {
@@ -1888,6 +1902,41 @@ function _ding_nodelist_sort_nodes($nodes, $conf) {
   else {
     return $nodes;
   }
+}
+
+/**
+ * Implements ascending sorting of events by date.
+ *
+ * @param array $event_nodes
+ *   An array containing:
+ *     Associative arrays which themeselves contain single elements of:
+ *     - date: Is the key of the element.
+ *     - event: An event object as value of the element.
+ * @param string $sorting_order
+ *    A string containing 'asc' when sorting by ascending way.
+ */
+function ding_nodelist_event_date_sort($event_nodes, $sorting_order) {
+  // This will hold the sorted events.
+  $sorted_event_nodes = array();
+  // Create an array of dates. Keep the $key in order
+  // to have faster access later on.
+  $dates = array();
+
+  foreach ($event_nodes as $key => $event_array) {
+    $dates[$key] = array_shift(array_keys($event_array));
+  }
+  if ($sorting_order == 'asc') {
+    asort($dates);
+  }
+  else {
+    arsort($dates);
+  }
+  // Loop through sorted dates and add their corresponding element
+  // from the unsorted input.
+  foreach ($dates as $key => $date) {
+    $sorted_event_nodes[] = $event_nodes[$key];
+  }
+  return $sorted_event_nodes;
 }
 
 /**
@@ -2074,11 +2123,39 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
  */
 function _ding_nodelist_striptags($nodes) {
   foreach ($nodes as $n => $node) {
-    foreach ($node->field_ding_body as $lng => $body) {
-      $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+    if (!is_array($node)) {
+      foreach ($node->field_ding_body as $lng => $body) {
+        $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+      }
+    }
+    else {
+      foreach ($node as $event_date => $event_node) {
+        foreach ($event_node->field_ding_body as $lng => $body) {
+          $nodes[$n][$event_date]->field_ding_body[$lng][0]['safe_value'] = preg_replace('/<[^>]+>/i', '', $body[0]['safe_value']);
+        }
+      }
     }
   }
   return $nodes;
+}
+
+/**
+ * Get the list of widgets with titles.
+ *
+ * @return array
+ *   List of widgets with titles.
+ */
+function _ding_nodelist_widgets_with_titles() {
+  // For more info search ".ding_nodelist-title" in core.css file.
+  // Without title: horizontal_accordion, single
+
+  return array(
+    NL_WIDGET_CAROUSEL,
+    NL_WIDGET_LIST,
+    NL_WIDGET_SLIDER,
+    NL_WIDGET_TAXONOMY_LIKE,
+    NL_WIDGET_VER_ACCORDION,
+  );
 }
 
 include_once('ding_nodelist.features.inc');
