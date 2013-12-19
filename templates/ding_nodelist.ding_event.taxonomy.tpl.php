@@ -15,8 +15,7 @@ $body = drupal_render($body);
 $category = field_view_field('node', $item, 'group_audience', 'teaser');
 $category = drupal_render($category);
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
-$event_date = _ding_nodelist_get_event_date($item);
-$event_date = format_date($event_date, 'date_combined');
+$event_date = _ding_nodelist_formated_ding_event_date($item);
 $author = $item->name;
 
 /**

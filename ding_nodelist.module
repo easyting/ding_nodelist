@@ -2093,6 +2093,20 @@ function _ding_nodelist_get_event_date($event_node) {
 }
 
 /**
+ * Get formated ding_event_date field value.
+ *
+ * @param array $event_node
+ *   Node.
+ *
+ * @return string
+ */
+function _ding_nodelist_formated_ding_event_date($event_node) {
+  $field = field_get_items('node', $event_node, 'field_event_date');
+  $event_date = field_view_value('node', $event_node, 'field_event_date', $field[0], array('type'=>'ding_event_date'));
+  return render($event_date);
+}
+
+/**
  * Method used for receiving image details like path, alt and title.
  * Used in ding_nodelist templates.
  *
