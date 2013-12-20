@@ -1477,10 +1477,11 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
    }
   }
 
-  // Apply sorting.
-  $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
-
-  $nodes = _ding_nodelist_striptags($nodes);
+  if (count($nodes) > 0 ) {
+    // Apply sorting.
+    $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
+    $nodes = _ding_nodelist_striptags($nodes);
+  }
 
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
