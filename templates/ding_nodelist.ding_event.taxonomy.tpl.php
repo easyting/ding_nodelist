@@ -11,12 +11,12 @@ if ($variables['conf']['sorting'] == 'event_date') {
 }
 $title = $item->title;
 $body = field_view_field('node', $item, 'field_ding_body', 'teaser');
-$body = drupal_render($body);
+$body = render($body);
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_formated_ding_event_date($item);
 $author = $item->name;
 
-$library = field_view_field('node', $item, 'group_audience', 'teaser');
+$library = field_view_field('node', $item, 'group_audience', array('label' => 'hidden'));
 $library = render($library);
 
 /**
