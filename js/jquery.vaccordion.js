@@ -291,7 +291,9 @@
 						contentAnimSpeed: 900,
 						// if this is set to false, then before
 						// sliding we collapse any opened slice
-						savePositions	: true
+						savePositions	: true,
+            // autoplay option integer or false
+            autoplay      : false
 					};
 
 					return this.each(function() {
@@ -306,7 +308,9 @@
 							$slices			= $el.find('div.va-slice'),
 							// the navigation buttons
 							$navNext		= $el.find('span.va-nav-next'),
-							$navPrev		= $el.find('span.va-nav-prev');
+							$navPrev		= $el.find('span.va-nav-prev'),
+              // Active slice
+              current     = 0;
 
 						// each slice's height
 						cache.sliceH		= Math.ceil( settings.accordionH / settings.visibleSlices );
@@ -351,6 +355,10 @@
 							// otherwise we will just be able to slide.
 							if( settings.visibleSlices > 1 ) {
 								var $el			= $(this);
+
+                // Save clicked item as current
+                current = $el.index();
+
 								aux.selectSlice( $el, $slices, $navNext, $navPrev, settings );
 							}
 						});
@@ -375,6 +383,25 @@
 							return false;
 						});
 
+            // autoplay
+            if (settings.autoplay) {
+              if( settings.visibleSlices > 1 ) {
+                $slices.eq(current).click();
+
+                setInterval(
+                  function() {
+                    if (current < $slices.length) {
+                      current++;
+                    }
+                    else {
+                      current = 0;
+                    }
+                    $slices.eq(current).click();
+                  },
+                  settings.autoplay
+                );
+              }
+            }
 					});
 				}
 			}
