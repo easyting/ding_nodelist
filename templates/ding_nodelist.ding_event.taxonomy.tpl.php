@@ -11,10 +11,13 @@ if ($variables['conf']['sorting'] == 'event_date') {
 }
 $title = $item->title;
 $body = field_view_field('node', $item, 'field_ding_body', 'teaser');
-$body = drupal_render($body);
+$body = render($body);
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_formated_ding_event_date($item);
 $author = $item->name;
+
+$library = field_view_field('node', $item, 'group_audience', array('label' => 'hidden'));
+$library = render($library);
 
 /**
  * Available variables:
@@ -33,11 +36,18 @@ $author = $item->name;
 ?>
 <div class="item">
   <div class="item-list-image">
-    <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
+    <a href="<?php print url('node/' . $item->nid);?>"><?php
+      print $image ? theme(
+        'image_style',
+        array_merge($image, array('style_name' => $conf['image_style']))
+      ) : '';
+    ?></a>
   </div>
   <div class="item-details">
     <h2 class="item-title"><?php print l($title, 'node/' . $item->nid); ?></h2>
-    <span class="item-date"><?php print $event_date ?></span><span class="item-author"><?php print $author ?></span>
-    <div class="item-body"><?php print $body ?></div>
+    <span class="item-date"><?php print $event_date; ?></span>
+    <span class="item-author"><?php print $author; ?></span>
+    <span class="item-library"><?php print $library; ?></span>
+    <div class="item-body"><?php print $body; ?></div>
   </div>
 </div>

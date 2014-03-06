@@ -301,3 +301,6 @@ html.js input.throbbing {
   background: transparent url(images/add.png) no-repeat 0 center;
   line-height: 30px;
 }
+.ding-nodelist-help-text {
+  margin-bottom: 10px;
+}
