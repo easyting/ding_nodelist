@@ -1,28 +1,18 @@
 (function ($) {
   $(document).ready(function () {
+    $('.next-prev a').click(function (e) {
+      e.preventDefault();
+    });
+
     $('.ding_nodelist-slider').each(function(){
-      $(this).find('.ding_nodelist-items').carouFredSel({
-        circular: true,
-        infinite: true,
+      $(this).find('.ding_nodelist-items').newsTicker({
+        row_height: 95,
+        max_rows: 4,
+        duration: 4000,
         direction: 'down',
-        auto : false,
-        width: 'auto',
-        responsive: true,
-        items: {
-          visible: 3,
-          width: '100%'
-        },
-        scroll : {
-          items: 3
-        },
-        prev: {
-          button: $(this).find('.prev'),
-          key: "prev"
-        },
-        next: {
-          button: $(this).find('.next'),
-          key: "next"
-        }
+        pauseOnHover: 0,
+        prevButton: $('.next-prev .prev'),
+        nextButton: $('.next-prev .next')
       });
     });
   });

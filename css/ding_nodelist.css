@@ -216,21 +216,6 @@ h3 {
   overflow: hidden;
 }
 
-.ding_nodelist-slider .legend {
-  float: left;
-  width: 300px;
-}
-
-.ding_nodelist-slider .ding_nodelist-items {
-  float: left;
-  width: 600px;
-}
-
-.ding_nodelist-slider .ding_nodelist-items .item {
-  height: 150px;
-  width: 100%;
-}
-
 .ding_nodelist-vertical_accordion .va-slice {
   cursor: pointer;
 }
