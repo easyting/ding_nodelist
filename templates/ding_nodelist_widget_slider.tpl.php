@@ -17,9 +17,11 @@
         <h2 class="ding_nodelist-title"><?php print $conf['title']; ?></h2>
       <?php endif; ?>
       <?php foreach ($links as $key => $bottom) : ?>
-        <span>
-          <?php print l(t($bottom['text']), $bottom['links']); ?>
-        </span>
+        <div>
+          <small>
+            <?php print l(t($bottom['text']), $bottom['links']); ?>
+          </small>
+        </div>
       <?php endforeach; ?>
     </div>
     <ul class="ding_nodelist-items">
@@ -35,8 +37,8 @@
       ?>
     </ul>
     <div class="next-prev">
-      <a class="prev" href="#"><span>prev</span></a>
-      <a class="next" href="#"><span>next</span></a>
+      <a class="prev" href="#"><span>prev</span><i class="icon-up-circled"></i></a>
+      <a class="next" href="#"><span>next</span><i class="icon-down-circled"></i></a>
     </div>
   </div>
 <?php endif; ?>

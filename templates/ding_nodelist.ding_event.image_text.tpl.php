@@ -16,7 +16,7 @@ $event_date = _ding_nodelist_get_event_date($item);
 ?>
 <li class="event item">
   <div class="item_content">
-    <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
+    <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?><i></i></div>
     <div class="label"><?php print t('Calendar');?></div>
     <div class="event-date">
       <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>

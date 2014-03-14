@@ -80,13 +80,6 @@
   -moz-border-radius: 15px;
 }
 
-h3 {
-  line-height:120%;
-  text-shadow: 1px 1px 1px #EAF1EA;
-  font-family: Myriad Pro,"Lucida Grande","Lucida Sans Unicode",Segoe UI,Helvetica,Arial,sans-serif;
-}
-
-
 .node {
   height: auto;
   padding: 10px 15px;
@@ -212,7 +205,6 @@ h3 {
 
 /* Slider base styles */
 .ding_nodelist-slider {
-  height: 400px;
   overflow: hidden;
 }
 

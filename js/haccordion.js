@@ -35,13 +35,15 @@
       });
     }
 
-    $('body').bind('responsivelayout', function(e, d) {
-      if ($(this).hasClass("responsive-layout-wide")) {
-        runAccordion(352);
-      }
-      else {
-        runAccordion(276);
-      }
-    });
+
+    if ($('body').hasClass('responsive-layout-desktop')) {
+      runAccordion(360);
+    }
+    else if ($('body').hasClass('responsive-layout-tablet')) {
+      runAccordion(320);
+    }
+    else {
+      runAccordion(280);
+    }
   });
 })(jQuery);
