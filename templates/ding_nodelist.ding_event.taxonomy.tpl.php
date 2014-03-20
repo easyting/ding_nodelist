@@ -34,7 +34,7 @@ $library = render($library);
  *   Node author name.
  */
 ?>
-<div class="item">
+<div class="item clearfix">
   <div class="item-list-image">
     <a href="<?php print url('node/' . $item->nid);?>"><?php
       print $image ? theme(
