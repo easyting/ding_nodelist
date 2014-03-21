@@ -30,6 +30,10 @@
           slideClass: 'slide',
           buildComplete: function () {
             nodelist_items.css('visibility', 'visible').fadeIn(1500);
+          },
+          animationStart: function () {
+            nodelist_items.find('.slide').find('i').removeClass('icon-right-circled').addClass('icon-plus-circle');
+            nodelist_items.find('.slide-open').find('i').removeClass('icon-plus-circle').addClass('icon-right-circled');
           }
         });
       });
