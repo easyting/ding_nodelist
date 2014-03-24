@@ -15,20 +15,22 @@
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 ?>
 <li class="item news">
-  <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
-  <div class="label"><?php print t('News');?></div>
-  <div class="image">
-    <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : '';?></a>
-  </div>
-  <div class="data">
-    <div class="caption">
-      <h3>
-        <?php print l($item->title, 'node/' . $item->nid);?>
-      </h3>
-      <div class="category"><?php
-        $body = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
-        print drupal_render($body);
-      ?></div>
+  <div class="item_content">
+    <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
+    <div class="label"><?php print t('News');?></div>
+    <div class="image">
+      <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : '';?></a>
+    </div>
+    <div class="data">
+      <div class="caption">
+        <h3>
+          <?php print l($item->title, 'node/' . $item->nid);?>
+        </h3>
+        <div class="category"><?php
+          $body = field_view_field('node', $item, 'field_editorial_base_n', 'teaser');
+          print drupal_render($body);
+        ?></div>
+      </div>
     </div>
   </div>
 </li>

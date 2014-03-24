@@ -23,6 +23,8 @@ define('NL_TPL_ACTIVE', 0);
 define('NL_TPL_HIDDEN', 1);
 
 define('NL_CACHE_LIFETIME', 1800);
+define('NL_TITLE_SIZE', 25);
+define('NL_BODY_SIZE', 100);
 
 /**
  * Implements hook_menu().
@@ -316,6 +318,25 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     );
   }
 
+  $widgets_trim = _ding_nodelist_widgets_content_trim();
+  if (in_array($widget_type, $widgets_trim)) {
+    $form['ding_nodelist_wrapper']['widget_dependent']['title_length'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Node title text length'),
+      '#description' => t('Trim will affect whole-words only'),
+      '#default_value' => isset($conf['title_length']) ? $conf['title_length'] : NL_TITLE_SIZE,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+
+    $form['ding_nodelist_wrapper']['widget_dependent']['body_length'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Node body text length'),
+      '#description' => t('Trim will affect whole-words only'),
+      '#default_value' => isset($conf['body_length']) ? $conf['body_length'] : NL_BODY_SIZE,
+      '#element_validate' => array('element_validate_integer_positive'),
+    );
+  }
+
   // Manually controlled list.
   $form['ding_nodelist_wrapper']['nodelist_content'] = array(
     '#type' => 'fieldset',
@@ -517,11 +538,18 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
     $form['ding_nodelist_wrapper']['nodelist_content']['nodelist_content_wrapper']['ding_nodelist_dynamic']['taxonomy_filters'][$key] = _ding_nodelist_taxonomy_filter($allowed_fields, $filter, $key);
   }
 
+  $form['ding_nodelist_wrapper']['nodelist_content']['nodelist_content_wrapper']['ding_nodelist_dynamic']['help_text'] = array(
+    '#prefix' => '<div class="ding-nodelist-help-text">',
+    '#suffix' => '</div>',
+    '#markup' => t('Explain the OR/AND syntax.'),
+    '#weight' => 9,
+  );
+
   $form['ding_nodelist_wrapper']['nodelist_content']['nodelist_content_wrapper']['ding_nodelist_dynamic']['add_filter'] = array(
     '#name' => 'add_filter',
     '#type' => 'submit',
     '#value' => t('Add filter'),
-    '#weight' => 0,
+    '#weight' => 10,
     '#submit' => array('ding_nodelist_add_filter_submit'),
     '#limit_validation_errors' => array(array('taxonomy_filters')),
     '#ajax' => array(
@@ -546,6 +574,7 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
   // Content filter.
   $form['ding_nodelist_wrapper']['nodelist_content']['nodelist_content_wrapper']['ding_nodelist_dynamic']['content_filter_promoted'] = array(
     '#type' => 'checkbox',
+    '#weight' => 11,
     '#title' => t('Show "Promoted to front page" content only'),
     '#default_value' => isset($conf['content_filter_promoted']) ? $conf['content_filter_promoted'] : FALSE,
   );
@@ -1488,10 +1517,16 @@ function ding_nodelist_content_type_render($subtype, $conf, $args, $context) {
    }
   }
 
-  // Apply sorting.
-  $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
+  if (count($nodes) > 0 ) {
+    // Apply sorting.
+    $nodes = _ding_nodelist_sort_nodes($nodes, $conf);
+    $nodes = _ding_nodelist_striptags($nodes);
 
-  $nodes = _ding_nodelist_striptags($nodes);
+    $trimmed_widgets = _ding_nodelist_widgets_content_trim();
+    if (in_array($conf['widget_type'], $trimmed_widgets)) {
+      $nodes = _ding_nodelist_trim_body($nodes, $conf);
+    }
+  }
 
   // Init JS for widgets
   _ding_nodelist_add_js($conf['widget_type'], $conf['autoscroll_delay'], $conf['unique_id']);
@@ -1692,6 +1727,8 @@ function _ding_nodelist_get_templates($include_hidden = TRUE, $content_type = NU
  */
 function _ding_nodelist_content_type_form_save(&$form_state, $rebuild = FALSE) {
   $form_state['conf']['list_type'] = $form_state['values']['list_type'];
+  $form_state['conf']['title_length'] = !empty($form_state['values']['title_length']) ? $form_state['values']['title_length'] : NL_TITLE_SIZE;
+  $form_state['conf']['body_length'] = !empty($form_state['values']['body_length']) ? $form_state['values']['body_length'] : NL_BODY_SIZE;
   $form_state['conf']['dynamic_switch'] = ($form_state['conf']['list_type'] === 'custom-dynamic') ? $form_state['values']['dynamic_switch'] : 0;
   $form_state['conf']['nodes_switch'] = ($form_state['conf']['list_type'] === 'custom-dynamic') ? $form_state['values']['nodes_switch'] : 0;
 
@@ -2133,6 +2170,40 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
 }
 
 /**
+ * Trim body field to a certain length, considering words, not characters.
+ *
+ * @param array $nodes
+ *   A set of node objects.
+ * @param array $conf
+ *   Widget config array.
+ *
+ * return array
+ *    Set of altered nodes objects.
+ */
+function _ding_nodelist_trim_body($nodes, $conf) {
+  $title_length = !empty($conf['title_length']) ? $conf['title_length'] : NL_TITLE_SIZE;
+  $body_length = !empty($conf['body_length']) ? $conf['body_length'] : NL_BODY_SIZE;
+
+  foreach ($nodes as $n => $node) {
+    if (strrpos(substr($node->title, 0, $title_length), ' ')) {
+      $node->title = substr($node->title, 0, strrpos(substr($node->title, 0, $title_length), ' '));
+    }
+
+    foreach ($node->field_ding_body as $lng => $body) {
+      if (strrpos(substr($body[0]['safe_value'], 0, $body_length), ' ')) {
+        $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = substr($body[0]['safe_value'], 0, strrpos(substr($body[0]['safe_value'], 0, $body_length), ' '));
+      }
+
+      if (strrpos(substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
+        $nodes[$n]->field_ding_body[$lng][0]['safe_summary'] = substr($body[0]['safe_summary'], 0, strrpos(substr($body[0]['safe_summary'], 0, $body_length), ' '));
+      }
+    }
+  }
+
+  return $nodes;
+}
+
+/**
  * Strips all HTML tags in body.
  */
 function _ding_nodelist_striptags($nodes) {
@@ -2168,6 +2239,21 @@ function _ding_nodelist_widgets_with_titles() {
     NL_WIDGET_LIST,
     NL_WIDGET_SLIDER,
     NL_WIDGET_TAXONOMY_LIKE,
+    NL_WIDGET_VER_ACCORDION,
+  );
+}
+
+/**
+ * Get the list of widgets whose content is to be trimmed.
+ *
+ * @return array
+ *   List of widgets to deal with.
+ */
+function _ding_nodelist_widgets_content_trim() {
+  return array(
+    NL_WIDGET_SINGLE,
+    NL_WIDGET_CAROUSEL,
+    NL_WIDGET_HOR_ACCORDION,
     NL_WIDGET_VER_ACCORDION,
   );
 }
