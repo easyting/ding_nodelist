@@ -22,6 +22,10 @@
           anim_speed = delay;
         }
 
+        // Destroy previos accordion
+        nodelist_items.zAccordion('destroy');
+
+        // Run new accordion
         nodelist_items.zAccordion({
           timeout: delay,
           speed: anim_speed,
@@ -39,15 +43,27 @@
       });
     }
 
+    /**
+     * Check for current window size and run accordion
+     */
+    function checkWindowSizeandRun () {
+      if ($('body').hasClass('responsive-layout-desktop')) {
+        runAccordion(360);
+      }
+      else if ($('body').hasClass('responsive-layout-tablet')) {
+        runAccordion(320);
+      }
+      else {
+        runAccordion(280);
+      }
+    }
 
-    if ($('body').hasClass('responsive-layout-desktop')) {
-      runAccordion(360);
-    }
-    else if ($('body').hasClass('responsive-layout-tablet')) {
-      runAccordion(320);
-    }
-    else {
-      runAccordion(280);
-    }
+    // First run
+    checkWindowSizeandRun();
+
+    // Recalculate accordion
+    $(window).resize(function () {
+      checkWindowSizeandRun();
+    });
   });
 })(jQuery);
