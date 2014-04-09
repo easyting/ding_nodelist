@@ -2210,18 +2210,37 @@ function _ding_nodelist_trim_body($nodes, $conf) {
   $title_length = !empty($conf['title_length']) ? $conf['title_length'] : NL_TITLE_SIZE;
   $body_length = !empty($conf['body_length']) ? $conf['body_length'] : NL_BODY_SIZE;
 
-  foreach ($nodes as $n => $node) {
-    if (strrpos(substr($node->title, 0, $title_length), ' ')) {
-      $node->title = substr($node->title, 0, strrpos(substr($node->title, 0, $title_length), ' '));
-    }
+  foreach ($nodes as $key => $node) {
+    if (is_array($node)) {
+      foreach ($node as $node_date => $n) {
+        if (mb_strrpos(mb_substr($n->title, 0, $title_length), ' ')) {
+          $nodes[$key][$node_date]->title = mb_substr($n->title, 0, mb_strrpos(mb_substr($n->title, 0, $title_length), ' '));
+        }
 
-    foreach ($node->field_ding_body as $lng => $body) {
-      if (strrpos(substr($body[0]['safe_value'], 0, $body_length), ' ')) {
-        $nodes[$n]->field_ding_body[$lng][0]['safe_value'] = substr($body[0]['safe_value'], 0, strrpos(substr($body[0]['safe_value'], 0, $body_length), ' '));
+        foreach ($n->field_ding_body as $lng => $body) {
+          if (mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' ')) {
+            $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_value'] = mb_substr($body[0]['safe_value'], 0, mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' '));
+          }
+
+          if (mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
+            $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_summary'] = mb_substr($body[0]['safe_summary'], 0, mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' '));
+          }
+        }
+      }
+    }
+    else {
+      if (mb_strrpos(mb_substr($node->title, 0, $title_length), ' ')) {
+        $node->title = mb_substr($node->title, 0, mb_strrpos(mb_substr($node->title, 0, $title_length), ' '));
       }
 
-      if (strrpos(substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
-        $nodes[$n]->field_ding_body[$lng][0]['safe_summary'] = substr($body[0]['safe_summary'], 0, strrpos(substr($body[0]['safe_summary'], 0, $body_length), ' '));
+      foreach ($node->field_ding_body as $lng => $body) {
+        if (mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' ')) {
+          $nodes[$key]->field_ding_body[$lng][0]['safe_value'] = mb_substr($body[0]['safe_value'], 0, mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' '));
+        }
+
+        if (mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
+          $nodes[$key]->field_ding_body[$lng][0]['safe_summary'] = mb_substr($body[0]['safe_summary'], 0, mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' '));
+        }
       }
     }
   }
