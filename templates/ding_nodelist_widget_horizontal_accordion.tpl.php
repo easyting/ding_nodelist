@@ -19,7 +19,8 @@
       <?php
       foreach ($items as $node) {
         if ($conf['sorting']=='event_date') {
-          print theme($template, array('item' => array_shift(array_values($node)), 'conf' => $conf));
+          $values = array_values($node);
+          print theme($template, array('item' => array_shift($values), 'conf' => $conf));
         }
         else {
           print theme($template, array('item' => $node, 'conf' => $conf));
