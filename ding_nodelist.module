@@ -1948,7 +1948,8 @@ function ding_nodelist_event_date_sort($event_nodes, $sorting_order) {
   $dates = array();
 
   foreach ($event_nodes as $key => $event_array) {
-    $dates[$key] = array_shift(array_keys($event_array));
+    $keys = array_keys($event_array);
+    $dates[$key] = array_shift($keys);
   }
   if ($sorting_order == 'asc') {
     asort($dates);
