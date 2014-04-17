@@ -2118,6 +2118,44 @@ function _ding_nodelist_get_event_date($event_node) {
 }
 
 /**
+ * Implements hook_field_formatter_info().
+ */
+function ding_nodelist_field_formatter_info() {
+  $info = array(
+    'group_audience' => array(
+      'label' => t('Nodelist'),
+      'field types' => array('group'),
+      'description' => t('Display only the name of the library.'),
+    ),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function ding_nodelist_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  switch ($display['type']) {
+    case 'group_audience':
+      foreach ($items as $delta => $item) {
+        if ($group = og_get_group('group', $item['gid'])) {
+          if ($group->access()) {
+            $label = og_label($group->gid);
+            $element[$delta] = array(
+              '#markup' => $label,
+            );
+          }
+        }
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
  * Get formated ding_event_date field value.
  *
  * @param array $event_node
