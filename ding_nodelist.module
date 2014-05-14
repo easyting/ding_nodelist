@@ -59,6 +59,16 @@ function ding_nodelist_menu() {
     'file' => 'ding_nodelist.admin.inc',
   );
 
+  $items['admin/config/ding/ding_nodelist/trim_content'] = array(
+    'title' => t('Trim content'),
+    'description' => t('Define title and teaser trim parameters for each widget'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('ding_nodelist_trim_content'),
+    'access arguments' => array('configure nodelist'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'ding_nodelist.admin.inc',
+  );
+
   $items['ding_nodelist/autocomplete/%'] = array(
     'page callback' => 'ding_nodelist_autocomplete',
     'page arguments' => array(2),
@@ -314,25 +324,6 @@ function ding_nodelist_content_type_edit_form($form, &$form_state) {
       . ' ' . t('You may use %keywords from contexts, as well as %title to contain the original title.'),
       '#required' => FALSE,
       '#default_value' => isset($conf['override_title_text']) ? $conf['override_title_text'] : '',
-    );
-  }
-
-  $widgets_trim = _ding_nodelist_widgets_content_trim();
-  if (in_array($widget_type, $widgets_trim)) {
-    $form['ding_nodelist_wrapper']['widget_dependent']['title_length'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Node title text length'),
-      '#description' => t('Trim will affect whole-words only'),
-      '#default_value' => isset($conf['title_length']) ? $conf['title_length'] : NL_TITLE_SIZE,
-      '#element_validate' => array('element_validate_integer_positive'),
-    );
-
-    $form['ding_nodelist_wrapper']['widget_dependent']['body_length'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Node body text length'),
-      '#description' => t('Trim will affect whole-words only'),
-      '#default_value' => isset($conf['body_length']) ? $conf['body_length'] : NL_BODY_SIZE,
-      '#element_validate' => array('element_validate_integer_positive'),
     );
   }
 
@@ -1199,6 +1190,9 @@ function ding_nodelist_theme($existing, $type, $theme, $path) {
     '_ding_nodelist_templates_table' => array(
       'render element' => 'form',
     ),
+    '_ding_nodelist_trim_text_table' => array(
+      'render element' => 'form',
+    ),
     // Widget templates.
     '_ding_nodelist_widget_simple' => array(
       'path' => $path,
@@ -1401,6 +1395,28 @@ function theme__ding_nodelist_templates_table($variables) {
     );
   }
 
+  return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($form);
+}
+
+/**
+ * Theme function to render backend lisy of widgets that require text trim.
+ */
+function theme__ding_nodelist_trim_text_table($variables) {
+  $header = array(
+    t('Widget'),
+    t('Title length'),
+    t('Teaser length'),
+  );
+
+  $rows = array();
+  $form = $variables['form'];
+  foreach(element_children($form) as $key) {
+    $rows[] = array(
+      $form[$key]['widget']['#value'],
+      drupal_render($form[$key]['title_trim']),
+      drupal_render($form[$key]['teaser_trim'])
+    );
+  }
   return theme('table', array('header' => $header, 'rows' => $rows)) . drupal_render_children($form);
 }
 
@@ -1948,7 +1964,8 @@ function ding_nodelist_event_date_sort($event_nodes, $sorting_order) {
   $dates = array();
 
   foreach ($event_nodes as $key => $event_array) {
-    $dates[$key] = array_shift(array_keys($event_array));
+    $keys = array_keys($event_array);
+    $dates[$key] = array_shift($keys);
   }
   if ($sorting_order == 'asc') {
     asort($dates);
@@ -2047,6 +2064,21 @@ function _ding_nodelist_is_valid_link($link) {
 }
 
 /**
+ * Returns widget human name by mashine name.
+ */
+function _ding_nodelist_get_widget_human_name($mashine_name) {
+  $widgets = array(
+    NL_WIDGET_SINGLE => t('Single item'),
+    NL_WIDGET_CAROUSEL => t('Carousel'),
+    NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
+    NL_WIDGET_VER_ACCORDION => t('Vertical accordion'),
+    NL_WIDGET_SLIDER => t('Slider'),
+    NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
+  );
+  return $widgets[$mashine_name];
+}
+
+/**
  * Returns an array of widget types that can be used as #options
  * in a select input otionally for a specific content type.
  *
@@ -2056,12 +2088,12 @@ function _ding_nodelist_is_valid_link($link) {
  */
 function _ding_nodelist_get_widget_types($content_type = NULL) {
   $widgets = array(
-    NL_WIDGET_SINGLE => t('Single item'),
-    NL_WIDGET_CAROUSEL => t('Carousel'),
-    NL_WIDGET_HOR_ACCORDION => t('Horizontal accordion'),
-    NL_WIDGET_VER_ACCORDION => t('Vertical accordion'),
-    NL_WIDGET_SLIDER => t('Slider'),
-    NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
+    NL_WIDGET_SINGLE => _ding_nodelist_get_widget_human_name(NL_WIDGET_SINGLE),
+    NL_WIDGET_CAROUSEL => _ding_nodelist_get_widget_human_name(NL_WIDGET_CAROUSEL),
+    NL_WIDGET_HOR_ACCORDION => _ding_nodelist_get_widget_human_name(NL_WIDGET_HOR_ACCORDION),
+    NL_WIDGET_VER_ACCORDION => _ding_nodelist_get_widget_human_name(NL_WIDGET_VER_ACCORDION),
+    NL_WIDGET_SLIDER => _ding_nodelist_get_widget_human_name(NL_WIDGET_SLIDER),
+    NL_WIDGET_TAXONOMY_LIKE => _ding_nodelist_get_widget_human_name(NL_WIDGET_TAXONOMY_LIKE),
   );
 
   // Fetch only widgets that have templates configured.
@@ -2168,8 +2200,8 @@ function _ding_nodelist_get_dams_image_info($node, $image_field) {
  *    Set of altered nodes objects.
  */
 function _ding_nodelist_trim_body($nodes, $conf) {
-  $title_length = !empty($conf['title_length']) ? $conf['title_length'] : NL_TITLE_SIZE;
-  $body_length = !empty($conf['body_length']) ? $conf['body_length'] : NL_BODY_SIZE;
+  $title_length = variable_get('ding_nodelist_' . $conf['widget_type'] . '_title_trim', NL_TITLE_SIZE);
+  $body_length = variable_get('ding_nodelist_' . $conf['widget_type'] . '_teaser_trim', NL_BODY_SIZE);
 
   foreach ($nodes as $key => $node) {
     if (is_array($node)) {
