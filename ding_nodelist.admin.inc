@@ -134,7 +134,7 @@ function ding_nodelist_templates_form_submit($form, &$form_state) {
  * Trim content settings form.
  */
 function ding_nodelist_trim_content($form, &$form_state) {
- $form['trim_content'] = array(
+  $form['trim_content'] = array(
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#title' => t('Text truncation in widgets'),

@@ -2064,9 +2064,9 @@ function _ding_nodelist_is_valid_link($link) {
 }
 
 /**
- * Returns widget human name by mashine name.
+ * Returns widget human name by machine name.
  */
-function _ding_nodelist_get_widget_human_name($mashine_name) {
+function _ding_nodelist_get_widget_human_name($machine_name) {
   $widgets = array(
     NL_WIDGET_SINGLE => t('Single item'),
     NL_WIDGET_CAROUSEL => t('Carousel'),
@@ -2075,7 +2075,7 @@ function _ding_nodelist_get_widget_human_name($mashine_name) {
     NL_WIDGET_SLIDER => t('Slider'),
     NL_WIDGET_TAXONOMY_LIKE => t('Taxonomy like'),
   );
-  return $widgets[$mashine_name];
+  return $widgets[$machine_name];
 }
 
 /**
