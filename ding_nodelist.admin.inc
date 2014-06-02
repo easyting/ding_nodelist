@@ -138,7 +138,7 @@ function ding_nodelist_trim_content($form, &$form_state) {
     '#type' => 'fieldset',
     '#collapsible' => FALSE,
     '#title' => t('Text truncation in widgets'),
-    '#description' => t('Define amount of words to be shown in each widget type'),
+    '#description' => t('Define amount of chars to be shown in each widget type'),
     '#theme' => '_ding_nodelist_trim_text_table',
     '#tree' => TRUE,
   );

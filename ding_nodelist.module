@@ -2204,36 +2204,16 @@ function _ding_nodelist_trim_body($nodes, $conf) {
   $body_length = variable_get('ding_nodelist_' . $conf['widget_type'] . '_teaser_trim', NL_BODY_SIZE);
 
   foreach ($nodes as $key => $node) {
-    if (is_array($node)) {
-      foreach ($node as $node_date => $n) {
-        if (mb_strrpos(mb_substr($n->title, 0, $title_length), ' ')) {
-          $nodes[$key][$node_date]->title = mb_substr($n->title, 0, mb_strrpos(mb_substr($n->title, 0, $title_length), ' '));
-        }
-
-        foreach ($n->field_ding_body as $lng => $body) {
-          if (mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' ')) {
-            $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_value'] = mb_substr($body[0]['safe_value'], 0, mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' '));
-          }
-
-          if (mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
-            $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_summary'] = mb_substr($body[0]['safe_summary'], 0, mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' '));
-          }
-        }
-      }
+    if (!is_array($node)) {
+      $node = array($node);
     }
-    else {
-      if (mb_strrpos(mb_substr($node->title, 0, $title_length), ' ')) {
-        $node->title = mb_substr($node->title, 0, mb_strrpos(mb_substr($node->title, 0, $title_length), ' '));
-      }
+    foreach ($node as $node_date => $n) {
+      $nodes[$key][$node_date]->title = truncate_utf8($n->title, $title_length, TRUE, FALSE, 1);
 
-      foreach ($node->field_ding_body as $lng => $body) {
-        if (mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' ')) {
-          $nodes[$key]->field_ding_body[$lng][0]['safe_value'] = mb_substr($body[0]['safe_value'], 0, mb_strrpos(mb_substr($body[0]['safe_value'], 0, $body_length), ' '));
-        }
+      foreach ($n->field_ding_body as $lng => $body) {
+        $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_value'] = truncate_utf8($body[0]['safe_value'], $body_length, TRUE, FALSE, 1);
+        $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_summary'] = truncate_utf8($body[0]['safe_summary'], $body_length, TRUE, FALSE, 1);
 
-        if (mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' ')) {
-          $nodes[$key]->field_ding_body[$lng][0]['safe_summary'] = mb_substr($body[0]['safe_summary'], 0, mb_strrpos(mb_substr($body[0]['safe_summary'], 0, $body_length), ' '));
-        }
       }
     }
   }
