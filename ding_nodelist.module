@@ -2205,20 +2205,20 @@ function _ding_nodelist_trim_body($nodes, $conf) {
 
   foreach ($nodes as $key => $node) {
     if (!is_array($node)) {
-      $nodes[$key]->title = truncate_utf8($node->title, $title_length, TRUE, FALSE, 1);
+      $nodes[$key]->title = truncate_utf8($node->title, $title_length, FALSE, TRUE);
 
       foreach ($node->field_ding_body as $lng => $body) {
-        $nodes[$key]->field_ding_body[$lng][0]['safe_value'] = truncate_utf8($body[0]['safe_value'], $body_length, TRUE, FALSE, 1);
-        $nodes[$key]->field_ding_body[$lng][0]['safe_summary'] = truncate_utf8($body[0]['safe_summary'], $body_length, TRUE, FALSE, 1);
+        $nodes[$key]->field_ding_body[$lng][0]['safe_value'] = truncate_utf8($body[0]['safe_value'], $body_length, FALSE, TRUE);
+        $nodes[$key]->field_ding_body[$lng][0]['safe_summary'] = truncate_utf8($body[0]['safe_summary'], $body_length, FALSE, TRUE);
       }
     }
     else {
       foreach ($node as $node_date => $n) {
-        $nodes[$key][$node_date]->title = truncate_utf8($n->title, $title_length, TRUE, FALSE, 1);
+        $nodes[$key][$node_date]->title = truncate_utf8($n->title, $title_length, FALSE, TRUE);
 
         foreach ($n->field_ding_body as $lng => $body) {
-          $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_value'] = truncate_utf8($body[0]['safe_value'], $body_length, TRUE, FALSE, 1);
-          $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_summary'] = truncate_utf8($body[0]['safe_summary'], $body_length, TRUE, FALSE, 1);
+          $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_value'] = truncate_utf8($body[0]['safe_value'], $body_length, FALSE, TRUE);
+          $nodes[$key][$node_date]->field_ding_body[$lng][0]['safe_summary'] = truncate_utf8($body[0]['safe_summary'], $body_length, FALSE, TRUE);
         }
       }
     }
