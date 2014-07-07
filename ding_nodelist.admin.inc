@@ -129,3 +129,54 @@ function ding_nodelist_templates_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Template settings have been saved.'));
 }
+
+/**
+ * Trim content settings form.
+ */
+function ding_nodelist_trim_content($form, &$form_state) {
+  $form['trim_content'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => FALSE,
+    '#title' => t('Text truncation in widgets'),
+    '#description' => t('Define amount of chars to be shown in each widget type'),
+    '#theme' => '_ding_nodelist_trim_text_table',
+    '#tree' => TRUE,
+  );
+  $widgets = _ding_nodelist_widgets_content_trim();
+  foreach ($widgets as $widget) {
+    $form['trim_content'][$widget]['widget'] = array(
+      '#type' => 'hidden',
+      '#value' => _ding_nodelist_get_widget_human_name($widget),
+    );
+
+    $form['trim_content'][$widget]['title_trim'] = array(
+      '#type' => 'textfield',
+      '#size' => 3,
+      '#default_value' => variable_get('ding_nodelist_' . $widget . '_title_trim', NL_TITLE_SIZE),
+    );
+
+    $form['trim_content'][$widget]['teaser_trim'] = array(
+      '#type' => 'textfield',
+      '#size' => '3',
+      '#default_value' => variable_get('ding_nodelist_' . $widget . '_teaser_trim', NL_BODY_SIZE),
+    );
+  }
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  return $form;
+}
+
+/**
+ * Trim content form submit.
+ */
+function ding_nodelist_trim_content_submit($form, &$form_state) {
+  foreach ($form_state['input']['trim_content'] as $widget=>$trim) {
+    variable_set('ding_nodelist_' . $widget . '_title_trim', $trim['title_trim']);
+    variable_set('ding_nodelist_' . $widget . '_teaser_trim', $trim['teaser_trim']);
+  }
+  drupal_set_message(t('Trim settings have been saved.'));
+}
