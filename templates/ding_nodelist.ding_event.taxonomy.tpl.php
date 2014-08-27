@@ -37,12 +37,8 @@ $library = render($library);
 <div class="item">
   <?php if (!empty($image)): ?>
     <div class="item-list-image">
-      <a href="<?php print url('node/' . $item->nid);?>"><?php
-        print $image ? theme(
-          'image_style',
-          array_merge($image, array('style_name' => $conf['image_style']))
-        ) : '';
-      ?></a>
+      <a href="<?php print url('node/' . $item->nid);?>">
+        <img src="<?php print $GLOBALS['base_url'] . '/' . variable_get('file_public_path', conf_path() . '/files') . str_replace('public:/', '', $image['path']);?>" alt=""></a>
     </div>
   <?php endif ?>
   <div class="item-details">
