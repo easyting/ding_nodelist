@@ -1608,6 +1608,7 @@ function _ding_nodelist_init_image_style($widget, $region) {
     case NL_WIDGET_VER_ACCORDION:
       return $layout  ? $layout['regions_image_styles'][$region] : 'ding_large';
     case NL_WIDGET_TAXONOMY_LIKE:
+      return 'ding_nodelist_micro';
     case NL_WIDGET_SLIDER:
       return 'ding_large';
     default:
