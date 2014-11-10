@@ -22,6 +22,10 @@
           anim_speed = delay;
         }
 
+        // Destroy previos accordion.
+        nodelist_items.zAccordion('destroy');
+
+        // Run new accordion.
         nodelist_items.zAccordion({
           timeout: delay,
           speed: anim_speed,
@@ -30,18 +34,41 @@
           slideClass: 'slide',
           buildComplete: function () {
             nodelist_items.css('visibility', 'visible').fadeIn(1500);
+          },
+          animationStart: function () {
+            nodelist_items.find('.slide').find('i').removeClass('icon-right-circled').addClass('icon-plus-circle');
+            nodelist_items.find('.slide-open').find('i').removeClass('icon-plus-circle').addClass('icon-right-circled');
           }
         });
       });
     }
 
-    $('body').bind('responsivelayout', function(e, d) {
-      if ($(this).hasClass("responsive-layout-wide")) {
-        runAccordion(352);
+    /**
+     * Check for current window size and run accordion.
+     */
+    function checkWindowSizeandRun () {
+      var currentWidth = $(document).width(),
+      scrollWidth = window.innerWidth - $(document).width();
+
+      if (currentWidth <= (768 - scrollWidth)) {
+        runAccordion(280);
       }
-      else {
-        runAccordion(276);
+
+      else if (currentWidth > (768 - scrollWidth) && currentWidth <= (1024 - scrollWidth)) {
+        runAccordion(320);
       }
+
+      else if (currentWidth > (1024 - scrollWidth)) {
+        runAccordion(360);
+      }
+    }
+
+    // First run.
+    checkWindowSizeandRun();
+
+    // Recalculate accordion.
+    $(window).resize(function () {
+      checkWindowSizeandRun();
     });
   });
 })(jQuery);
