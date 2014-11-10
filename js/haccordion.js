@@ -47,14 +47,19 @@
      * Check for current window size and run accordion
      */
     function checkWindowSizeandRun () {
-      if ($('body').hasClass('responsive-layout-wide')) {
-        runAccordion(360);
+      var currentWidth = $(document).width(),
+      scrollWidth = window.innerWidth - $(document).width();
+
+      if (currentWidth <= (768 - scrollWidth)) {
+        runAccordion(280);
       }
-      else if ($('body').hasClass('responsive-layout-normal')) {
+
+      else if (currentWidth > (768 - scrollWidth) && currentWidth <= (1024 - scrollWidth)) {
         runAccordion(320);
       }
-      else {
-        runAccordion(280);
+
+      else if (currentWidth > (1024 - scrollWidth)) {
+        runAccordion(360);
       }
     }
 
@@ -65,11 +70,5 @@
     $(window).resize(function () {
       checkWindowSizeandRun();
     });
-    if ($(this).hasClass("responsive-layout-wide")) {
-      runAccordion(352);
-    }
-    else {
-      runAccordion(276);
-    }
   });
 })(jQuery);

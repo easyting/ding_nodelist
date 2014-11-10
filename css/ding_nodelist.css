@@ -439,16 +439,16 @@ h3 {
 }
 
 .ding_nodelist-horizontal_accordion .slide .expand {
-  left: auto;
-  -webkit-border-radius: 50px;
-  -moz-border-radius: 50px;
-  border-radius: 50px;
   position: absolute;
   bottom: 62px;
+  left: auto;
   left: 10px;
   z-index: 10;
   display: inline-block;
   display: block;
+  -webkit-border-radius: 50px;
+  -moz-border-radius: 50px;
+  border-radius: 50px;
   background-color: #53514b;
   color: #fff;
   cursor: pointer;
@@ -456,11 +456,11 @@ h3 {
 
 .ding_nodelist-horizontal_accordion .slide .expand:after {
   display: inline-block;
-  vertical-align: middle;
   width: 30px;
   height: 30px;
   color: #fff;
   content: '\e844';
+  vertical-align: middle;
   text-align: center;
   font-size: 12px;
   font-family: 'fontello';
@@ -468,8 +468,8 @@ h3 {
 }
 
 .ding_nodelist-horizontal_accordion .slide-open .expand {
-  left: auto;
   right: 10px;
+  left: auto;
 }
 
 .ding_nodelist-horizontal_accordion .slide-open .expand:after {
@@ -511,10 +511,13 @@ h3 {
 .ding_nodelist-horizontal_accordion .image a {
   position: absolute;
   top: 0;
+  right: 0;
+  bottom: 50px;
   left: 0;
   z-index: 0;
   display: block;
   background-color: #000;
+  margin: 0 auto;
 }
 
 @media only screen and (max-width: 768px) {
@@ -562,6 +565,7 @@ h3 {
   overflow: hidden;
   padding-top: 5px;
   height: 55px;
+  white-space: nowrap;
 }
 
 .ding_nodelist-horizontal_accordion .caption h3 {
@@ -814,8 +818,9 @@ h3 {
 .ding_nodelist-carousel .event-image img {
   display: block;
   margin: 0 auto;
-  width: 100%;
-  height: auto;
+  min-width: 100%;
+  width: auto;
+  height: 100%;
 }
 
 .ding_nodelist-carousel .article_image .field-label,
