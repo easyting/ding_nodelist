@@ -22,10 +22,10 @@
           anim_speed = delay;
         }
 
-        // Destroy previos accordion
+        // Destroy previos accordion.
         nodelist_items.zAccordion('destroy');
 
-        // Run new accordion
+        // Run new accordion.
         nodelist_items.zAccordion({
           timeout: delay,
           speed: anim_speed,
@@ -44,7 +44,7 @@
     }
 
     /**
-     * Check for current window size and run accordion
+     * Check for current window size and run accordion.
      */
     function checkWindowSizeandRun () {
       var currentWidth = $(document).width(),
@@ -63,10 +63,10 @@
       }
     }
 
-    // First run
+    // First run.
     checkWindowSizeandRun();
 
-    // Recalculate accordion
+    // Recalculate accordion.
     $(window).resize(function () {
       checkWindowSizeandRun();
     });
