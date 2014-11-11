@@ -522,21 +522,21 @@ h3 {
 
 @media only screen and (max-width: 768px) {
   .ding_nodelist-horizontal_accordion .image a {
-    width: 310px;
+    min-width: 310px;
     height: 260px;
   }
 }
 
 @media only screen and (min-width: 769px) and (max-width: 1024px) {
   .ding_nodelist-horizontal_accordion .image a {
-    width: 400px;
+    min-width: 400px;
     height: 300px;
   }
 }
 
 @media only screen and (min-width: 1025px) {
   .ding_nodelist-horizontal_accordion .image a {
-    width: 450px;
+    min-width: 450px;
     height: 340px;
   }
 }
@@ -588,7 +588,6 @@ h3 {
   position: relative;
   box-sizing: border-box;
   margin-bottom: 13px;
-  padding: 10px;
   height: 436px;
   background-color: #fff;
   box-shadow: 1px 1px 5px #ccc;
@@ -600,7 +599,7 @@ h3 {
 
 .ding_nodelist-carousel .item {
   position: relative;
-  height: 366px;
+  height: 396px;
 }
 
 .ding_nodelist-carousel .event-label {
@@ -681,8 +680,8 @@ h3 {
 }
 
 .ding_nodelist-carousel .next-prev {
-  position: relative;
-  top: 10px;
+  position: absolute;
+  bottom: 0;
   left: 0;
 }
 
@@ -692,6 +691,10 @@ h3 {
 
 .ding_nodelist-carousel .next-prev .prev:after {
   content: '\e81c';
+}
+
+.ding_nodelist-carousel .next-prev .prev {
+  left: 10px;
 }
 
 .ding_nodelist-carousel .next-prev .next {
@@ -722,7 +725,7 @@ h3 {
 .ding_nodelist-carousel .next-prev .prev,
 .ding_nodelist-carousel .next-prev .next {
   position: absolute;
-  top: 10px;
+  bottom: 8px;
 }
 
 .ding_nodelist-carousel .next-prev .prev:hover,
@@ -751,7 +754,7 @@ h3 {
 
 .ding_nodelist-carousel .pagination {
   right: 10px;
-  bottom: 20px;
+  bottom: 8px;
 }
 
 .ding_nodelist-carousel .pagination a {
