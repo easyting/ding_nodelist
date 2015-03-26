@@ -15,6 +15,8 @@
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
 $event_date = _ding_nodelist_get_event_date($item);
+$address = field_view_field('node', $item, 'field_address');
+$address = render($address);
 ?>
 <div class="item">
   <div class="event-image">
@@ -24,6 +26,10 @@ $event_date = _ding_nodelist_get_event_date($item);
   <div class="event-date">
     <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
     <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
+  </div>
+  <div class="event-place-label"><?php print t('Event place');?></div>
+  <div class="event-place">
+    <?php print $address; ?>
   </div>
   <div class="article-info">
     <div class="category"><?php print drupal_render($edbase);?></div>
