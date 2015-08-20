@@ -22,5 +22,10 @@
       }
       ?>
     </div>
+    <?php foreach ($links as $key => $bottom) : ?>
+      <span>
+        <?php print l(t($bottom['text']), $bottom['links']); ?>
+      </span>
+    <?php endforeach; ?>
   </div>
 <?php endif; ?>
