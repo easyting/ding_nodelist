@@ -17,6 +17,14 @@ $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
 $event_date = _ding_nodelist_get_event_date($item);
 $address = field_view_field('node', $item, 'field_address');
 $address = render($address);
+
+$event_date = _ding_nodelist_formated_ding_event_date($item);
+$fee = field_view_field('node', $item, 'field_event_fee');
+$fee = render($fee);
+
+$library = field_view_field('node', $item, 'group_audience', array('label' => 'hidden'));
+$library = render($library);
+
 ?>
 <div class="item">
   <div class="event-image">
@@ -35,6 +43,9 @@ $address = render($address);
     <div class="category"><?php print drupal_render($edbase);?></div>
     <h3><a href="<?php print url('node/' . $item->nid);?>"><?php print $item->title;?></a></h3>
     <div class="node">
+      <div><?php print $event_date;?></div>
+      <span><?php print $library;?></span>
+      <span><?php print $fee;?></span>
       <p>
         <?php
           $teaser = field_get_items('node', $item, 'field_ding_body');
