@@ -21,6 +21,13 @@ $library = render($library);
 
 $address = field_view_field('node', $item, 'field_address');
 $address = render($address);
+
+$fee = field_view_field('node', $item, 'field_event_fee');
+$fee = render($fee);
+
+$category = field_view_field('node', $item, 'field_category');
+$category = render($category);
+
 /**
  * Available variables:
  *
@@ -48,7 +55,7 @@ $address = render($address);
   <div class="item-details">
     <h2 class="item-title"><?php print l($title, 'node/' . $item->nid); ?></h2>
     <span class="item-date"><?php print $event_date; ?></span>
-    <span class="item-library"><?php print $library; ?></span>
+    <span class="item-library"><?php print $library; print $fee; print $category; ?></span>
     <span class="item-address"><?php print $address; ?></span>
     <div class="item-body"><?php print $body; ?></div>
   </div>
