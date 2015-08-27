@@ -32,7 +32,7 @@ $author = $item->name;
  *   Node author name.
  */
 ?>
-<div class="item">
+<div class="item clearfix">
   <div class="item-list-image">
     <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
   </div>
