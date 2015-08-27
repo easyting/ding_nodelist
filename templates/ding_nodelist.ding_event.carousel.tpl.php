@@ -14,16 +14,7 @@
 
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
-$address = field_view_field('node', $item, 'field_address');
-$address = render($address);
-
-$event_date = _ding_nodelist_formated_ding_event_date($item);
-$fee = field_view_field('node', $item, 'field_event_fee');
-$fee = render($fee);
-
-$library = field_view_field('node', $item, 'group_audience', array('label' => 'hidden'));
-$library = render($library);
-
+$event_date = _ding_nodelist_get_event_date($item);
 ?>
 <div class="item">
   <div class="event-image">
@@ -34,17 +25,10 @@ $library = render($library);
     <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
     <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
   </div>
-  <div class="event-place-label"><?php print t('Event place');?></div>
-  <div class="event-place">
-    <?php print $address; ?>
-  </div>
   <div class="article-info">
     <div class="category"><?php print drupal_render($edbase);?></div>
     <h3><a href="<?php print url('node/' . $item->nid);?>"><?php print $item->title;?></a></h3>
     <div class="node">
-      <div><?php print $event_date;?></div>
-      <span><?php print $library;?></span>
-      <span><?php print $fee;?></span>
       <p>
         <?php
           $teaser = field_get_items('node', $item, 'field_ding_body');
