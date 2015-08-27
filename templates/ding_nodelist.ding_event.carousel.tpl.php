@@ -14,7 +14,6 @@
 
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
-$event_date = _ding_nodelist_get_event_date($item);
 $address = field_view_field('node', $item, 'field_address');
 $address = render($address);
 

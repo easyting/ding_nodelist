@@ -55,7 +55,7 @@ $category = render($category);
   <div class="item-details">
     <h2 class="item-title"><?php print l($title, 'node/' . $item->nid); ?></h2>
     <span class="item-date"><?php print $event_date; ?></span>
-    <span class="item-library"><?php print $library; ?><?php print $fee; ?> <?php print $category; ?></span>
+    <span class="item-library"><?php print $library; print $fee; print $category; ?></span>
     <span class="item-address"><?php print $address; ?></span>
     <div class="item-body"><?php print $body; ?></div>
   </div>
