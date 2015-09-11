@@ -13,7 +13,7 @@
  */
 
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
-$edbase = field_view_field('node', $item, 'field_editorial_base_e', 'teaser');
+$edbase = field_view_field('node', $item, 'field_editorial_base_e', array('label' => 'hidden'));
 $address = field_view_field('node', $item, 'field_address');
 $address = render($address);
 
