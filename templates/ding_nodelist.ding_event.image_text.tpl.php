@@ -19,7 +19,6 @@ $address = render($address);
 <li class="event item">
   <div class="item_content">
     <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
-    <div class="event-place-label"><?php print t('Event place');?></div>
       <div class="event-place">
         <?php print $address; ?>
       </div>

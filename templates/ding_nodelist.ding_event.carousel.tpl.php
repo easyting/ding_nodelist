@@ -29,12 +29,6 @@ $library = render($library);
   <div class="event-image">
     <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
   </div>
-  <div class="event-label"><?php print t('Calendar');?></div>
-  <div class="event-date">
-    <div class="event-day"><?php print format_date($event_date, 'day_only'); ?></div>
-    <div class="event-month"><?php print format_date($event_date, 'short_month_only'); ?></div>
-  </div>
-  <div class="event-place-label"><?php print t('Event place');?></div>
   <div class="event-place">
     <?php print $address; ?>
   </div>
