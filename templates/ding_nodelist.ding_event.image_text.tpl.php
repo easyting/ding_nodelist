@@ -12,7 +12,7 @@
  * group_audience
  */
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
-$event_date = _ding_nodelist_get_event_date($item);
+$event_date = _ding_nodelist_formated_ding_event_date($item);
 $address = field_view_field('node', $item, 'field_address');
 $address = render($address);
 ?>
@@ -33,7 +33,7 @@ $address = render($address);
       </div>
       <div class="library">
         <div class="event-time">
-          <span><?php print format_date($event_date, 'custom', 'd/m-Y') . " " . t('Time') . " " . format_date($event_date, 'custom', 'H:i') ;?></span>
+          <span><?php print $event_date;?></span>
         </div>
         <?php
           $audience = field_view_field('node', $item, 'group_audience', 'teaser');
