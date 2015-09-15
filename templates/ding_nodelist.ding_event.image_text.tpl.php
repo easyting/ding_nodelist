@@ -19,7 +19,6 @@ $address = render($address);
 <li class="event item">
   <div class="item_content">
     <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
-    <div class="event-place-label"><?php print t('Event place');?></div>
       <div class="event-place">
         <?php print $address; ?>
       </div>
@@ -34,8 +33,7 @@ $address = render($address);
       </div>
       <div class="library">
         <div class="event-time">
-          <span><?php print t('Time');?></span>
-          <span><?php print format_date($event_date, 'custom', 'H:i');?></span>
+          <span><?php print format_date($event_date, 'custom', 'd/m-Y') . " " . t('Time') . " " . format_date($event_date, 'custom', 'H:i') ;?></span>
         </div>
         <?php
           $audience = field_view_field('node', $item, 'group_audience', 'teaser');
