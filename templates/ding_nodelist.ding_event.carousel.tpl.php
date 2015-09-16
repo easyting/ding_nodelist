@@ -14,8 +14,9 @@
 
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', array('label' => 'hidden'));
-$address = field_view_field('node', $item, 'field_address');
-$address = render($address);
+$locality = $item->field_address[LANGUAGE_NONE][0]['locality'];
+$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'];
+$premise = $item->field_address[LANGUAGE_NONE][0]['premise'];
 
 $event_date = _ding_nodelist_formated_ding_event_date($item);
 $fee = field_view_field('node', $item, 'field_event_fee');
@@ -29,9 +30,7 @@ $library = render($library);
   <div class="event-image">
     <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
   </div>
-  <div class="event-place">
-    <?php print $address; ?>
-  </div>
+  <div class="event-place"><?php if (!empty($locality)): ?><span><?php print $locality;?></span><?php endif; ?><?php if ((!empty($thoroughfare))||(!empty($premise))): ?><div><?php print $thoroughfare;?></div><div><?php print $premise;?></div><?php endif; ?></div>
   <div class="article-info">
     <div class="category"><?php print drupal_render($edbase);?></div>
     <h3><a href="<?php print url('node/' . $item->nid);?>"><?php print $item->title;?></a></h3>

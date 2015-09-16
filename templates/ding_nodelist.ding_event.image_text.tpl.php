@@ -13,15 +13,14 @@
  */
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_formated_ding_event_date($item);
-$address = field_view_field('node', $item, 'field_address');
-$address = render($address);
+$locality = $item->field_address[LANGUAGE_NONE][0]['locality'];
+$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'];
+$premise = $item->field_address[LANGUAGE_NONE][0]['premise'];
 ?>
 <li class="event item">
   <div class="item_content">
     <div class="expand"><?php print l($item->title, 'node/' . $item->nid);?></div>
-      <div class="event-place">
-        <?php print $address; ?>
-      </div>
+    <div class="event-place"><?php if (!empty($locality)): ?><span><?php print $locality;?></span><?php endif; ?><?php if ((!empty($thoroughfare))||(!empty($premise))): ?><div><?php print $thoroughfare;?></div><div><?php print $premise;?></div><?php endif; ?></div>
     <div class="image">
       <a href="<?php print url('node/' . $item->nid);?>"><?php print $image ? theme('image_style', array_merge($image, array('style_name' => $conf['image_style']))) : ''; ?></a>
     </div>
