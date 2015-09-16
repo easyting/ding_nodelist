@@ -13,9 +13,9 @@
  */
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $event_date = _ding_nodelist_formated_ding_event_date($item);
-$locality = $item->field_address[LANGUAGE_NONE][0]['locality'];
-$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'];
-$premise = $item->field_address[LANGUAGE_NONE][0]['premise'];
+$locality = $item->field_address[LANGUAGE_NONE][0]['locality'] ? $item->field_address[LANGUAGE_NONE][0]['locality'] : null;
+$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'] ? $item->field_address[LANGUAGE_NONE][0]['thoroughfare'] : null;
+$premise = $item->field_address[LANGUAGE_NONE][0]['premise'] ? $item->field_address[LANGUAGE_NONE][0]['premise'] : null;
 ?>
 <li class="event item">
   <div class="item_content">

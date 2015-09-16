@@ -14,9 +14,9 @@
 
 $image = _ding_nodelist_get_dams_image_info($item, 'field_list_image');
 $edbase = field_view_field('node', $item, 'field_editorial_base_e', array('label' => 'hidden'));
-$locality = $item->field_address[LANGUAGE_NONE][0]['locality'];
-$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'];
-$premise = $item->field_address[LANGUAGE_NONE][0]['premise'];
+$locality = $item->field_address[LANGUAGE_NONE][0]['locality'] ? $item->field_address[LANGUAGE_NONE][0]['locality'] : null;
+$thoroughfare = $item->field_address[LANGUAGE_NONE][0]['thoroughfare'] ? $item->field_address[LANGUAGE_NONE][0]['thoroughfare'] : null;
+$premise = $item->field_address[LANGUAGE_NONE][0]['premise'] ? $item->field_address[LANGUAGE_NONE][0]['premise'] : null;
 
 $event_date = _ding_nodelist_formated_ding_event_date($item);
 $fee = field_view_field('node', $item, 'field_event_fee');
